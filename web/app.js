@@ -291,7 +291,7 @@ const SRC = {};
   .forEach(([id, label, kind]) => (SRC[id] = { id, label, kind, color: `var(--c-${kind})`, bipolar: kind === "lfo" || kind === "rand" }));
 const CSSCOL = { lfo: "#d9aa3f", env: "#f08a4b", rand: "#a78bfa", macro: "#4ac6e8" };
 const MOD = { spec: { sources: {}, routes: [] }, assign: null, on: false, touched: 0, t0: 0, tAt: performance.now(), playing: false, tab: "lfo" };
-const TGT = { guidance: { label: "Guidance", span: 8 }, temperature: { label: "Temperature", span: 1.5 }, lowpass_hz: { label: "Low-pass", span: 4, oct: true }, volume: { label: "Volume", span: 1 }, width: { label: "Width", span: 2 }, spread: { label: "Spread", span: 1 } };
+const TGT = { guidance: { label: "Strength", span: 8 }, temperature: { label: "Temperature", span: 1.5 }, lowpass_hz: { label: "Low-pass", span: 4, oct: true }, volume: { label: "Volume", span: 1 }, width: { label: "Width", span: 2 }, spread: { label: "Spread", span: 1 } };
 // the knobs of the Model layers units and the effect slots, as modulation targets: {label, min, max, log}
 const MODTGT = {};
 const tgtOf = (k) => MODTGT[k] ? { label: MODTGT[k].label, span: 1 } : (k.startsWith("dose:") ? { label: S.dirs.find((d) => d.name === k.slice(5))?.title || k.slice(5), span: 0.8 } : TGT[k]);
@@ -573,7 +573,7 @@ $("#engine").addEventListener("change", async () => {
   try { await api("/api/engine", { engine: $("#engine").value }); dirsKnown = -1; S.engine = null; listSessions(); } catch (e) { fail(e); }
 });
 const engKnobs = [
-  knob({ label: "Guidance", min: 0, max: 8, step: 0.1, reset: 3, get: () => +(S.sampling.guidance ?? 3), put: (v) => sendSampling({ guidance: v }), fmt: (v) => v.toFixed(1), mod: "guidance", curve: "guidance", tip: "how closely it follows the style prompt (conditioning; live, at no cost)" }),
+  knob({ label: "Strength", min: 0, max: 8, step: 0.1, reset: 3, get: () => +(S.sampling.guidance ?? 3), put: (v) => sendSampling({ guidance: v }), fmt: (v) => v.toFixed(1), mod: "guidance", curve: "guidance", tip: "how strongly the prompt steers the music: the model's guidance, its weight on the style conditioning; live, at no cost" }),
   knob({ label: "Temperature", min: 0.5, max: 2, step: 0.05, reset: 1.3, get: () => +(S.sampling.temperature ?? 1.3), put: (v) => sendSampling({ temperature: v }), fmt: (v) => v.toFixed(2), mod: "temperature", curve: "temperature", tip: "the sampler's temperature" }),
   knob({ label: "Top-k", min: 1, max: 250, int: true, reset: 40, curve: "top_k", get: () => +(S.sampling.top_k ?? 40), put: (v) => sendSampling({ top_k: v }), tip: "how many of the likeliest tokens the sampler chooses among" }),
 ];
@@ -610,7 +610,15 @@ dice.addEventListener("click", () => { $("#seed").value = String(Math.floor(Math
 const seedPair = h(`<div class="seedpair"></div>`);
 seedPair.append(seedKnob, dice);
 $("#engknobs").appendChild(seedPair);
-engKnobs.forEach((k) => $("#engknobs").appendChild(k));
+// Strength (the model's guidance) beside the prompt it weighs; under them Seed, then Temperature and Top-k as a pair under SAMPLING
+const [guidKnob, tempKnob, topkKnob] = engKnobs;
+const promptRow = h(`<div class="promptrow"><div class="pcol"></div></div>`);
+$("#prompt").before(promptRow);
+promptRow.querySelector(".pcol").append($("#prompt"), $("#pform"));
+promptRow.appendChild(guidKnob); guidKnob.classList.add("kmini");
+const sampPair = h(`<div class="kgroup samppair" data-label="SAMPLING"></div>`);
+sampPair.append(tempKnob, topkKnob);
+$("#engknobs").appendChild(sampPair);
 
 // Output: the master, after the model
 const outKnobs = [
@@ -1991,7 +1999,7 @@ async function poll() {
       if (s.engine !== S.engine) {
         S.engine = s.engine; dirsKnown = -1;
         $("#mg-only").hidden = s.engine !== "musicgen";
-        engKnobs.forEach((k) => (k.hidden = s.engine !== "mrt2"));
+        engKnobs.forEach((k) => (k.hidden = s.engine !== "mrt2")); sampPair.hidden = s.engine !== "mrt2";
         speedPair.hidden = s.engine !== "mrt2";
       }
       MOD.on = s.engine === "mrt2" && s.state === "ready";
@@ -2269,7 +2277,7 @@ async function doExport(body) {
 const T = { grid: null, ctl: null };
 const unitTitle = (id) => U.units.find((u) => u.id === id)?.title || id;
 const unitParam = (id, key) => (key === "at" ? "placement" : U.units.find((u) => u.id === id)?.params.find((q) => q.key === key)?.label || key);
-const ctlLabel = (k) => k.startsWith("unit:") ? `${unitTitle(k.split(":")[1])} · ${unitParam(k.split(":")[1], k.split(":")[2])}` : (k.startsWith("dose:") ? `Steer: ${S.dirs.find((d) => d.name === k.slice(5))?.title || k.slice(5)}` : { guidance: "Guidance", temperature: "Temperature", top_k: "Top-k" }[k] || k);
+const ctlLabel = (k) => k.startsWith("unit:") ? `${unitTitle(k.split(":")[1])} · ${unitParam(k.split(":")[1], k.split(":")[2])}` : (k.startsWith("dose:") ? `Steer: ${S.dirs.find((d) => d.name === k.slice(5))?.title || k.slice(5)}` : { guidance: "Strength", temperature: "Temperature", top_k: "Top-k" }[k] || k);
 async function loadTune() {
   try { T.grid = await api("/api/calibration/grid"); } catch (e) { fail(e); return; }
   const ks = Object.keys(T.grid.controls);

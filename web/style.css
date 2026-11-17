@@ -975,3 +975,7 @@ html, body { overscroll-behavior-x: none; }
 /* Mode and Speed first, then Width and Spread */
 .engfoot .widen { grid-template-columns: auto 58px 58px; }
 .engfoot .widen .speedpair { order: -1; margin: 0 6px 0 0; }
+/* Mode and Speed linked by a thin bracket over the pair instead of a box */
+.engfoot .widen .speedpair { position: relative; border: 0; padding: 6px 0 0; }
+.engfoot .widen .speedpair::after { content: ""; position: absolute; left: 12px; right: 12px; top: 0; height: 5px; border: 1px solid #4a4f5b; border-bottom: 0; border-radius: 4px 4px 0 0; pointer-events: none; }
+.engfoot .widen { align-items: end; }

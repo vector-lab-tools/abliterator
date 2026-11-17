@@ -945,3 +945,7 @@ html, body { overscroll-behavior-x: none; }
 #pn-out .outcol2 { justify-content: center; }
 #pn-out .outcol2 .outk { flex: none; }
 #pn-out .dyn { margin-top: 10px; }
+/* the Engine's left side fills the panel's height: the knobs between the prompt and Save, Save at the foot */
+.eng > .engl { display: flex; flex-direction: column; min-height: 0; }
+.eng > .engl #engknobs { margin-top: auto; margin-bottom: auto; padding-top: 6px; padding-bottom: 6px; }
+.eng > .engl .engsave { flex: none; align-self: stretch; margin-top: 0; }

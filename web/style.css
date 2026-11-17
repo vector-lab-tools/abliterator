@@ -982,7 +982,7 @@ html, body { overscroll-behavior-x: none; }
 /* a little room either side of the sampler, whatever height the panel has */
 .eng > .engl #pform { margin-bottom: 12px; }
 #pform { align-items: center; }
-#pform .knob.kmini { margin-left: 4px; }
+#pform .knob.kmini { margin-left: 4px; transform: translateY(7px); }   /* its dial level with the Prompt box, the value and label hanging below */
 .eng > .engl .engsave { margin-top: 6px; }
 /* a mini knob, as in Dynamics: Strength beside the prompt */
 .knob.kmini { padding: 0; }

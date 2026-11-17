@@ -9,5 +9,5 @@ soundfile>=0.12
 sounddevice>=0.4.6
 PyYAML>=6.0
 pytest>=8
-vector-abliteration-units @ git+https://github.com/vector-lab-tools/vector-abliteration-units@8e3b6524976ebb2dce89d941d836f44bec6986cf
+vector-abliteration-units @ git+https://github.com/vector-lab-tools/vector-abliteration-units@dd1742e95e7e45e155611261109ac74e118a5812
 # torch comes with vau (CPU use only here: the strips' edits run on one position of the stream per step)

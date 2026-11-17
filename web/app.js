@@ -948,9 +948,8 @@ function transport() {
 // saving sounds
 async function saveLast() {
   try {
-    const r = await api("/api/sounds/snapshot", { seconds: +$("#snaplen").value, name: $("#sndname").value });
+    const r = await api("/api/sounds/snapshot", { seconds: +$("#snaplen").value, name: "" });
     SND.list = r.sounds; SND.fresh = r.snapshot.snapshot; drawSounds();
-    $("#sndname").value = "";
     info(`saved “${r.snapshot.label}” (${r.snapshot.seconds} s)`, "ok");
   } catch (e) { fail(e); }
 }
@@ -959,7 +958,7 @@ $("#snapbtn").addEventListener("click", saveLast);
 $("#freeze").addEventListener("click", async (e) => {
   if (e.target.tagName === "SELECT" || !S.preset) return;
   try {
-    await api("/api/sounds/freeze", { seconds: +$("#frzlen").value, preset: S.preset.id, seed: Math.max(0, +$("#seed").value || 0), name: $("#sndname").value });
+    await api("/api/sounds/freeze", { seconds: +$("#frzlen").value, preset: S.preset.id, seed: Math.max(0, +$("#seed").value || 0), name: "" });
     info("freezing…", "", 1500); SND.watchFreeze = true;
   } catch (err) { fail(err); }
 });
@@ -2104,7 +2103,7 @@ async function pollSounds() {
     const f = r.freeze;
     if (SND.watchFreeze && f && f.state !== "running") {
       SND.watchFreeze = false;
-      if (f.state === "done") { SND.fresh = f.snapshot.snapshot; drawSounds(); $("#sndname").value = ""; info(`frozen “${f.snapshot.label}”: ${f.snapshot.seconds} s in ${f.snapshot.seconds_to_render} s`, "ok", 6000); }
+      if (f.state === "done") { SND.fresh = f.snapshot.snapshot; drawSounds(); info(`frozen “${f.snapshot.label}”: ${f.snapshot.seconds} s in ${f.snapshot.seconds_to_render} s`, "ok", 6000); }
       else info(`Freeze failed: ${f.error}`, "bad", 8000);
     }
   } catch (e) { /* the status poll reports a dead server */ }

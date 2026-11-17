@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>What is Abliteration? · Abliterator</title>
+  <meta name="description" content="What vector bending a music model means for sound design: abliteration and its wider sense, real renders, spectrograms, and comparisons with the audio effect that comes nearest.">
+  <meta property="og:title" content="What is Abliteration? · vector bending and sound design">
+  <meta property="og:description" content="What vector bending a music model means for sound design, with real renders, spectrograms and comparisons with ordinary audio effects.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://vector-lab-tools.github.io/abliterator/img/share.png">
+  <meta property="og:image:width" content="1280">
+  <meta property="og:image:height" content="640">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="img/mark.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#f3f2ee" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0e1015" media="(prefers-color-scheme: dark)">
+  <script>(function(){try{var t=localStorage.getItem('abl-theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+  <link rel="stylesheet" href="style.css?v=a7fbc234">
+  <link rel="stylesheet" href="audio.css?v=75a41c3f">
+</head>
+<body>
+<!-- Written by hand. Copyright (C) 2026 David M. Berry. SPDX-License-Identifier: GPL-3.0-or-later -->
+<a class="skip" href="#main">Skip to the content</a>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="./" aria-label="Abliterator, home">
+      <img src="img/mark.svg" alt="">
+      <span class="brand-block">
+        <span class="brand-name">Abliterator</span>
+        <span class="brand-tagline">What is Abliteration?</span>
+      </span>
+    </a>
+    <div class="head-tools">
+      <nav class="site-nav" aria-label="Pages and sections">
+        <a href="./">Home</a>
+        <a href="#word">The word</a>
+        <a href="#moves">Add, remove, turn</a>
+        <a href="#design">Sound design</a>
+        <a href="units.html">Model layers</a>
+        <a href="faq.html">FAQ</a>
+        <span class="nav-sep" aria-hidden="true"></span>
+        <a class="ext" href="https://github.com/vector-lab-tools/abliterator">GitHub</a>
+      </nav>
+      <button class="theme-toggle" type="button" aria-label="Switch between light and dark" title="Switch between light and dark">
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<section class="hero hero-short">
+  <canvas class="hero-scope" id="hero-scope" aria-hidden="true"></canvas>
+  <div class="wrap hero-inner">
+    <span class="kicker">Abliterator · abliteration and sound design</span>
+    <h1><span class="glitch" id="title" data-text="What is Abliteration?">What is Abliteration?</span></h1>
+    <p class="tagline">Abliterator takes its name from abliteration: removing a direction from a model's internal vectors so that it stops doing something. Here the word covers every edit to those vectors while the model plays, and the model is one that writes sound. This page says what that means for sound design, with real renders, their spectrograms, and comparisons with the audio effect that comes nearest.</p>
+  </div>
+</section>
+
+<main class="content" id="main">
+
+  <div class="wrap toc-strip" aria-label="On this page">
+    <a href="#word">The word</a><a href="#moves">Add, remove, turn</a><a href="#design">Sound design</a><a href="#brighter">Brighter</a><a href="#echo">Echo</a><a href="#depth">Depth</a><a href="#movement">Movement</a><a href="#edge">The edge</a><a href="#takes">Takes</a><a href="#limits">Limits</a><a href="#refs">References</a>
+  </div>
+
+  <!-- 01 -->
+  <section class="section wrap reveal" id="word">
+    <span class="num">01</span>
+    <h2>The word</h2>
+    <p class="lede">In the interpretability literature, abliteration means removing a refusal direction from a chat model. Arditi et al. (2024) found that refusal in a range of open chat models runs through a single direction in the residual stream: add it and a model refuses harmless requests, take it out and it stops refusing. Removing that direction from the model's weights, so that it no longer refuses, came to be called abliteration in the open-model community (Labonne 2024).</p>
+    <p>A music model has no refusals. What it has are directions for qualities of sound. Abliterator makes two from pairs of prompts that differ in one quality, “bright airy ambient pad, high shimmering tones” against the same piece asked for dark, low and muffled: <b>brightness</b>, and in the same way <b>pulse</b>. Removing one of those directions from what the model's blocks write is abliteration in the first sense, applied to timbre. Most of the other things the instrument does to the model remove no direction at all: they push the stream along one, turn it, squash it, quantise it, or feed it frames from the past.</p>
+    <p>So Abliterator uses the word in an extended sense, for any change to a generative model's internal vectors made while it runs. Terence Broad and his co-authors call this family active divergence, and its most direct form network bending: transformations inserted into a trained network as it generates (Broad, Leymarie and Grierson 2021; Broad, Berns, Colton and Grierson 2021). Abliterator calls its own form of this vector bending, since what it changes are the vectors the model computes with; abliteration is one kind of vector bending among many.</p>
+  </section>
+
+  <!-- 02 -->
+  <section class="section wrap reveal" id="moves">
+    <span class="num">02</span>
+    <h2>Add, remove, turn</h2>
+    <p>Three things a unit can do along one direction of the stream. Steer <b>adds</b> it, Abliterate <b>removes</b> it, Rotate <b>turns</b> it toward another. Choose one and move the slider: the drawing shows what happens to the stream at one frame, and the spectrogram under it is the real render at that setting, on the Warm drone preset, seed 1.</p>
+    <div class="viz" id="viz-art" role="group" aria-label="Interactive figure: a vector and the brightness direction, with the stream added to, removed from, or turned along it, and the real render's spectrogram below">
+      <svg viewBox="0 0 960 330" aria-hidden="true"></svg>
+      <div class="bar"><span class="lab">Move</span>
+        <button type="button" data-mode="add" aria-pressed="true">add</button>
+        <button type="button" data-mode="remove" aria-pressed="false">remove</button>
+        <button type="button" data-mode="turn" aria-pressed="false">turn</button>
+        <label>setting <input type="range" min="0" max="1" step="1" value="0"><output>0</output></label></div>
+      <div class="readout" aria-live="polite"></div>
+    </div>
+    <div class="specbox wide" id="art-spec" data-src="audio/dose-brightness-warm-drone-0.mp3" data-label="Warm drone" data-line=" "></div>
+    <p class="viz-cap"><b>Every sound here is a recording</b>, rendered with the instrument and saved as MP3; the page cannot run the model. <b>The spectrograms</b> were computed from the clips when the site was built: 40 Hz at the foot to 20 kHz at the top, three seconds left to right, on one fixed scale of loudness, so any two compare. Press ▶ to listen; a line follows the sound.</p>
+  </section>
+
+  <!-- 03 -->
+  <section class="section wrap reveal" id="design">
+    <span class="num">03</span>
+    <h2>What it means for sound design</h2>
+    <p class="lede">Sound design usually starts from a signal. An oscillator, a sample or a recording supplies it, and filters and effects shape it. Here there is no signal until the model writes one, 40 ms at a time, and the controls act on the state the model writes it from. A change there changes what is played: its register, its density, the instruments it seems to use, as well as its spectrum.</p>
+    <p>The examples below set the two side by side. In each, the first clip is the model as it plays; the second is an ordinary audio effect on that same clip; the third is the model with vector bending toward the same end.</p>
+
+    <h3 id="brighter">Brighter</h3>
+    <p>An EQ can brighten a sound only by raising what is already there. The Warm drone has little above a few hundred hertz, so a high shelf of +12 dB moves its spectral centroid from 137 Hz to 153 Hz and lifts its faint upper partials and noise. A Steer toward brightness of 0.2 at layer 6 moves the centroid to 1.76 kHz: the model writes higher material, and in the spectrogram the low drone below about 200 Hz all but goes.</p>
+    <div class="trio" id="trio-eq"></div>
+
+    <h3 id="echo">Echo</h3>
+    <p>A delay on the audio repeats the sound 160 ms later at a fifth of its level. Lookback adds the stream from four frames back (160 ms) to the stream at layer 6, with the same feedback and mix. The model then writes from that mixed state: on this clip it plays 8.6 dB quieter than without it, and at a mix of 0.4 and above it falls almost silent.</p>
+    <div class="trio" id="trio-delay"></div>
+
+    <h3 id="depth">Depth</h3>
+    <p>An audio effect has one place to go: after the sound. A unit has twelve, between the model's transformer layers, and the same unit at different depths does different things. Tanh Squash at its defaults broke the sound at layers 2 and 4 and held from 6 on. Choose a layer.</p>
+    <div class="viz" id="viz-depth" role="group" aria-label="Interactive figure: Tanh Squash at each measured layer, with its render's spectrogram">
+      <svg viewBox="0 0 960 190" aria-hidden="true"></svg>
+      <div class="bar"><span class="lab">Tanh Squash at</span></div>
+    </div>
+    <div class="specbox wide" id="depth-spec" data-src="audio/u-none.mp3" data-label="Tanh Squash"></div>
+
+    <h3 id="movement">Movement from inside</h3>
+    <p>Modulation moves the model's controls as it plays. In this saved sound LFO 1, a 0.2 Hz sine, swings the brightness dose, and LFO 2, a 0.5 Hz triangle, swings the sampler's temperature, over twenty seconds of the Warm drone. In the spectrogram the high band opens four times, once every five seconds, with LFO 1.</p>
+    <div class="specbox wide tall" data-src="audio/sound-20261116-105444-f002.mp3" data-label="Warm drone · LFO 1 on brightness, LFO 2 on temperature · 20 s" data-line="LFO 1: sine, 0.2 Hz → dose:brightness · LFO 2: triangle, 0.5 Hz → temperature"></div>
+
+    <h3 id="edge">The edge as material</h3>
+    <p>The knobs keep to the ranges where the measurements found the sound held. Past them, the sound breaks in ways no audio effect produces, and some of that is usable. <b>Full range</b> on the Steer card unlocks the doses; the units' knobs mark the settings that broke with ⚠.</p>
+    <div class="trio">
+      <div class="specbox" data-src="audio/dose-brightness-warm-drone-m1.mp3" data-label="Brightness −1" data-note="Louder and clipped (−8 dBFS RMS), where the drone sits at −28: on the dark side the sound gets louder before it gets darker."></div>
+      <div class="specbox" data-src="audio/u-delay-mix-0.4.mp3" data-label="Lookback, mix 0.4" data-note="The model falls almost silent: −60 dBFS, 98% of its frames below −55."></div>
+      <div class="specbox" data-src="audio/u-erosion-bits-1.mp3" data-label="Quantise, 1 bit" data-note="Each coordinate of the stream at layer 6 rounded to steps of three standard deviations, so that most become 0."></div>
+    </div>
+
+    <h3 id="takes">Takes and recall</h3>
+    <p>A seed is a take. The same seed, preset, settings and moves give the same sound, sample for sample, and a saved sound keeps all of them in its recipe, so Freeze renders it again exactly, at the length you choose. Changing the seed changes the music about as much as the sampler's own knobs do: across seeds the spectrum moves about 8 dB. Auditioning seeds is part of the instrument, and so is fixing one.</p>
+  </section>
+
+  <!-- 04 -->
+  <section class="section wrap reveal" id="limits">
+    <span class="num">04</span>
+    <h2>Where the comparison with audio effects fails</h2>
+    <div class="note break"><span class="tag">Breaks</span><p><b>A direction is not a frequency band.</b> Brightness is a direction made from prompts; it moves the spectrum, and it also moves register and instrumentation. Nothing orders the directions the way frequency is ordered.</p></div>
+    <div class="note break"><span class="tag">Breaks</span><p><b>The output feeds the input.</b> The model reads every frame it has written. A change at one frame carries into the frames after it, so a unit's effect builds and wanders, and switching it off does not return the sound to where it was.</p></div>
+    <div class="note break"><span class="tag">Breaks</span><p><b>Time is frames.</b> A model-layer unit's time is counted in 40 ms frames of the stream. Lookback's four frames are 160 ms of position, and what comes back is a state the model writes from, not a copy of the sound.</p></div>
+    <div class="note break"><span class="tag">Breaks</span><p><b>Two numbers do not describe a sound.</b> The measures here (level, spectral centroid, flatness, a long-term spectrum) find where a sound breaks. Whether a setting is musical is decided by ear, in the Tune view.</p></div>
+  </section>
+
+  <!-- 05 -->
+  <section class="section wrap reveal" id="refs">
+    <span class="num">05</span>
+    <h2>References</h2>
+    <ul class="refs">
+      <li>Arditi, A., Obeso, O., Syed, A., Paleka, D., Panickssery, N., Gurnee, W. and Nanda, N. (2024) “Refusal in Language Models Is Mediated by a Single Direction”. <a href="https://arxiv.org/abs/2406.11717">arXiv:2406.11717</a>.</li>
+      <li>Broad, T., Berns, S., Colton, S. and Grierson, M. (2021) “Active Divergence with Generative Deep Learning: A Survey and Taxonomy”, <i>Proceedings of the 12th International Conference on Computational Creativity (ICCC 2021)</i>. <a href="https://arxiv.org/abs/2107.05599">arXiv:2107.05599</a>.</li>
+      <li>Broad, T., Leymarie, F. F. and Grierson, M. (2021) “Network Bending: Expressive Manipulation of Deep Generative Models”, <i>EvoMUSART 2021</i>. <a href="https://arxiv.org/abs/2005.12420">arXiv:2005.12420</a>.</li>
+      <li>Labonne, M. (2024) “Uncensor any LLM with abliteration”, Hugging Face blog. <a href="https://huggingface.co/blog/mlabonne/abliteration">huggingface.co/blog/mlabonne/abliteration</a>.</li>
+    </ul>
+  </section>
+
+  <section class="section wrap reveal">
+    <div class="links">
+      <a href="./"><b>Abliterator</b><span>The instrument, its sounds and how it works</span></a>
+      <a href="units.html"><b>Model layers</b><span>Where the units live and act, unit by unit</span></a>
+      <a href="faq.html"><b>FAQ</b><span>Questions people ask about it</span></a>
+      <a href="https://github.com/vector-lab-tools/abliterator"><b>GitHub</b><span>The code</span></a>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="foot">
+      <img src="img/mark.svg" alt="">
+      <div>
+        <p><b>Abliterator</b>, a <a href="https://vector-lab-tools.github.io">Vector Lab</a> tool. David M. Berry, University of Sussex. GPL-3.0-or-later.</p>
+        <p><a href="./">Home</a> · <a href="units.html">Model layers</a> · <a href="faq.html">FAQ</a> · <a href="https://github.com/vector-lab-tools/abliterator">Repository</a></p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Screenshot, enlarged" hidden>
+  <button type="button" aria-label="Close">✕</button>
+  <img alt="">
+  <div class="cap"></div>
+</div>
+
+<audio id="player" preload="none"></audio>
+<script src="media.js?v=e1db11f7"></script>
+<script src="units-media.js?v=94794d8a"></script>
+<script src="design-media.js?v=a9f614af"></script>
+<script src="site.js?v=abdc9fe1"></script>
+<script>
+(function () {
+  var D = window.DESIGN || {};
+  function trio(id, d, labels) {
+    var el = document.getElementById(id); if (!el || !d.base) return;
+    [["base", labels[0]], ["fx", labels[1]], ["model", labels[2]]].forEach(function (p) {
+      var c = d[p[0]], b = document.createElement("div");
+      b.className = "specbox"; b.setAttribute("data-src", c.src); b.setAttribute("data-label", p[1]);
+      b.setAttribute("data-level", c.rms_db.toFixed(1) + " dBFS");
+      if (c.line) b.setAttribute("data-line", c.line);
+      el.appendChild(b);
+    });
+  }
+  trio("trio-eq", D.eq || {}, ["The model, as it plays", "An EQ on the audio", "Vector bending: Steer"]);
+  trio("trio-delay", D.delay || {}, ["The model, as it plays", "A delay on the audio", "Vector bending: Lookback"]);
+})();
+</script>
+<script src="spec-index.js?v=989cfc11"></script>
+<script src="spectro.js?v=fb1f3867"></script>
+<script src="abliteration.js?v=a85fd8fd"></script>
+</body>
+</html>

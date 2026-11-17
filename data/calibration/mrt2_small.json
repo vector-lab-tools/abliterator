@@ -1,0 +1,9702 @@
+{
+ "format": "abliterator.calibration.v1",
+ "engine": "mrt2",
+ "made": "2026-11-16 12:34",
+ "method": "For each control and preset, a step is marked broken when the output clips (more than 0.1% of samples at full scale), falls toward silence (more than a quarter of it below \u221255 dBFS, or 24 dB under the control's default), is overdriven (louder than \u221212 dBFS RMS: the model's output at the defaults sits between \u221228 and \u221241), or turns to noise (spectral flatness above 0.3 and three times the default's). The control's safe range is the run of unbroken steps around its default that every preset shares. Within it, the knob is laid out by timbre: equal travel gives equal change in the level-free spectrum (measure.timbre_distance between neighbouring steps, averaged over presets), so the knob spends its travel where the sound changes and passes quickly where it does not. A changed sampler takes a different path, so every step also differs by what seeds alone do (the noise floor: the defaults on other seeds); that is subtracted first. 40% of the travel is spread evenly over the steps, so every setting stays in reach, and a control whose changes stay within the floor is laid out in even steps. A dose knob is laid out on each side of 0 separately, so 0 stays at the centre.",
+ "renders": 260,
+ "controls": {
+  "dose:brightness": {
+   "default": 0.0,
+   "safe": [
+    -0.2,
+    1.0
+   ],
+   "steps": [
+    -0.2,
+    -0.15,
+    -0.1,
+    -0.05,
+    0.0,
+    0.05,
+    0.1,
+    0.15,
+    0.2,
+    0.3,
+    0.4,
+    0.6,
+    1.0
+   ],
+   "curve": [
+    [
+     0.0,
+     -0.2
+    ],
+    [
+     0.0618,
+     -0.15
+    ],
+    [
+     0.1236,
+     -0.1
+    ],
+    [
+     0.2505,
+     -0.05
+    ],
+    [
+     0.5,
+     0.0
+    ],
+    [
+     0.5973,
+     0.05
+    ],
+    [
+     0.6662,
+     0.1
+    ],
+    [
+     0.77,
+     0.15
+    ],
+    [
+     0.8188,
+     0.2
+    ],
+    [
+     0.878,
+     0.3
+    ],
+    [
+     0.9501,
+     0.4
+    ],
+    [
+     0.9729,
+     0.6
+    ],
+    [
+     1.0,
+     1.0
+    ]
+   ],
+   "level_db": [
+    20.1,
+    22.0,
+    19.4,
+    12.2,
+    0.0,
+    -1.8,
+    2.4,
+    9.3,
+    10.1,
+    15.5,
+    18.2,
+    20.4,
+    18.1
+   ],
+   "step_timbre_db": [
+    5.46,
+    7.2,
+    10.94,
+    16.14,
+    16.74,
+    13.49,
+    17.49,
+    11.16,
+    12.37,
+    13.84,
+    7.55,
+    8.68
+   ],
+   "beyond_seeds": 18.26,
+   "swept": [
+    -1.0,
+    1.0
+   ],
+   "presets": {
+    "warm-drone": [
+     {
+      "value": -1.0,
+      "broken": [
+       "clips (0.44% of samples)",
+       "overdriven (-8 dBFS RMS; the model's own level is \u221228 to \u221241)"
+      ],
+      "rms_db": -8.28,
+      "level_db": 19.9,
+      "timbre_db": 20.801,
+      "centroid_hz": 185.9,
+      "flatness": 0.00224
+     },
+     {
+      "value": -0.6,
+      "broken": [
+       "clips (0.15% of samples)",
+       "overdriven (-9 dBFS RMS; the model's own level is \u221228 to \u221241)"
+      ],
+      "rms_db": -8.65,
+      "level_db": 19.5,
+      "timbre_db": 18.485,
+      "centroid_hz": 116.8,
+      "flatness": 0.00019
+     },
+     {
+      "value": -0.4,
+      "broken": [],
+      "rms_db": -13.37,
+      "level_db": 14.8,
+      "timbre_db": 9.322,
+      "centroid_hz": 118.7,
+      "flatness": 0.0
+     },
+     {
+      "value": -0.3,
+      "broken": [],
+      "rms_db": -14.05,
+      "level_db": 14.1,
+      "timbre_db": 17.112,
+      "centroid_hz": 95.4,
+      "flatness": 0.0
+     },
+     {
+      "value": -0.2,
+      "broken": [],
+      "rms_db": -12.7,
+      "level_db": 15.5,
+      "timbre_db": 12.79,
+      "centroid_hz": 91.2,
+      "flatness": 0.0
+     },
+     {
+      "value": -0.15,
+      "broken": [],
+      "rms_db": -14.02,
+      "level_db": 14.2,
+      "timbre_db": 9.489,
+      "centroid_hz": 100.4,
+      "flatness": 0.0
+     },
+     {
+      "value": -0.1,
+      "broken": [],
+      "rms_db": -14.96,
+      "level_db": 13.2,
+      "timbre_db": 9.651,
+      "centroid_hz": 80.8,
+      "flatness": 0.0
+     },
+     {
+      "value": -0.05,
+      "broken": [],
+      "rms_db": -19.86,
+      "level_db": 8.3,
+      "timbre_db": 7.619,
+      "centroid_hz": 114.1,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.0,
+      "broken": [],
+      "rms_db": -28.18,
+      "level_db": 0.0,
+      "timbre_db": 0.0,
+      "centroid_hz": 136.6,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.05,
+      "broken": [],
+      "rms_db": -40.22,
+      "level_db": -12.0,
+      "timbre_db": 12.298,
+      "centroid_hz": 310.2,
+      "flatness": 3e-05
+     },
+     {
+      "value": 0.1,
+      "broken": [],
+      "rms_db": -35.86,
+      "level_db": -7.7,
+      "timbre_db": 15.845,
+      "centroid_hz": 941.7,
+      "flatness": 2e-05
+     },
+     {
+      "value": 0.15,
+      "broken": [],
+      "rms_db": -27.04,
+      "level_db": 1.1,
+      "timbre_db": 43.376,
+      "centroid_hz": 1707.7,
+      "flatness": 8e-05
+     },
+     {
+      "value": 0.2,
+      "broken": [],
+      "rms_db": -23.4,
+      "level_db": 4.8,
+      "timbre_db": 42.08,
+      "centroid_hz": 1761.9,
+      "flatness": 4e-05
+     },
+     {
+      "value": 0.3,
+      "broken": [],
+      "rms_db": -20.38,
+      "level_db": 7.8,
+      "timbre_db": 54.729,
+      "centroid_hz": 1839.5,
+      "flatness": 3e-05
+     },
+     {
+      "value": 0.4,
+      "broken": [],
+      "rms_db": -15.7,
+      "level_db": 12.5,
+      "timbre_db": 41.596,
+      "centroid_hz": 1999.4,
+      "flatness": 0.00032
+     },
+     {
+      "value": 0.6,
+      "broken": [],
+      "rms_db": -15.62,
+      "level_db": 12.6,
+      "timbre_db": 53.583,
+      "centroid_hz": 2001.4,
+      "flatness": 0.00134
+     },
+     {
+      "value": 1.0,
+      "broken": [],
+      "rms_db": -18.33,
+      "level_db": 9.9,
+      "timbre_db": 39.906,
+      "centroid_hz": 1991.1,
+      "flatness": 0.0046
+     }
+    ],
+    "shimmer": [
+     {
+      "value": -1.0,
+      "broken": [
+       "clips (1.14% of samples)",
+       "overdriven (-7 dBFS RMS; the model's own level is \u221228 to \u221241)"
+      ],
+      "rms_db": -7.42,
+      "level_db": 31.5,
+      "timbre_db": 27.751,
+      "centroid_hz": 344.2,
+      "flatness": 0.00944
+     },
+     {
+      "value": -0.6,
+      "broken": [
+       "clips (0.49% of samples)",
+       "overdriven (-9 dBFS RMS; the model's own level is \u221228 to \u221241)"
+      ],
+      "rms_db": -9.2,
+      "level_db": 29.8,
+      "timbre_db": 28.218,
+      "centroid_hz": 280.9,
+      "flatness": 0.00406
+     },
+     {
+      "value": -0.4,
+      "broken": [],
+      "rms_db": -15.66,
+      "level_db": 23.3,
+      "timbre_db": 33.741,
+      "centroid_hz": 89.8,
+      "flatness": 0.0
+     },
+     {
+      "value": -0.3,
+      "broken": [],
+      "rms_db": -17.13,
+      "level_db": 21.8,
+      "timbre_db": 45.565,
+      "centroid_hz": 77.8,
+      "flatness": 0.0
+     },
+     {
+      "value": -0.2,
+      "broken": [],
+      "rms_db": -16.79,
+      "level_db": 22.2,
+      "timbre_db": 42.807,
+      "centroid_hz": 73.5,
+      "flatness": 0.0
+     },
+     {
+      "value": -0.15,
+      "broken": [],
+      "rms_db": -13.37,
+      "level_db": 25.6,
+      "timbre_db": 44.692,
+      "centroid_hz": 57.9,
+      "flatness": 0.0
+     },
+     {
+      "value": -0.1,
+      "broken": [],
+      "rms_db": -19.09,
+      "level_db": 19.9,
+      "timbre_db": 37.993,
+      "centroid_hz": 134.9,
+      "flatness": 0.0
+     },
+     {
+      "value": -0.05,
+      "broken": [],
+      "rms_db": -27.14,
+      "level_db": 11.8,
+      "timbre_db": 31.769,
+      "centroid_hz": 296.7,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.0,
+      "broken": [],
+      "rms_db": -38.97,
+      "level_db": 0.0,
+      "timbre_db": 0.0,
+      "centroid_hz": 1045.7,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.05,
+      "broken": [],
+      "rms_db": -34.52,
+      "level_db": 4.4,
+      "timbre_db": 20.5,
+      "centroid_hz": 1415.4,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.1,
+      "broken": [],
+      "rms_db": -35.22,
+      "level_db": 3.8,
+      "timbre_db": 13.35,
+      "centroid_hz": 1164.2,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.15,
+      "broken": [],
+      "rms_db": -20.55,
+      "level_db": 18.4,
+      "timbre_db": 18.445,
+      "centroid_hz": 1535.7,
+      "flatness": 1e-05
+     },
+     {
+      "value": 0.2,
+      "broken": [],
+      "rms_db": -27.22,
+      "level_db": 11.8,
+      "timbre_db": 24.024,
+      "centroid_hz": 1426.2,
+      "flatness": 2e-05
+     },
+     {
+      "value": 0.3,
+      "broken": [],
+      "rms_db": -15.96,
+      "level_db": 23.0,
+      "timbre_db": 20.71,
+      "centroid_hz": 1875.9,
+      "flatness": 0.00042
+     },
+     {
+      "value": 0.4,
+      "broken": [],
+      "rms_db": -16.33,
+      "level_db": 22.6,
+      "timbre_db": 27.525,
+      "centroid_hz": 2016.4,
+      "flatness": 0.00096
+     },
+     {
+      "value": 0.6,
+      "broken": [],
+      "rms_db": -15.34,
+      "level_db": 23.6,
+      "timbre_db": 25.783,
+      "centroid_hz": 1989.9,
+      "flatness": 0.00099
+     },
+     {
+      "value": 1.0,
+      "broken": [],
+      "rms_db": -16.46,
+      "level_db": 22.5,
+      "timbre_db": 25.508,
+      "centroid_hz": 2067.3,
+      "flatness": 0.00332
+     }
+    ],
+    "dark-field": [
+     {
+      "value": -1.0,
+      "broken": [
+       "clips (1.07% of samples)",
+       "overdriven (-8 dBFS RMS; the model's own level is \u221228 to \u221241)"
+      ],
+      "rms_db": -7.53,
+      "level_db": 33.7,
+      "timbre_db": 14.082,
+      "centroid_hz": 243.1,
+      "flatness": 0.00539
+     },
+     {
+      "value": -0.6,
+      "broken": [
+       "clips (0.89% of samples)",
+       "overdriven (-8 dBFS RMS; the model's own level is \u221228 to \u221241)"
+      ],
+      "rms_db": -7.71,
+      "level_db": 33.5,
+      "timbre_db": 14.087,
+      "centroid_hz": 298.0,
+      "flatness": 0.00758
+     },
+     {
+      "value": -0.4,
+      "broken": [
+       "clips (0.37% of samples)",
+       "overdriven (-9 dBFS RMS; the model's own level is \u221228 to \u221241)"
+      ],
+      "rms_db": -8.54,
+      "level_db": 32.6,
+      "timbre_db": 14.3,
+      "centroid_hz": 237.4,
+      "flatness": 0.00389
+     },
+     {
+      "value": -0.3,
+      "broken": [
+       "overdriven (-9 dBFS RMS; the model's own level is \u221228 to \u221241)"
+      ],
+      "rms_db": -9.0,
+      "level_db": 32.2,
+      "timbre_db": 15.058,
+      "centroid_hz": 118.3,
+      "flatness": 0.00037
+     },
+     {
+      "value": -0.2,
+      "broken": [],
+      "rms_db": -12.85,
+      "level_db": 28.3,
+      "timbre_db": 21.625,
+      "centroid_hz": 89.1,
+      "flatness": 0.0
+     },
+     {
+      "value": -0.15,
+      "broken": [],
+      "rms_db": -13.29,
+      "level_db": 27.9,
+      "timbre_db": 21.234,
+      "centroid_hz": 80.6,
+      "flatness": 0.0
+     },
+     {
+      "value": -0.1,
+      "broken": [],
+      "rms_db": -13.72,
+      "level_db": 27.5,
+      "timbre_db": 19.851,
+      "centroid_hz": 58.2,
+      "flatness": 0.0
+     },
+     {
+      "value": -0.05,
+      "broken": [],
+      "rms_db": -15.32,
+      "level_db": 25.9,
+      "timbre_db": 12.358,
+      "centroid_hz": 61.0,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.0,
+      "broken": [],
+      "rms_db": -41.19,
+      "level_db": 0.0,
+      "timbre_db": 0.0,
+      "centroid_hz": 225.3,
+      "flatness": 0.00011
+     },
+     {
+      "value": 0.05,
+      "broken": [],
+      "rms_db": -39.98,
+      "level_db": 1.2,
+      "timbre_db": 16.828,
+      "centroid_hz": 1937.4,
+      "flatness": 0.00038
+     },
+     {
+      "value": 0.1,
+      "broken": [],
+      "rms_db": -28.9,
+      "level_db": 12.3,
+      "timbre_db": 35.611,
+      "centroid_hz": 2163.7,
+      "flatness": 0.00017
+     },
+     {
+      "value": 0.15,
+      "broken": [],
+      "rms_db": -23.17,
+      "level_db": 18.0,
+      "timbre_db": 28.61,
+      "centroid_hz": 1866.0,
+      "flatness": 0.00012
+     },
+     {
+      "value": 0.2,
+      "broken": [],
+      "rms_db": -21.94,
+      "level_db": 19.2,
+      "timbre_db": 40.774,
+      "centroid_hz": 2133.2,
+      "flatness": 0.00012
+     },
+     {
+      "value": 0.3,
+      "broken": [],
+      "rms_db": -15.48,
+      "level_db": 25.7,
+      "timbre_db": 39.048,
+      "centroid_hz": 2029.0,
+      "flatness": 9e-05
+     },
+     {
+      "value": 0.4,
+      "broken": [],
+      "rms_db": -13.09,
+      "level_db": 28.1,
+      "timbre_db": 22.218,
+      "centroid_hz": 1936.7,
+      "flatness": 0.00025
+     },
+     {
+      "value": 0.6,
+      "broken": [],
+      "rms_db": -12.7,
+      "level_db": 28.5,
+      "timbre_db": 23.437,
+      "centroid_hz": 2029.6,
+      "flatness": 0.00067
+     },
+     {
+      "value": 1.0,
+      "broken": [],
+      "rms_db": -15.73,
+      "level_db": 25.5,
+      "timbre_db": 30.307,
+      "centroid_hz": 2075.9,
+      "flatness": 0.0041
+     }
+    ],
+    "glass": [
+     {
+      "value": -1.0,
+      "broken": [
+       "clips (1.40% of samples)",
+       "overdriven (-7 dBFS RMS; the model's own level is \u221228 to \u221241)"
+      ],
+      "rms_db": -7.29,
+      "level_db": 27.3,
+      "timbre_db": 24.323,
+      "centroid_hz": 328.2,
+      "flatness": 0.00897
+     },
+     {
+      "value": -0.6,
+      "broken": [
+       "clips (0.73% of samples)",
+       "overdriven (-8 dBFS RMS; the model's own level is \u221228 to \u221241)"
+      ],
+      "rms_db": -7.98,
+      "level_db": 26.6,
+      "timbre_db": 23.61,
+      "centroid_hz": 215.9,
+      "flatness": 0.00253
+     },
+     {
+      "value": -0.4,
+      "broken": [],
+      "rms_db": -12.13,
+      "level_db": 22.5,
+      "timbre_db": 20.306,
+      "centroid_hz": 100.1,
+      "flatness": 6e-05
+     },
+     {
+      "value": -0.3,
+      "broken": [],
+      "rms_db": -15.74,
+      "level_db": 18.9,
+      "timbre_db": 16.558,
+      "centroid_hz": 92.2,
+      "flatness": 0.0
+     },
+     {
+      "value": -0.2,
+      "broken": [],
+      "rms_db": -20.11,
+      "level_db": 14.5,
+      "timbre_db": 21.402,
+      "centroid_hz": 101.7,
+      "flatness": 0.00025
+     },
+     {
+      "value": -0.15,
+      "broken": [],
+      "rms_db": -14.38,
+      "level_db": 20.2,
+      "timbre_db": 21.097,
+      "centroid_hz": 71.6,
+      "flatness": 0.00125
+     },
+     {
+      "value": -0.1,
+      "broken": [],
+      "rms_db": -17.44,
+      "level_db": 17.2,
+      "timbre_db": 20.362,
+      "centroid_hz": 75.5,
+      "flatness": 0.0
+     },
+     {
+      "value": -0.05,
+      "broken": [],
+      "rms_db": -31.75,
+      "level_db": 2.9,
+      "timbre_db": 12.829,
+      "centroid_hz": 475.9,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.0,
+      "broken": [],
+      "rms_db": -34.62,
+      "level_db": 0.0,
+      "timbre_db": 0.0,
+      "centroid_hz": 616.7,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.05,
+      "broken": [],
+      "rms_db": -35.3,
+      "level_db": -0.7,
+      "timbre_db": 17.318,
+      "centroid_hz": 518.9,
+      "flatness": 0.00238
+     },
+     {
+      "value": 0.1,
+      "broken": [],
+      "rms_db": -33.42,
+      "level_db": 1.2,
+      "timbre_db": 24.397,
+      "centroid_hz": 840.0,
+      "flatness": 8e-05
+     },
+     {
+      "value": 0.15,
+      "broken": [],
+      "rms_db": -34.8,
+      "level_db": -0.2,
+      "timbre_db": 36.098,
+      "centroid_hz": 984.1,
+      "flatness": 0.00101
+     },
+     {
+      "value": 0.2,
+      "broken": [],
+      "rms_db": -30.08,
+      "level_db": 4.5,
+      "timbre_db": 47.199,
+      "centroid_hz": 1484.8,
+      "flatness": 3e-05
+     },
+     {
+      "value": 0.3,
+      "broken": [],
+      "rms_db": -29.11,
+      "level_db": 5.5,
+      "timbre_db": 43.99,
+      "centroid_hz": 1680.2,
+      "flatness": 3e-05
+     },
+     {
+      "value": 0.4,
+      "broken": [],
+      "rms_db": -24.96,
+      "level_db": 9.7,
+      "timbre_db": 45.35,
+      "centroid_hz": 1662.2,
+      "flatness": 0.00021
+     },
+     {
+      "value": 0.6,
+      "broken": [],
+      "rms_db": -17.61,
+      "level_db": 17.0,
+      "timbre_db": 41.938,
+      "centroid_hz": 1782.6,
+      "flatness": 0.00098
+     },
+     {
+      "value": 1.0,
+      "broken": [],
+      "rms_db": -20.22,
+      "level_db": 14.4,
+      "timbre_db": 38.505,
+      "centroid_hz": 2004.2,
+      "flatness": 0.00389
+     }
+    ]
+   }
+  },
+  "dose:pulse": {
+   "default": 0.0,
+   "safe": [
+    0.0,
+    0.05
+   ],
+   "steps": [
+    0.0,
+    0.05
+   ],
+   "curve": [
+    [
+     0.5,
+     0.0
+    ],
+    [
+     1.0,
+     0.05
+    ]
+   ],
+   "level_db": [
+    0.0,
+    10.7
+   ],
+   "step_timbre_db": [
+    15.65
+   ],
+   "beyond_seeds": 6.63,
+   "swept": [
+    -1.0,
+    1.0
+   ],
+   "presets": {
+    "warm-drone": [
+     {
+      "value": -1.0,
+      "broken": [
+       "falls silent (-92 dBFS)"
+      ],
+      "rms_db": -91.82,
+      "level_db": -63.6,
+      "timbre_db": 24.945,
+      "centroid_hz": 440.7,
+      "flatness": 0.0475
+     },
+     {
+      "value": -0.6,
+      "broken": [
+       "falls silent (-92 dBFS)"
+      ],
+      "rms_db": -92.08,
+      "level_db": -63.9,
+      "timbre_db": 24.931,
+      "centroid_hz": 597.8,
+      "flatness": 0.0534
+     },
+     {
+      "value": -0.4,
+      "broken": [
+       "falls silent (-84 dBFS)"
+      ],
+      "rms_db": -84.42,
+      "level_db": -56.2,
+      "timbre_db": 22.991,
+      "centroid_hz": 781.7,
+      "flatness": 0.07714
+     },
+     {
+      "value": -0.3,
+      "broken": [
+       "falls silent (-57 dBFS)"
+      ],
+      "rms_db": -56.67,
+      "level_db": -28.5,
+      "timbre_db": 17.741,
+      "centroid_hz": 595.2,
+      "flatness": 0.019
+     },
+     {
+      "value": -0.2,
+      "broken": [
+       "falls silent (-53 dBFS)"
+      ],
+      "rms_db": -52.6,
+      "level_db": -24.4,
+      "timbre_db": 17.801,
+      "centroid_hz": 505.3,
+      "flatness": 0.00269
+     },
+     {
+      "value": -0.15,
+      "broken": [],
+      "rms_db": -42.27,
+      "level_db": -14.1,
+      "timbre_db": 7.554,
+      "centroid_hz": 314.2,
+      "flatness": 1e-05
+     },
+     {
+      "value": -0.1,
+      "broken": [],
+      "rms_db": -45.78,
+      "level_db": -17.6,
+      "timbre_db": 11.438,
+      "centroid_hz": 392.5,
+      "flatness": 6e-05
+     },
+     {
+      "value": -0.05,
+      "broken": [],
+      "rms_db": -40.7,
+      "level_db": -12.5,
+      "timbre_db": 8.872,
+      "centroid_hz": 275.6,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.0,
+      "broken": [],
+      "rms_db": -28.18,
+      "level_db": 0.0,
+      "timbre_db": 0.0,
+      "centroid_hz": 136.6,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.05,
+      "broken": [],
+      "rms_db": -17.57,
+      "level_db": 10.6,
+      "timbre_db": 21.378,
+      "centroid_hz": 139.6,
+      "flatness": 0.00021
+     },
+     {
+      "value": 0.1,
+      "broken": [],
+      "rms_db": -13.51,
+      "level_db": 14.7,
+      "timbre_db": 19.238,
+      "centroid_hz": 93.0,
+      "flatness": 0.0001
+     },
+     {
+      "value": 0.15,
+      "broken": [],
+      "rms_db": -12.21,
+      "level_db": 16.0,
+      "timbre_db": 20.843,
+      "centroid_hz": 95.7,
+      "flatness": 7e-05
+     },
+     {
+      "value": 0.2,
+      "broken": [
+       "overdriven (-10 dBFS RMS; the model's own level is \u221228 to \u221241)"
+      ],
+      "rms_db": -10.1,
+      "level_db": 18.1,
+      "timbre_db": 24.303,
+      "centroid_hz": 537.8,
+      "flatness": 0.00288
+     },
+     {
+      "value": 0.3,
+      "broken": [
+       "clips (0.20% of samples)",
+       "overdriven (-8 dBFS RMS; the model's own level is \u221228 to \u221241)"
+      ],
+      "rms_db": -8.31,
+      "level_db": 19.9,
+      "timbre_db": 24.687,
+      "centroid_hz": 419.7,
+      "flatness": 0.00308
+     },
+     {
+      "value": 0.4,
+      "broken": [
+       "overdriven (-9 dBFS RMS; the model's own level is \u221228 to \u221241)"
+      ],
+      "rms_db": -9.18,
+      "level_db": 19.0,
+      "timbre_db": 24.907,
+      "centroid_hz": 445.0,
+      "flatness": 0.00238
+     },
+     {
+      "value": 0.6,
+      "broken": [
+       "overdriven (-9 dBFS RMS; the model's own level is \u221228 to \u221241)"
+      ],
+      "rms_db": -8.99,
+      "level_db": 19.2,
+      "timbre_db": 24.532,
+      "centroid_hz": 434.6,
+      "flatness": 0.00274
+     },
+     {
+      "value": 1.0,
+      "broken": [
+       "overdriven (-10 dBFS RMS; the model's own level is \u221228 to \u221241)"
+      ],
+      "rms_db": -9.53,
+      "level_db": 18.6,
+      "timbre_db": 25.107,
+      "centroid_hz": 794.8,
+      "flatness": 0.00728
+     }
+    ],
+    "shimmer": [
+     {
+      "value": -1.0,
+      "broken": [
+       "falls silent (-92 dBFS)"
+      ],
+      "rms_db": -91.67,
+      "level_db": -52.7,
+      "timbre_db": 23.291,
+      "centroid_hz": 415.9,
+      "flatness": 0.0436
+     },
+     {
+      "value": -0.6,
+      "broken": [
+       "falls silent (-52 dBFS)"
+      ],
+      "rms_db": -52.01,
+      "level_db": -13.0,
+      "timbre_db": 8.012,
+      "centroid_hz": 630.2,
+      "flatness": 0.05023
+     },
+     {
+      "value": -0.4,
+      "broken": [
+       "falls silent (-52 dBFS)"
+      ],
+      "rms_db": -51.59,
+      "level_db": -12.6,
+      "timbre_db": 8.7,
+      "centroid_hz": 607.2,
+      "flatness": 0.06439
+     },
+     {
+      "value": -0.3,
+      "broken": [],
+      "rms_db": -43.14,
+      "level_db": -4.2,
+      "timbre_db": 7.037,
+      "centroid_hz": 612.0,
+      "flatness": 0.0
+     },
+     {
+      "value": -0.2,
+      "broken": [],
+      "rms_db": -41.79,
+      "level_db": -2.8,
+      "timbre_db": 6.6,
+      "centroid_hz": 616.5,
+      "flatness": 0.0
+     },
+     {
+      "value": -0.15,
+      "broken": [],
+      "rms_db": -40.36,
+      "level_db": -1.4,
+      "timbre_db": 6.574,
+      "centroid_hz": 649.8,
+      "flatness": 0.0
+     },
+     {
+      "value": -0.1,
+      "broken": [],
+      "rms_db": -36.35,
+      "level_db": 2.6,
+      "timbre_db": 6.191,
+      "centroid_hz": 622.8,
+      "flatness": 0.0
+     },
+     {
+      "value": -0.05,
+      "broken": [],
+      "rms_db": -40.16,
+      "level_db": -1.2,
+      "timbre_db": 5.091,
+      "centroid_hz": 636.4,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.0,
+      "broken": [],
+      "rms_db": -38.97,
+      "level_db": 0.0,
+      "timbre_db": 0.0,
+      "centroid_hz": 1045.7,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.05,
+      "broken": [],
+      "rms_db": -25.87,
+      "level_db": 13.1,
+      "timbre_db": 17.001,
+      "centroid_hz": 544.8,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.1,
+      "broken": [],
+      "rms_db": -14.16,
+      "level_db": 24.8,
+      "timbre_db": 27.715,
+      "centroid_hz": 234.2,
+      "flatness": 0.00071
+     },
+     {
+      "value": 0.15,
+      "broken": [
+       "overdriven (-11 dBFS RMS; the model's own level is \u221228 to \u221241)"
+      ],
+      "rms_db": -11.27,
+      "level_db": 27.7,
+      "timbre_db": 30.813,
+      "centroid_hz": 517.9,
+      "flatness": 0.0024
+     },
+     {
+      "value": 0.2,
+      "broken": [],
+      "rms_db": -18.73,
+      "level_db": 20.2,
+      "timbre_db": 31.991,
+      "centroid_hz": 1413.9,
+      "flatness": 0.009
+     },
+     {
+      "value": 0.3,
+      "broken": [
+       "overdriven (-11 dBFS RMS; the model's own level is \u221228 to \u221241)"
+      ],
+      "rms_db": -11.39,
+      "level_db": 27.6,
+      "timbre_db": 30.256,
+      "centroid_hz": 603.5,
+      "flatness": 0.00321
+     },
+     {
+      "value": 0.4,
+      "broken": [
+       "overdriven (-11 dBFS RMS; the model's own level is \u221228 to \u221241)"
+      ],
+      "rms_db": -10.87,
+      "level_db": 28.1,
+      "timbre_db": 32.369,
+      "centroid_hz": 1400.0,
+      "flatness": 0.01167
+     },
+     {
+      "value": 0.6,
+      "broken": [
+       "overdriven (-10 dBFS RMS; the model's own level is \u221228 to \u221241)"
+      ],
+      "rms_db": -9.7,
+      "level_db": 29.3,
+      "timbre_db": 30.161,
+      "centroid_hz": 800.3,
+      "flatness": 0.00746
+     },
+     {
+      "value": 1.0,
+      "broken": [
+       "overdriven (-10 dBFS RMS; the model's own level is \u221228 to \u221241)"
+      ],
+      "rms_db": -9.71,
+      "level_db": 29.3,
+      "timbre_db": 30.746,
+      "centroid_hz": 984.8,
+      "flatness": 0.00922
+     }
+    ],
+    "dark-field": [
+     {
+      "value": -1.0,
+      "broken": [
+       "falls silent (-92 dBFS)"
+      ],
+      "rms_db": -91.71,
+      "level_db": -50.5,
+      "timbre_db": 13.778,
+      "centroid_hz": 424.5,
+      "flatness": 0.04313
+     },
+     {
+      "value": -0.6,
+      "broken": [
+       "falls silent (-92 dBFS)"
+      ],
+      "rms_db": -92.06,
+      "level_db": -50.9,
+      "timbre_db": 13.629,
+      "centroid_hz": 524.9,
+      "flatness": 0.04956
+     },
+     {
+      "value": -0.4,
+      "broken": [
+       "falls silent (-78 dBFS)"
+      ],
+      "rms_db": -77.98,
+      "level_db": -36.8,
+      "timbre_db": 14.142,
+      "centroid_hz": 785.4,
+      "flatness": 0.07693
+     },
+     {
+      "value": -0.3,
+      "broken": [],
+      "rms_db": -51.27,
+      "level_db": -10.1,
+      "timbre_db": 23.606,
+      "centroid_hz": 807.2,
+      "flatness": 3e-05
+     },
+     {
+      "value": -0.2,
+      "broken": [],
+      "rms_db": -47.35,
+      "level_db": -6.2,
+      "timbre_db": 23.103,
+      "centroid_hz": 768.0,
+      "flatness": 1e-05
+     },
+     {
+      "value": -0.15,
+      "broken": [],
+      "rms_db": -49.17,
+      "level_db": -8.0,
+      "timbre_db": 18.905,
+      "centroid_hz": 879.2,
+      "flatness": 2e-05
+     },
+     {
+      "value": -0.1,
+      "broken": [],
+      "rms_db": -46.23,
+      "level_db": -5.0,
+      "timbre_db": 17.22,
+      "centroid_hz": 1032.3,
+      "flatness": 1e-05
+     },
+     {
+      "value": -0.05,
+      "broken": [],
+      "rms_db": -49.11,
+      "level_db": -7.9,
+      "timbre_db": 10.314,
+      "centroid_hz": 1048.0,
+      "flatness": 6e-05
+     },
+     {
+      "value": 0.0,
+      "broken": [],
+      "rms_db": -41.19,
+      "level_db": 0.0,
+      "timbre_db": 0.0,
+      "centroid_hz": 225.3,
+      "flatness": 0.00011
+     },
+     {
+      "value": 0.05,
+      "broken": [],
+      "rms_db": -27.78,
+      "level_db": 13.4,
+      "timbre_db": 6.52,
+      "centroid_hz": 89.7,
+      "flatness": 2e-05
+     },
+     {
+      "value": 0.1,
+      "broken": [
+       "overdriven (-11 dBFS RMS; the model's own level is \u221228 to \u221241)"
+      ],
+      "rms_db": -11.17,
+      "level_db": 30.0,
+      "timbre_db": 12.162,
+      "centroid_hz": 54.4,
+      "flatness": 1e-05
+     },
+     {
+      "value": 0.15,
+      "broken": [],
+      "rms_db": -12.71,
+      "level_db": 28.5,
+      "timbre_db": 16.585,
+      "centroid_hz": 148.7,
+      "flatness": 0.00039
+     },
+     {
+      "value": 0.2,
+      "broken": [
+       "overdriven (-10 dBFS RMS; the model's own level is \u221228 to \u221241)"
+      ],
+      "rms_db": -10.44,
+      "level_db": 30.8,
+      "timbre_db": 15.789,
+      "centroid_hz": 127.4,
+      "flatness": 0.00029
+     },
+     {
+      "value": 0.3,
+      "broken": [
+       "overdriven (-10 dBFS RMS; the model's own level is \u221228 to \u221241)"
+      ],
+      "rms_db": -10.01,
+      "level_db": 31.2,
+      "timbre_db": 17.722,
+      "centroid_hz": 265.4,
+      "flatness": 0.00105
+     },
+     {
+      "value": 0.4,
+      "broken": [
+       "overdriven (-10 dBFS RMS; the model's own level is \u221228 to \u221241)"
+      ],
+      "rms_db": -9.64,
+      "level_db": 31.5,
+      "timbre_db": 18.69,
+      "centroid_hz": 531.7,
+      "flatness": 0.00311
+     },
+     {
+      "value": 0.6,
+      "broken": [
+       "overdriven (-10 dBFS RMS; the model's own level is \u221228 to \u221241)"
+      ],
+      "rms_db": -9.91,
+      "level_db": 31.3,
+      "timbre_db": 17.048,
+      "centroid_hz": 561.4,
+      "flatness": 0.00333
+     },
+     {
+      "value": 1.0,
+      "broken": [
+       "overdriven (-10 dBFS RMS; the model's own level is \u221228 to \u221241)"
+      ],
+      "rms_db": -9.69,
+      "level_db": 31.5,
+      "timbre_db": 17.046,
+      "centroid_hz": 664.2,
+      "flatness": 0.00487
+     }
+    ],
+    "glass": [
+     {
+      "value": -1.0,
+      "broken": [
+       "falls silent (-92 dBFS)"
+      ],
+      "rms_db": -91.7,
+      "level_db": -57.1,
+      "timbre_db": 26.105,
+      "centroid_hz": 432.7,
+      "flatness": 0.04233
+     },
+     {
+      "value": -0.6,
+      "broken": [
+       "falls silent (-92 dBFS)"
+      ],
+      "rms_db": -92.04,
+      "level_db": -57.4,
+      "timbre_db": 26.37,
+      "centroid_hz": 618.2,
+      "flatness": 0.05311
+     },
+     {
+      "value": -0.4,
+      "broken": [
+       "falls silent (-76 dBFS)"
+      ],
+      "rms_db": -76.2,
+      "level_db": -41.6,
+      "timbre_db": 25.679,
+      "centroid_hz": 962.6,
+      "flatness": 0.06293
+     },
+     {
+      "value": -0.3,
+      "broken": [
+       "falls silent (-51 dBFS)"
+      ],
+      "rms_db": -50.74,
+      "level_db": -16.1,
+      "timbre_db": 28.63,
+      "centroid_hz": 852.7,
+      "flatness": 0.02885
+     },
+     {
+      "value": -0.2,
+      "broken": [
+       "falls silent (-45 dBFS)"
+      ],
+      "rms_db": -44.72,
+      "level_db": -10.1,
+      "timbre_db": 23.81,
+      "centroid_hz": 589.3,
+      "flatness": 0.00424
+     },
+     {
+      "value": -0.15,
+      "broken": [
+       "falls silent (-47 dBFS)"
+      ],
+      "rms_db": -46.54,
+      "level_db": -11.9,
+      "timbre_db": 24.835,
+      "centroid_hz": 695.2,
+      "flatness": 0.0011
+     },
+     {
+      "value": -0.1,
+      "broken": [
+       "falls silent (-50 dBFS)"
+      ],
+      "rms_db": -50.06,
+      "level_db": -15.4,
+      "timbre_db": 11.72,
+      "centroid_hz": 360.2,
+      "flatness": 0.00017
+     },
+     {
+      "value": -0.05,
+      "broken": [
+       "falls silent (-41 dBFS)"
+      ],
+      "rms_db": -40.75,
+      "level_db": -6.1,
+      "timbre_db": 14.575,
+      "centroid_hz": 615.5,
+      "flatness": 0.00043
+     },
+     {
+      "value": 0.0,
+      "broken": [],
+      "rms_db": -34.62,
+      "level_db": 0.0,
+      "timbre_db": 0.0,
+      "centroid_hz": 616.7,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.05,
+      "broken": [],
+      "rms_db": -28.83,
+      "level_db": 5.8,
+      "timbre_db": 17.714,
+      "centroid_hz": 219.0,
+      "flatness": 0.00219
+     },
+     {
+      "value": 0.1,
+      "broken": [],
+      "rms_db": -13.38,
+      "level_db": 21.2,
+      "timbre_db": 18.716,
+      "centroid_hz": 136.6,
+      "flatness": 6e-05
+     },
+     {
+      "value": 0.15,
+      "broken": [],
+      "rms_db": -12.35,
+      "level_db": 22.3,
+      "timbre_db": 20.267,
+      "centroid_hz": 147.8,
+      "flatness": 5e-05
+     },
+     {
+      "value": 0.2,
+      "broken": [
+       "overdriven (-10 dBFS RMS; the model's own level is \u221228 to \u221241)"
+      ],
+      "rms_db": -10.02,
+      "level_db": 24.6,
+      "timbre_db": 23.571,
+      "centroid_hz": 168.2,
+      "flatness": 0.00054
+     },
+     {
+      "value": 0.3,
+      "broken": [
+       "overdriven (-8 dBFS RMS; the model's own level is \u221228 to \u221241)"
+      ],
+      "rms_db": -8.4,
+      "level_db": 26.2,
+      "timbre_db": 23.044,
+      "centroid_hz": 275.3,
+      "flatness": 0.00088
+     },
+     {
+      "value": 0.4,
+      "broken": [
+       "clips (0.13% of samples)",
+       "overdriven (-9 dBFS RMS; the model's own level is \u221228 to \u221241)"
+      ],
+      "rms_db": -8.97,
+      "level_db": 25.6,
+      "timbre_db": 25.506,
+      "centroid_hz": 636.9,
+      "flatness": 0.00728
+     },
+     {
+      "value": 0.6,
+      "broken": [
+       "clips (0.34% of samples)",
+       "overdriven (-9 dBFS RMS; the model's own level is \u221228 to \u221241)"
+      ],
+      "rms_db": -8.61,
+      "level_db": 26.0,
+      "timbre_db": 25.985,
+      "centroid_hz": 843.9,
+      "flatness": 0.01301
+     },
+     {
+      "value": 1.0,
+      "broken": [
+       "clips (0.16% of samples)",
+       "overdriven (-9 dBFS RMS; the model's own level is \u221228 to \u221241)"
+      ],
+      "rms_db": -9.3,
+      "level_db": 25.3,
+      "timbre_db": 25.884,
+      "centroid_hz": 840.0,
+      "flatness": 0.01021
+     }
+    ]
+   }
+  },
+  "guidance": {
+   "default": 3.0,
+   "safe": [
+    0.0,
+    8.0
+   ],
+   "steps": [
+    0.0,
+    0.5,
+    1.0,
+    2.0,
+    3.0,
+    4.0,
+    5.0,
+    6.0,
+    8.0
+   ],
+   "curve": [
+    [
+     0.0,
+     0.0
+    ],
+    [
+     0.1116,
+     0.5
+    ],
+    [
+     0.3938,
+     1.0
+    ],
+    [
+     0.5285,
+     2.0
+    ],
+    [
+     0.6789,
+     3.0
+    ],
+    [
+     0.7578,
+     4.0
+    ],
+    [
+     0.8078,
+     5.0
+    ],
+    [
+     0.8624,
+     6.0
+    ],
+    [
+     1.0,
+     8.0
+    ]
+   ],
+   "level_db": [
+    -2.3,
+    2.3,
+    -2.8,
+    0.5,
+    0.0,
+    2.5,
+    -0.0,
+    0.0,
+    -0.4
+   ],
+   "step_timbre_db": [
+    10.15,
+    15.6,
+    10.89,
+    11.39,
+    9.11,
+    6.77,
+    8.34,
+    10.99
+   ],
+   "beyond_seeds": 2.91,
+   "swept": [
+    0.0,
+    8.0
+   ],
+   "presets": {
+    "warm-drone": [
+     {
+      "value": 0.0,
+      "broken": [],
+      "rms_db": -39.07,
+      "level_db": -10.9,
+      "timbre_db": 12.325,
+      "centroid_hz": 290.8,
+      "flatness": 1e-05
+     },
+     {
+      "value": 0.5,
+      "broken": [],
+      "rms_db": -32.41,
+      "level_db": -4.2,
+      "timbre_db": 15.875,
+      "centroid_hz": 281.0,
+      "flatness": 0.0
+     },
+     {
+      "value": 1.0,
+      "broken": [],
+      "rms_db": -36.37,
+      "level_db": -8.2,
+      "timbre_db": 8.696,
+      "centroid_hz": 244.0,
+      "flatness": 0.0
+     },
+     {
+      "value": 2.0,
+      "broken": [],
+      "rms_db": -23.32,
+      "level_db": 4.9,
+      "timbre_db": 8.933,
+      "centroid_hz": 225.2,
+      "flatness": 0.0
+     },
+     {
+      "value": 3.0,
+      "broken": [],
+      "rms_db": -28.18,
+      "level_db": 0.0,
+      "timbre_db": 0.0,
+      "centroid_hz": 136.6,
+      "flatness": 0.0
+     },
+     {
+      "value": 4.0,
+      "broken": [],
+      "rms_db": -25.64,
+      "level_db": 2.5,
+      "timbre_db": 8.347,
+      "centroid_hz": 97.9,
+      "flatness": 0.0
+     },
+     {
+      "value": 5.0,
+      "broken": [],
+      "rms_db": -29.86,
+      "level_db": -1.7,
+      "timbre_db": 4.678,
+      "centroid_hz": 127.5,
+      "flatness": 0.0
+     },
+     {
+      "value": 6.0,
+      "broken": [],
+      "rms_db": -27.49,
+      "level_db": 0.7,
+      "timbre_db": 5.302,
+      "centroid_hz": 124.2,
+      "flatness": 0.0
+     },
+     {
+      "value": 8.0,
+      "broken": [],
+      "rms_db": -31.04,
+      "level_db": -2.9,
+      "timbre_db": 5.551,
+      "centroid_hz": 204.7,
+      "flatness": 0.0
+     }
+    ],
+    "shimmer": [
+     {
+      "value": 0.0,
+      "broken": [],
+      "rms_db": -33.29,
+      "level_db": 5.7,
+      "timbre_db": 8.982,
+      "centroid_hz": 632.9,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.5,
+      "broken": [],
+      "rms_db": -35.86,
+      "level_db": 3.1,
+      "timbre_db": 7.976,
+      "centroid_hz": 767.4,
+      "flatness": 0.0
+     },
+     {
+      "value": 1.0,
+      "broken": [],
+      "rms_db": -32.52,
+      "level_db": 6.4,
+      "timbre_db": 10.767,
+      "centroid_hz": 563.7,
+      "flatness": 0.0
+     },
+     {
+      "value": 2.0,
+      "broken": [],
+      "rms_db": -32.51,
+      "level_db": 6.5,
+      "timbre_db": 6.429,
+      "centroid_hz": 643.0,
+      "flatness": 0.0
+     },
+     {
+      "value": 3.0,
+      "broken": [],
+      "rms_db": -38.97,
+      "level_db": 0.0,
+      "timbre_db": 0.0,
+      "centroid_hz": 1045.7,
+      "flatness": 0.0
+     },
+     {
+      "value": 4.0,
+      "broken": [],
+      "rms_db": -36.45,
+      "level_db": 2.5,
+      "timbre_db": 9.153,
+      "centroid_hz": 805.7,
+      "flatness": 0.0
+     },
+     {
+      "value": 5.0,
+      "broken": [],
+      "rms_db": -35.96,
+      "level_db": 3.0,
+      "timbre_db": 7.55,
+      "centroid_hz": 649.0,
+      "flatness": 0.0
+     },
+     {
+      "value": 6.0,
+      "broken": [],
+      "rms_db": -39.88,
+      "level_db": -0.9,
+      "timbre_db": 5.583,
+      "centroid_hz": 869.8,
+      "flatness": 0.0
+     },
+     {
+      "value": 8.0,
+      "broken": [],
+      "rms_db": -36.69,
+      "level_db": 2.3,
+      "timbre_db": 9.021,
+      "centroid_hz": 784.7,
+      "flatness": 0.0
+     }
+    ],
+    "dark-field": [
+     {
+      "value": 0.0,
+      "broken": [],
+      "rms_db": -47.46,
+      "level_db": -6.3,
+      "timbre_db": 5.488,
+      "centroid_hz": 1240.3,
+      "flatness": 0.00056
+     },
+     {
+      "value": 0.5,
+      "broken": [],
+      "rms_db": -37.64,
+      "level_db": 3.5,
+      "timbre_db": 5.439,
+      "centroid_hz": 96.7,
+      "flatness": 7e-05
+     },
+     {
+      "value": 1.0,
+      "broken": [],
+      "rms_db": -48.68,
+      "level_db": -7.5,
+      "timbre_db": 6.17,
+      "centroid_hz": 1128.8,
+      "flatness": 0.00068
+     },
+     {
+      "value": 2.0,
+      "broken": [],
+      "rms_db": -45.48,
+      "level_db": -4.3,
+      "timbre_db": 3.964,
+      "centroid_hz": 989.9,
+      "flatness": 0.00019
+     },
+     {
+      "value": 3.0,
+      "broken": [],
+      "rms_db": -41.19,
+      "level_db": 0.0,
+      "timbre_db": 0.0,
+      "centroid_hz": 225.3,
+      "flatness": 0.00011
+     },
+     {
+      "value": 4.0,
+      "broken": [],
+      "rms_db": -37.34,
+      "level_db": 3.8,
+      "timbre_db": 3.834,
+      "centroid_hz": 131.2,
+      "flatness": 5e-05
+     },
+     {
+      "value": 5.0,
+      "broken": [],
+      "rms_db": -41.71,
+      "level_db": -0.5,
+      "timbre_db": 3.284,
+      "centroid_hz": 214.8,
+      "flatness": 6e-05
+     },
+     {
+      "value": 6.0,
+      "broken": [],
+      "rms_db": -37.89,
+      "level_db": 3.3,
+      "timbre_db": 3.831,
+      "centroid_hz": 132.4,
+      "flatness": 3e-05
+     },
+     {
+      "value": 8.0,
+      "broken": [],
+      "rms_db": -44.3,
+      "level_db": -3.1,
+      "timbre_db": 1.333,
+      "centroid_hz": 388.4,
+      "flatness": 0.00016
+     }
+    ],
+    "glass": [
+     {
+      "value": 0.0,
+      "broken": [],
+      "rms_db": -32.39,
+      "level_db": 2.2,
+      "timbre_db": 17.202,
+      "centroid_hz": 557.5,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.5,
+      "broken": [],
+      "rms_db": -27.69,
+      "level_db": 6.9,
+      "timbre_db": 19.549,
+      "centroid_hz": 629.1,
+      "flatness": 0.0
+     },
+     {
+      "value": 1.0,
+      "broken": [],
+      "rms_db": -36.77,
+      "level_db": -2.2,
+      "timbre_db": 27.998,
+      "centroid_hz": 1507.5,
+      "flatness": 3e-05
+     },
+     {
+      "value": 2.0,
+      "broken": [],
+      "rms_db": -39.72,
+      "level_db": -5.1,
+      "timbre_db": 26.234,
+      "centroid_hz": 913.6,
+      "flatness": 8e-05
+     },
+     {
+      "value": 3.0,
+      "broken": [],
+      "rms_db": -34.62,
+      "level_db": 0.0,
+      "timbre_db": 0.0,
+      "centroid_hz": 616.7,
+      "flatness": 0.0
+     },
+     {
+      "value": 4.0,
+      "broken": [],
+      "rms_db": -33.34,
+      "level_db": 1.3,
+      "timbre_db": 15.112,
+      "centroid_hz": 503.8,
+      "flatness": 0.0
+     },
+     {
+      "value": 5.0,
+      "broken": [],
+      "rms_db": -35.46,
+      "level_db": -0.8,
+      "timbre_db": 11.541,
+      "centroid_hz": 612.0,
+      "flatness": 0.0
+     },
+     {
+      "value": 6.0,
+      "broken": [],
+      "rms_db": -37.65,
+      "level_db": -3.0,
+      "timbre_db": 25.917,
+      "centroid_hz": 626.9,
+      "flatness": 1e-05
+     },
+     {
+      "value": 8.0,
+      "broken": [],
+      "rms_db": -32.72,
+      "level_db": 1.9,
+      "timbre_db": 6.924,
+      "centroid_hz": 456.9,
+      "flatness": 1e-05
+     }
+    ]
+   }
+  },
+  "temperature": {
+   "default": 1.3,
+   "safe": [
+    0.5,
+    1.5
+   ],
+   "steps": [
+    0.5,
+    0.7,
+    0.9,
+    1.1,
+    1.3,
+    1.5
+   ],
+   "curve": [
+    [
+     0.0,
+     0.5
+    ],
+    [
+     0.08,
+     0.7
+    ],
+    [
+     0.16,
+     0.9
+    ],
+    [
+     0.302,
+     1.1
+    ],
+    [
+     0.796,
+     1.3
+    ],
+    [
+     1.0,
+     1.5
+    ]
+   ],
+   "level_db": [
+    -1.7,
+    0.7,
+    -0.8,
+    2.7,
+    0.0,
+    0.7
+   ],
+   "step_timbre_db": [
+    7.24,
+    7.6,
+    8.53,
+    10.46,
+    8.87
+   ],
+   "beyond_seeds": 1.27,
+   "swept": [
+    0.5,
+    2.0
+   ],
+   "presets": {
+    "warm-drone": [
+     {
+      "value": 0.5,
+      "broken": [],
+      "rms_db": -41.05,
+      "level_db": -12.9,
+      "timbre_db": 9.813,
+      "centroid_hz": 195.0,
+      "flatness": 1e-05
+     },
+     {
+      "value": 0.7,
+      "broken": [],
+      "rms_db": -31.5,
+      "level_db": -3.3,
+      "timbre_db": 6.392,
+      "centroid_hz": 145.7,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.9,
+      "broken": [],
+      "rms_db": -34.35,
+      "level_db": -6.2,
+      "timbre_db": 12.908,
+      "centroid_hz": 262.2,
+      "flatness": 0.0
+     },
+     {
+      "value": 1.1,
+      "broken": [],
+      "rms_db": -26.18,
+      "level_db": 2.0,
+      "timbre_db": 11.298,
+      "centroid_hz": 161.6,
+      "flatness": 0.0
+     },
+     {
+      "value": 1.3,
+      "broken": [],
+      "rms_db": -28.18,
+      "level_db": 0.0,
+      "timbre_db": 0.0,
+      "centroid_hz": 136.6,
+      "flatness": 0.0
+     },
+     {
+      "value": 1.5,
+      "broken": [],
+      "rms_db": -28.66,
+      "level_db": -0.5,
+      "timbre_db": 7.944,
+      "centroid_hz": 205.4,
+      "flatness": 0.0
+     },
+     {
+      "value": 1.7,
+      "broken": [],
+      "rms_db": -29.38,
+      "level_db": -1.2,
+      "timbre_db": 7.499,
+      "centroid_hz": 145.3,
+      "flatness": 0.0
+     },
+     {
+      "value": 2.0,
+      "broken": [],
+      "rms_db": -28.81,
+      "level_db": -0.6,
+      "timbre_db": 5.73,
+      "centroid_hz": 131.6,
+      "flatness": 0.0
+     }
+    ],
+    "shimmer": [
+     {
+      "value": 0.5,
+      "broken": [],
+      "rms_db": -33.73,
+      "level_db": 5.2,
+      "timbre_db": 6.571,
+      "centroid_hz": 795.3,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.7,
+      "broken": [],
+      "rms_db": -34.53,
+      "level_db": 4.4,
+      "timbre_db": 7.85,
+      "centroid_hz": 695.9,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.9,
+      "broken": [],
+      "rms_db": -36.5,
+      "level_db": 2.5,
+      "timbre_db": 6.981,
+      "centroid_hz": 842.6,
+      "flatness": 0.0
+     },
+     {
+      "value": 1.1,
+      "broken": [],
+      "rms_db": -32.66,
+      "level_db": 6.3,
+      "timbre_db": 7.21,
+      "centroid_hz": 718.4,
+      "flatness": 0.0
+     },
+     {
+      "value": 1.3,
+      "broken": [],
+      "rms_db": -38.97,
+      "level_db": 0.0,
+      "timbre_db": 0.0,
+      "centroid_hz": 1045.7,
+      "flatness": 0.0
+     },
+     {
+      "value": 1.5,
+      "broken": [],
+      "rms_db": -35.37,
+      "level_db": 3.6,
+      "timbre_db": 9.757,
+      "centroid_hz": 622.6,
+      "flatness": 0.0
+     },
+     {
+      "value": 1.7,
+      "broken": [],
+      "rms_db": -39.15,
+      "level_db": -0.2,
+      "timbre_db": 6.096,
+      "centroid_hz": 726.6,
+      "flatness": 0.0
+     },
+     {
+      "value": 2.0,
+      "broken": [],
+      "rms_db": -34.74,
+      "level_db": 4.2,
+      "timbre_db": 7.527,
+      "centroid_hz": 723.7,
+      "flatness": 0.0
+     }
+    ],
+    "dark-field": [
+     {
+      "value": 0.5,
+      "broken": [],
+      "rms_db": -39.32,
+      "level_db": 1.9,
+      "timbre_db": 5.162,
+      "centroid_hz": 176.7,
+      "flatness": 8e-05
+     },
+     {
+      "value": 0.7,
+      "broken": [],
+      "rms_db": -44.2,
+      "level_db": -3.0,
+      "timbre_db": 3.08,
+      "centroid_hz": 516.2,
+      "flatness": 0.00013
+     },
+     {
+      "value": 0.9,
+      "broken": [],
+      "rms_db": -41.52,
+      "level_db": -0.3,
+      "timbre_db": 3.083,
+      "centroid_hz": 277.3,
+      "flatness": 8e-05
+     },
+     {
+      "value": 1.1,
+      "broken": [],
+      "rms_db": -42.04,
+      "level_db": -0.9,
+      "timbre_db": 3.829,
+      "centroid_hz": 417.2,
+      "flatness": 6e-05
+     },
+     {
+      "value": 1.3,
+      "broken": [],
+      "rms_db": -41.19,
+      "level_db": 0.0,
+      "timbre_db": 0.0,
+      "centroid_hz": 225.3,
+      "flatness": 0.00011
+     },
+     {
+      "value": 1.5,
+      "broken": [],
+      "rms_db": -43.44,
+      "level_db": -2.2,
+      "timbre_db": 2.663,
+      "centroid_hz": 317.5,
+      "flatness": 0.00012
+     },
+     {
+      "value": 1.7,
+      "broken": [],
+      "rms_db": -44.24,
+      "level_db": -3.1,
+      "timbre_db": 3.079,
+      "centroid_hz": 376.8,
+      "flatness": 9e-05
+     },
+     {
+      "value": 2.0,
+      "broken": [],
+      "rms_db": -47.32,
+      "level_db": -6.1,
+      "timbre_db": 6.573,
+      "centroid_hz": 857.6,
+      "flatness": 0.00083
+     }
+    ],
+    "glass": [
+     {
+      "value": 0.5,
+      "broken": [],
+      "rms_db": -35.83,
+      "level_db": -1.2,
+      "timbre_db": 11.428,
+      "centroid_hz": 815.5,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.7,
+      "broken": [],
+      "rms_db": -29.99,
+      "level_db": 4.6,
+      "timbre_db": 11.591,
+      "centroid_hz": 445.1,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.9,
+      "broken": [],
+      "rms_db": -33.72,
+      "level_db": 0.9,
+      "timbre_db": 10.281,
+      "centroid_hz": 439.4,
+      "flatness": 0.0
+     },
+     {
+      "value": 1.1,
+      "broken": [],
+      "rms_db": -31.38,
+      "level_db": 3.2,
+      "timbre_db": 19.503,
+      "centroid_hz": 371.3,
+      "flatness": 1e-05
+     },
+     {
+      "value": 1.3,
+      "broken": [],
+      "rms_db": -34.62,
+      "level_db": 0.0,
+      "timbre_db": 0.0,
+      "centroid_hz": 616.7,
+      "flatness": 0.0
+     },
+     {
+      "value": 1.5,
+      "broken": [],
+      "rms_db": -32.83,
+      "level_db": 1.8,
+      "timbre_db": 15.115,
+      "centroid_hz": 483.8,
+      "flatness": 9e-05
+     },
+     {
+      "value": 1.7,
+      "broken": [
+       "falls silent (-37 dBFS)"
+      ],
+      "rms_db": -36.79,
+      "level_db": -2.2,
+      "timbre_db": 18.106,
+      "centroid_hz": 819.4,
+      "flatness": 0.00161
+     },
+     {
+      "value": 2.0,
+      "broken": [
+       "falls silent (-33 dBFS)"
+      ],
+      "rms_db": -33.49,
+      "level_db": 1.1,
+      "timbre_db": 18.187,
+      "centroid_hz": 436.8,
+      "flatness": 0.00108
+     }
+    ]
+   }
+  },
+  "top_k": {
+   "default": 40,
+   "safe": [
+    1.0,
+    250.0
+   ],
+   "steps": [
+    1.0,
+    5.0,
+    10.0,
+    20.0,
+    40.0,
+    80.0,
+    160.0,
+    250.0
+   ],
+   "curve": [
+    [
+     0.0,
+     1.0
+    ],
+    [
+     0.1515,
+     5.0
+    ],
+    [
+     0.4221,
+     10.0
+    ],
+    [
+     0.5208,
+     20.0
+    ],
+    [
+     0.6682,
+     40.0
+    ],
+    [
+     0.797,
+     80.0
+    ],
+    [
+     0.9429,
+     160.0
+    ],
+    [
+     1.0,
+     250.0
+    ]
+   ],
+   "level_db": [
+    -2.0,
+    2.9,
+    1.8,
+    0.4,
+    0.0,
+    -2.5,
+    -0.9,
+    -1.2
+   ],
+   "step_timbre_db": [
+    9.28,
+    10.66,
+    8.67,
+    9.24,
+    9.02,
+    9.22,
+    5.33
+   ],
+   "beyond_seeds": 1.85,
+   "swept": [
+    1.0,
+    250.0
+   ],
+   "presets": {
+    "warm-drone": [
+     {
+      "value": 1.0,
+      "broken": [],
+      "rms_db": -25.71,
+      "level_db": 2.5,
+      "timbre_db": 4.881,
+      "centroid_hz": 197.6,
+      "flatness": 0.0
+     },
+     {
+      "value": 5.0,
+      "broken": [],
+      "rms_db": -28.06,
+      "level_db": 0.1,
+      "timbre_db": 5.838,
+      "centroid_hz": 140.3,
+      "flatness": 0.0
+     },
+     {
+      "value": 10.0,
+      "broken": [],
+      "rms_db": -30.76,
+      "level_db": -2.6,
+      "timbre_db": 10.046,
+      "centroid_hz": 148.8,
+      "flatness": 0.0
+     },
+     {
+      "value": 20.0,
+      "broken": [],
+      "rms_db": -27.41,
+      "level_db": 0.8,
+      "timbre_db": 10.995,
+      "centroid_hz": 158.1,
+      "flatness": 0.0
+     },
+     {
+      "value": 40.0,
+      "broken": [],
+      "rms_db": -28.18,
+      "level_db": 0.0,
+      "timbre_db": 0.0,
+      "centroid_hz": 136.6,
+      "flatness": 0.0
+     },
+     {
+      "value": 80.0,
+      "broken": [],
+      "rms_db": -29.43,
+      "level_db": -1.2,
+      "timbre_db": 5.602,
+      "centroid_hz": 191.9,
+      "flatness": 0.0
+     },
+     {
+      "value": 160.0,
+      "broken": [],
+      "rms_db": -26.86,
+      "level_db": 1.3,
+      "timbre_db": 5.178,
+      "centroid_hz": 111.4,
+      "flatness": 0.0
+     },
+     {
+      "value": 250.0,
+      "broken": [],
+      "rms_db": -28.78,
+      "level_db": -0.6,
+      "timbre_db": 6.286,
+      "centroid_hz": 151.7,
+      "flatness": 0.0
+     }
+    ],
+    "shimmer": [
+     {
+      "value": 1.0,
+      "broken": [],
+      "rms_db": -37.93,
+      "level_db": 1.0,
+      "timbre_db": 7.357,
+      "centroid_hz": 710.3,
+      "flatness": 0.0
+     },
+     {
+      "value": 5.0,
+      "broken": [],
+      "rms_db": -29.43,
+      "level_db": 9.5,
+      "timbre_db": 6.081,
+      "centroid_hz": 695.8,
+      "flatness": 0.0
+     },
+     {
+      "value": 10.0,
+      "broken": [],
+      "rms_db": -32.19,
+      "level_db": 6.8,
+      "timbre_db": 7.476,
+      "centroid_hz": 700.9,
+      "flatness": 0.0
+     },
+     {
+      "value": 20.0,
+      "broken": [],
+      "rms_db": -30.3,
+      "level_db": 8.7,
+      "timbre_db": 10.137,
+      "centroid_hz": 670.3,
+      "flatness": 0.0
+     },
+     {
+      "value": 40.0,
+      "broken": [],
+      "rms_db": -38.97,
+      "level_db": 0.0,
+      "timbre_db": 0.0,
+      "centroid_hz": 1045.7,
+      "flatness": 0.0
+     },
+     {
+      "value": 80.0,
+      "broken": [],
+      "rms_db": -37.64,
+      "level_db": 1.3,
+      "timbre_db": 6.349,
+      "centroid_hz": 699.8,
+      "flatness": 0.0
+     },
+     {
+      "value": 160.0,
+      "broken": [],
+      "rms_db": -43.31,
+      "level_db": -4.3,
+      "timbre_db": 7.794,
+      "centroid_hz": 696.6,
+      "flatness": 1e-05
+     },
+     {
+      "value": 250.0,
+      "broken": [],
+      "rms_db": -38.01,
+      "level_db": 1.0,
+      "timbre_db": 6.546,
+      "centroid_hz": 676.7,
+      "flatness": 0.0
+     }
+    ],
+    "dark-field": [
+     {
+      "value": 1.0,
+      "broken": [],
+      "rms_db": -49.31,
+      "level_db": -8.1,
+      "timbre_db": 5.836,
+      "centroid_hz": 780.8,
+      "flatness": 0.00034
+     },
+     {
+      "value": 5.0,
+      "broken": [],
+      "rms_db": -31.65,
+      "level_db": 9.5,
+      "timbre_db": 4.946,
+      "centroid_hz": 67.3,
+      "flatness": 1e-05
+     },
+     {
+      "value": 10.0,
+      "broken": [],
+      "rms_db": -40.48,
+      "level_db": 0.7,
+      "timbre_db": 3.958,
+      "centroid_hz": 124.2,
+      "flatness": 5e-05
+     },
+     {
+      "value": 20.0,
+      "broken": [],
+      "rms_db": -44.09,
+      "level_db": -2.9,
+      "timbre_db": 4.301,
+      "centroid_hz": 337.6,
+      "flatness": 7e-05
+     },
+     {
+      "value": 40.0,
+      "broken": [],
+      "rms_db": -41.19,
+      "level_db": 0.0,
+      "timbre_db": 0.0,
+      "centroid_hz": 225.3,
+      "flatness": 0.00011
+     },
+     {
+      "value": 80.0,
+      "broken": [],
+      "rms_db": -44.28,
+      "level_db": -3.1,
+      "timbre_db": 2.614,
+      "centroid_hz": 665.8,
+      "flatness": 0.00014
+     },
+     {
+      "value": 160.0,
+      "broken": [],
+      "rms_db": -39.68,
+      "level_db": 1.5,
+      "timbre_db": 4.349,
+      "centroid_hz": 161.1,
+      "flatness": 5e-05
+     },
+     {
+      "value": 250.0,
+      "broken": [],
+      "rms_db": -42.67,
+      "level_db": -1.5,
+      "timbre_db": 3.685,
+      "centroid_hz": 317.3,
+      "flatness": 7e-05
+     }
+    ],
+    "glass": [
+     {
+      "value": 1.0,
+      "broken": [],
+      "rms_db": -38.05,
+      "level_db": -3.4,
+      "timbre_db": 21.101,
+      "centroid_hz": 525.0,
+      "flatness": 0.0
+     },
+     {
+      "value": 5.0,
+      "broken": [],
+      "rms_db": -42.12,
+      "level_db": -7.5,
+      "timbre_db": 15.63,
+      "centroid_hz": 568.3,
+      "flatness": 0.0
+     },
+     {
+      "value": 10.0,
+      "broken": [],
+      "rms_db": -32.36,
+      "level_db": 2.3,
+      "timbre_db": 18.468,
+      "centroid_hz": 502.8,
+      "flatness": 0.0
+     },
+     {
+      "value": 20.0,
+      "broken": [],
+      "rms_db": -39.52,
+      "level_db": -4.9,
+      "timbre_db": 11.513,
+      "centroid_hz": 559.8,
+      "flatness": 0.0
+     },
+     {
+      "value": 40.0,
+      "broken": [],
+      "rms_db": -34.62,
+      "level_db": 0.0,
+      "timbre_db": 0.0,
+      "centroid_hz": 616.7,
+      "flatness": 0.0
+     },
+     {
+      "value": 80.0,
+      "broken": [],
+      "rms_db": -41.71,
+      "level_db": -7.1,
+      "timbre_db": 21.517,
+      "centroid_hz": 733.7,
+      "flatness": 2e-05
+     },
+     {
+      "value": 160.0,
+      "broken": [],
+      "rms_db": -36.9,
+      "level_db": -2.3,
+      "timbre_db": 8.188,
+      "centroid_hz": 433.7,
+      "flatness": 1e-05
+     },
+     {
+      "value": 250.0,
+      "broken": [],
+      "rms_db": -38.38,
+      "level_db": -3.8,
+      "timbre_db": 13.415,
+      "centroid_hz": 369.3,
+      "flatness": 2e-05
+     }
+    ]
+   }
+  },
+  "unit:abliterate:at": {
+   "unit": true,
+   "vau_default": -1.0,
+   "steps": [
+    -1.0,
+    0.0,
+    3.0,
+    6.0,
+    9.0,
+    11.0
+   ],
+   "presets": {
+    "warm-drone": [
+     {
+      "value": -1.0,
+      "broken": [],
+      "rms_db": -43.07,
+      "level_db": -15.2,
+      "timbre_db": 15.819,
+      "centroid_hz": 470.5,
+      "flatness": 4e-05
+     },
+     {
+      "value": 0.0,
+      "broken": [],
+      "rms_db": -27.82,
+      "level_db": 0.0,
+      "timbre_db": 0.0,
+      "centroid_hz": 136.9,
+      "flatness": 0.0
+     },
+     {
+      "value": 3.0,
+      "broken": [],
+      "rms_db": -27.82,
+      "level_db": 0.0,
+      "timbre_db": 0.0,
+      "centroid_hz": 136.9,
+      "flatness": 0.0
+     },
+     {
+      "value": 6.0,
+      "broken": [],
+      "rms_db": -27.88,
+      "level_db": -0.1,
+      "timbre_db": 6.665,
+      "centroid_hz": 201.5,
+      "flatness": 0.0
+     },
+     {
+      "value": 9.0,
+      "broken": [],
+      "rms_db": -36.87,
+      "level_db": -9.0,
+      "timbre_db": 9.432,
+      "centroid_hz": 315.6,
+      "flatness": 1e-05
+     },
+     {
+      "value": 11.0,
+      "broken": [],
+      "rms_db": -34.03,
+      "level_db": -6.2,
+      "timbre_db": 5.988,
+      "centroid_hz": 169.3,
+      "flatness": 0.0
+     }
+    ],
+    "shimmer": [
+     {
+      "value": -1.0,
+      "broken": [],
+      "rms_db": -34.63,
+      "level_db": 4.2,
+      "timbre_db": 10.782,
+      "centroid_hz": 592.2,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.0,
+      "broken": [],
+      "rms_db": -38.88,
+      "level_db": 0.0,
+      "timbre_db": 0.0,
+      "centroid_hz": 1028.2,
+      "flatness": 0.0
+     },
+     {
+      "value": 3.0,
+      "broken": [],
+      "rms_db": -38.88,
+      "level_db": 0.0,
+      "timbre_db": 0.0,
+      "centroid_hz": 1028.2,
+      "flatness": 0.0
+     },
+     {
+      "value": 6.0,
+      "broken": [],
+      "rms_db": -33.06,
+      "level_db": 5.8,
+      "timbre_db": 8.027,
+      "centroid_hz": 716.2,
+      "flatness": 0.0
+     },
+     {
+      "value": 9.0,
+      "broken": [],
+      "rms_db": -32.64,
+      "level_db": 6.2,
+      "timbre_db": 8.556,
+      "centroid_hz": 611.0,
+      "flatness": 0.0
+     },
+     {
+      "value": 11.0,
+      "broken": [],
+      "rms_db": -33.95,
+      "level_db": 4.9,
+      "timbre_db": 4.665,
+      "centroid_hz": 602.5,
+      "flatness": 0.0
+     }
+    ]
+   },
+   "swept": [
+    -1.0,
+    11.0
+   ],
+   "kind": "placement",
+   "safe_places": [
+    -1.0,
+    0.0,
+    3.0,
+    6.0,
+    9.0,
+    11.0
+   ],
+   "default": -1.0,
+   "safe": [
+    -1.0,
+    11.0
+   ],
+   "curve": []
+  },
+  "unit:abliterate:edge": {
+   "unit": true,
+   "vau_default": 0.3,
+   "steps": [
+    0.0,
+    0.2,
+    0.3,
+    0.4,
+    0.6,
+    0.8,
+    1.0
+   ],
+   "presets": {
+    "warm-drone": [
+     {
+      "value": 0.0,
+      "broken": [],
+      "rms_db": -40.96,
+      "level_db": -13.1,
+      "timbre_db": 12.334,
+      "centroid_hz": 407.1,
+      "flatness": 1e-05
+     },
+     {
+      "value": 0.2,
+      "broken": [],
+      "rms_db": -35.98,
+      "level_db": -8.2,
+      "timbre_db": 12.791,
+      "centroid_hz": 316.5,
+      "flatness": 3e-05
+     },
+     {
+      "value": 0.3,
+      "broken": [],
+      "rms_db": -43.07,
+      "level_db": -15.2,
+      "timbre_db": 15.819,
+      "centroid_hz": 470.5,
+      "flatness": 4e-05
+     },
+     {
+      "value": 0.4,
+      "broken": [],
+      "rms_db": -32.07,
+      "level_db": -4.2,
+      "timbre_db": 9.612,
+      "centroid_hz": 135.0,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.6,
+      "broken": [],
+      "rms_db": -32.42,
+      "level_db": -4.6,
+      "timbre_db": 12.872,
+      "centroid_hz": 197.7,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.8,
+      "broken": [],
+      "rms_db": -35.21,
+      "level_db": -7.4,
+      "timbre_db": 13.456,
+      "centroid_hz": 63.0,
+      "flatness": 2e-05
+     },
+     {
+      "value": 1.0,
+      "broken": [],
+      "rms_db": -36.74,
+      "level_db": -8.9,
+      "timbre_db": 15.353,
+      "centroid_hz": 338.2,
+      "flatness": 2e-05
+     }
+    ],
+    "shimmer": [
+     {
+      "value": 0.0,
+      "broken": [],
+      "rms_db": -35.72,
+      "level_db": 3.2,
+      "timbre_db": 13.352,
+      "centroid_hz": 513.7,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.2,
+      "broken": [],
+      "rms_db": -34.3,
+      "level_db": 4.6,
+      "timbre_db": 11.316,
+      "centroid_hz": 568.9,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.3,
+      "broken": [],
+      "rms_db": -34.63,
+      "level_db": 4.2,
+      "timbre_db": 10.782,
+      "centroid_hz": 592.2,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.4,
+      "broken": [],
+      "rms_db": -36.78,
+      "level_db": 2.1,
+      "timbre_db": 11.971,
+      "centroid_hz": 575.3,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.6,
+      "broken": [],
+      "rms_db": -34.18,
+      "level_db": 4.7,
+      "timbre_db": 12.376,
+      "centroid_hz": 555.7,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.8,
+      "broken": [],
+      "rms_db": -34.26,
+      "level_db": 4.6,
+      "timbre_db": 11.691,
+      "centroid_hz": 584.0,
+      "flatness": 0.0
+     },
+     {
+      "value": 1.0,
+      "broken": [],
+      "rms_db": -32.97,
+      "level_db": 5.9,
+      "timbre_db": 16.801,
+      "centroid_hz": 580.8,
+      "flatness": 0.0
+     }
+    ]
+   },
+   "swept": [
+    0.0,
+    1.0
+   ],
+   "default": 0.3,
+   "safe": [
+    0.0,
+    1.0
+   ],
+   "curve": [
+    [
+     0.0,
+     0.0
+    ],
+    [
+     0.1667,
+     0.2
+    ],
+    [
+     0.3333,
+     0.3
+    ],
+    [
+     0.5,
+     0.4
+    ],
+    [
+     0.6667,
+     0.6
+    ],
+    [
+     0.8333,
+     0.8
+    ],
+    [
+     1.0,
+     1.0
+    ]
+   ],
+   "moved_default": false
+  },
+  "unit:abliterate:peak": {
+   "unit": true,
+   "vau_default": 0.7,
+   "steps": [
+    0.0,
+    0.2,
+    0.4,
+    0.6,
+    0.7,
+    0.8,
+    1.0
+   ],
+   "presets": {
+    "warm-drone": [
+     {
+      "value": 0.0,
+      "broken": [],
+      "rms_db": -36.17,
+      "level_db": -8.4,
+      "timbre_db": 11.095,
+      "centroid_hz": 292.8,
+      "flatness": 1e-05
+     },
+     {
+      "value": 0.2,
+      "broken": [],
+      "rms_db": -37.23,
+      "level_db": -9.4,
+      "timbre_db": 11.924,
+      "centroid_hz": 247.1,
+      "flatness": 1e-05
+     },
+     {
+      "value": 0.4,
+      "broken": [],
+      "rms_db": -41.78,
+      "level_db": -14.0,
+      "timbre_db": 11.093,
+      "centroid_hz": 192.2,
+      "flatness": 2e-05
+     },
+     {
+      "value": 0.6,
+      "broken": [],
+      "rms_db": -44.1,
+      "level_db": -16.3,
+      "timbre_db": 11.871,
+      "centroid_hz": 348.2,
+      "flatness": 6e-05
+     },
+     {
+      "value": 0.7,
+      "broken": [],
+      "rms_db": -43.07,
+      "level_db": -15.2,
+      "timbre_db": 15.819,
+      "centroid_hz": 470.5,
+      "flatness": 4e-05
+     },
+     {
+      "value": 0.8,
+      "broken": [],
+      "rms_db": -42.64,
+      "level_db": -14.8,
+      "timbre_db": 12.959,
+      "centroid_hz": 362.2,
+      "flatness": 1e-05
+     },
+     {
+      "value": 1.0,
+      "broken": [],
+      "rms_db": -35.44,
+      "level_db": -7.6,
+      "timbre_db": 10.889,
+      "centroid_hz": 86.0,
+      "flatness": 2e-05
+     }
+    ],
+    "shimmer": [
+     {
+      "value": 0.0,
+      "broken": [],
+      "rms_db": -36.0,
+      "level_db": 2.9,
+      "timbre_db": 9.434,
+      "centroid_hz": 636.6,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.2,
+      "broken": [],
+      "rms_db": -35.59,
+      "level_db": 3.3,
+      "timbre_db": 10.415,
+      "centroid_hz": 618.0,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.4,
+      "broken": [],
+      "rms_db": -31.26,
+      "level_db": 7.6,
+      "timbre_db": 14.086,
+      "centroid_hz": 527.8,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.6,
+      "broken": [],
+      "rms_db": -32.61,
+      "level_db": 6.3,
+      "timbre_db": 11.912,
+      "centroid_hz": 549.1,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.7,
+      "broken": [],
+      "rms_db": -34.63,
+      "level_db": 4.2,
+      "timbre_db": 10.782,
+      "centroid_hz": 592.2,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.8,
+      "broken": [],
+      "rms_db": -31.76,
+      "level_db": 7.1,
+      "timbre_db": 15.716,
+      "centroid_hz": 556.8,
+      "flatness": 0.0
+     },
+     {
+      "value": 1.0,
+      "broken": [],
+      "rms_db": -36.45,
+      "level_db": 2.4,
+      "timbre_db": 11.989,
+      "centroid_hz": 562.0,
+      "flatness": 0.0
+     }
+    ]
+   },
+   "swept": [
+    0.0,
+    1.0
+   ],
+   "default": 0.7,
+   "safe": [
+    0.0,
+    1.0
+   ],
+   "curve": [
+    [
+     0.0,
+     0.0
+    ],
+    [
+     0.0667,
+     0.2
+    ],
+    [
+     0.1333,
+     0.4
+    ],
+    [
+     0.2,
+     0.6
+    ],
+    [
+     0.2667,
+     0.7
+    ],
+    [
+     0.9333,
+     0.8
+    ],
+    [
+     1.0,
+     1.0
+    ]
+   ],
+   "moved_default": false
+  },
+  "unit:abliterate:share": {
+   "unit": true,
+   "vau_default": 0.5,
+   "steps": [
+    0.0,
+    0.2,
+    0.4,
+    0.5,
+    0.6,
+    0.8,
+    1.0
+   ],
+   "presets": {
+    "warm-drone": [
+     {
+      "value": 0.0,
+      "broken": [],
+      "rms_db": -40.67,
+      "level_db": -12.9,
+      "timbre_db": 9.405,
+      "centroid_hz": 281.0,
+      "flatness": 1e-05
+     },
+     {
+      "value": 0.2,
+      "broken": [],
+      "rms_db": -39.48,
+      "level_db": -11.7,
+      "timbre_db": 18.198,
+      "centroid_hz": 697.9,
+      "flatness": 2e-05
+     },
+     {
+      "value": 0.4,
+      "broken": [],
+      "rms_db": -37.86,
+      "level_db": -10.0,
+      "timbre_db": 11.207,
+      "centroid_hz": 176.3,
+      "flatness": 2e-05
+     },
+     {
+      "value": 0.5,
+      "broken": [],
+      "rms_db": -43.07,
+      "level_db": -15.2,
+      "timbre_db": 15.819,
+      "centroid_hz": 470.5,
+      "flatness": 4e-05
+     },
+     {
+      "value": 0.6,
+      "broken": [],
+      "rms_db": -33.14,
+      "level_db": -5.3,
+      "timbre_db": 9.918,
+      "centroid_hz": 77.0,
+      "flatness": 2e-05
+     },
+     {
+      "value": 0.8,
+      "broken": [],
+      "rms_db": -37.0,
+      "level_db": -9.2,
+      "timbre_db": 12.522,
+      "centroid_hz": 111.9,
+      "flatness": 2e-05
+     },
+     {
+      "value": 1.0,
+      "broken": [],
+      "rms_db": -33.54,
+      "level_db": -5.7,
+      "timbre_db": 13.412,
+      "centroid_hz": 136.2,
+      "flatness": 1e-05
+     }
+    ],
+    "shimmer": [
+     {
+      "value": 0.0,
+      "broken": [],
+      "rms_db": -32.65,
+      "level_db": 6.2,
+      "timbre_db": 14.463,
+      "centroid_hz": 492.5,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.2,
+      "broken": [],
+      "rms_db": -35.78,
+      "level_db": 3.1,
+      "timbre_db": 11.564,
+      "centroid_hz": 617.3,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.4,
+      "broken": [],
+      "rms_db": -38.26,
+      "level_db": 0.6,
+      "timbre_db": 12.224,
+      "centroid_hz": 593.3,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.5,
+      "broken": [],
+      "rms_db": -34.63,
+      "level_db": 4.2,
+      "timbre_db": 10.782,
+      "centroid_hz": 592.2,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.6,
+      "broken": [],
+      "rms_db": -26.41,
+      "level_db": 12.5,
+      "timbre_db": 15.574,
+      "centroid_hz": 601.1,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.8,
+      "broken": [],
+      "rms_db": -35.44,
+      "level_db": 3.4,
+      "timbre_db": 14.495,
+      "centroid_hz": 536.4,
+      "flatness": 0.0
+     },
+     {
+      "value": 1.0,
+      "broken": [],
+      "rms_db": -34.62,
+      "level_db": 4.3,
+      "timbre_db": 10.794,
+      "centroid_hz": 592.8,
+      "flatness": 0.0
+     }
+    ]
+   },
+   "swept": [
+    0.0,
+    1.0
+   ],
+   "default": 0.5,
+   "safe": [
+    0.0,
+    1.0
+   ],
+   "curve": [
+    [
+     0.0,
+     0.0
+    ],
+    [
+     0.2114,
+     0.2
+    ],
+    [
+     0.3833,
+     0.4
+    ],
+    [
+     0.4499,
+     0.5
+    ],
+    [
+     0.8667,
+     0.6
+    ],
+    [
+     0.9333,
+     0.8
+    ],
+    [
+     1.0,
+     1.0
+    ]
+   ],
+   "moved_default": false
+  },
+  "unit:abliterate:strength": {
+   "unit": true,
+   "vau_default": 1.0,
+   "steps": [
+    0.0,
+    0.3,
+    0.6,
+    0.9,
+    1.0,
+    1.2,
+    1.5
+   ],
+   "presets": {
+    "warm-drone": [
+     {
+      "value": 0.0,
+      "broken": [],
+      "rms_db": -27.82,
+      "level_db": 0.0,
+      "timbre_db": 0.0,
+      "centroid_hz": 136.9,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.3,
+      "broken": [],
+      "rms_db": -39.62,
+      "level_db": -11.8,
+      "timbre_db": 11.674,
+      "centroid_hz": 257.8,
+      "flatness": 1e-05
+     },
+     {
+      "value": 0.6,
+      "broken": [],
+      "rms_db": -40.37,
+      "level_db": -12.5,
+      "timbre_db": 15.281,
+      "centroid_hz": 294.3,
+      "flatness": 2e-05
+     },
+     {
+      "value": 0.9,
+      "broken": [],
+      "rms_db": -41.66,
+      "level_db": -13.8,
+      "timbre_db": 15.822,
+      "centroid_hz": 435.4,
+      "flatness": 2e-05
+     },
+     {
+      "value": 1.0,
+      "broken": [],
+      "rms_db": -43.07,
+      "level_db": -15.2,
+      "timbre_db": 15.819,
+      "centroid_hz": 470.5,
+      "flatness": 4e-05
+     },
+     {
+      "value": 1.2,
+      "broken": [],
+      "rms_db": -29.18,
+      "level_db": -1.4,
+      "timbre_db": 8.15,
+      "centroid_hz": 138.1,
+      "flatness": 1e-05
+     },
+     {
+      "value": 1.5,
+      "broken": [],
+      "rms_db": -25.96,
+      "level_db": 1.9,
+      "timbre_db": 12.972,
+      "centroid_hz": 183.6,
+      "flatness": 0.0
+     }
+    ],
+    "shimmer": [
+     {
+      "value": 0.0,
+      "broken": [],
+      "rms_db": -38.88,
+      "level_db": 0.0,
+      "timbre_db": 0.0,
+      "centroid_hz": 1028.2,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.3,
+      "broken": [],
+      "rms_db": -37.55,
+      "level_db": 1.3,
+      "timbre_db": 9.549,
+      "centroid_hz": 618.1,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.6,
+      "broken": [],
+      "rms_db": -35.57,
+      "level_db": 3.3,
+      "timbre_db": 13.035,
+      "centroid_hz": 565.9,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.9,
+      "broken": [],
+      "rms_db": -32.78,
+      "level_db": 6.1,
+      "timbre_db": 13.34,
+      "centroid_hz": 516.8,
+      "flatness": 0.0
+     },
+     {
+      "value": 1.0,
+      "broken": [],
+      "rms_db": -34.63,
+      "level_db": 4.2,
+      "timbre_db": 10.782,
+      "centroid_hz": 592.2,
+      "flatness": 0.0
+     },
+     {
+      "value": 1.2,
+      "broken": [],
+      "rms_db": -31.19,
+      "level_db": 7.7,
+      "timbre_db": 14.527,
+      "centroid_hz": 591.3,
+      "flatness": 0.0
+     },
+     {
+      "value": 1.5,
+      "broken": [],
+      "rms_db": -34.63,
+      "level_db": 4.2,
+      "timbre_db": 12.871,
+      "centroid_hz": 529.1,
+      "flatness": 0.0
+     }
+    ]
+   },
+   "swept": [
+    0.0,
+    1.5
+   ],
+   "default": 1.0,
+   "safe": [
+    0.0,
+    1.5
+   ],
+   "curve": [
+    [
+     0.0,
+     0.0
+    ],
+    [
+     0.2898,
+     0.3
+    ],
+    [
+     0.3564,
+     0.6
+    ],
+    [
+     0.4985,
+     0.9
+    ],
+    [
+     0.6133,
+     1.0
+    ],
+    [
+     0.8681,
+     1.2
+    ],
+    [
+     1.0,
+     1.5
+    ]
+   ],
+   "moved_default": false
+  },
+  "unit:abliterate:width": {
+   "unit": true,
+   "vau_default": 0.4,
+   "steps": [
+    0.05,
+    0.24,
+    0.4,
+    0.43,
+    0.62,
+    0.81,
+    1.0
+   ],
+   "presets": {
+    "warm-drone": [
+     {
+      "value": 0.05,
+      "broken": [],
+      "rms_db": -30.43,
+      "level_db": -2.6,
+      "timbre_db": 3.724,
+      "centroid_hz": 68.6,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.24,
+      "broken": [],
+      "rms_db": -41.24,
+      "level_db": -13.4,
+      "timbre_db": 13.462,
+      "centroid_hz": 309.5,
+      "flatness": 3e-05
+     },
+     {
+      "value": 0.4,
+      "broken": [],
+      "rms_db": -43.07,
+      "level_db": -15.2,
+      "timbre_db": 15.819,
+      "centroid_hz": 470.5,
+      "flatness": 4e-05
+     },
+     {
+      "value": 0.43,
+      "broken": [],
+      "rms_db": -39.3,
+      "level_db": -11.5,
+      "timbre_db": 13.073,
+      "centroid_hz": 339.4,
+      "flatness": 1e-05
+     },
+     {
+      "value": 0.62,
+      "broken": [],
+      "rms_db": -46.44,
+      "level_db": -18.6,
+      "timbre_db": 13.881,
+      "centroid_hz": 154.6,
+      "flatness": 3e-05
+     },
+     {
+      "value": 0.81,
+      "broken": [],
+      "rms_db": -41.41,
+      "level_db": -13.6,
+      "timbre_db": 9.611,
+      "centroid_hz": 301.5,
+      "flatness": 2e-05
+     },
+     {
+      "value": 1.0,
+      "broken": [],
+      "rms_db": -35.86,
+      "level_db": -8.0,
+      "timbre_db": 12.879,
+      "centroid_hz": 168.5,
+      "flatness": 2e-05
+     }
+    ],
+    "shimmer": [
+     {
+      "value": 0.05,
+      "broken": [],
+      "rms_db": -34.62,
+      "level_db": 4.3,
+      "timbre_db": 14.848,
+      "centroid_hz": 698.1,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.24,
+      "broken": [],
+      "rms_db": -33.77,
+      "level_db": 5.1,
+      "timbre_db": 13.187,
+      "centroid_hz": 579.3,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.4,
+      "broken": [],
+      "rms_db": -34.63,
+      "level_db": 4.2,
+      "timbre_db": 10.782,
+      "centroid_hz": 592.2,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.43,
+      "broken": [],
+      "rms_db": -31.95,
+      "level_db": 6.9,
+      "timbre_db": 12.737,
+      "centroid_hz": 594.5,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.62,
+      "broken": [],
+      "rms_db": -36.94,
+      "level_db": 1.9,
+      "timbre_db": 12.476,
+      "centroid_hz": 554.5,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.81,
+      "broken": [],
+      "rms_db": -32.4,
+      "level_db": 6.5,
+      "timbre_db": 12.949,
+      "centroid_hz": 577.7,
+      "flatness": 0.0
+     },
+     {
+      "value": 1.0,
+      "broken": [],
+      "rms_db": -32.96,
+      "level_db": 5.9,
+      "timbre_db": 15.059,
+      "centroid_hz": 599.6,
+      "flatness": 0.0
+     }
+    ]
+   },
+   "swept": [
+    0.05,
+    1.0
+   ],
+   "default": 0.4,
+   "safe": [
+    0.05,
+    1.0
+   ],
+   "curve": [
+    [
+     0.0,
+     0.05
+    ],
+    [
+     0.6563,
+     0.24
+    ],
+    [
+     0.723,
+     0.4
+    ],
+    [
+     0.8,
+     0.43
+    ],
+    [
+     0.8667,
+     0.62
+    ],
+    [
+     0.9333,
+     0.81
+    ],
+    [
+     1.0,
+     1.0
+    ]
+   ],
+   "moved_default": false
+  },
+  "unit:beatrepeat:at": {
+   "unit": true,
+   "vau_default": 6.0,
+   "steps": [
+    2.0,
+    4.0,
+    6.0,
+    8.0,
+    10.0,
+    12.0
+   ],
+   "presets": {
+    "warm-drone": [
+     {
+      "value": 2.0,
+      "broken": [],
+      "rms_db": -25.49,
+      "level_db": 2.3,
+      "timbre_db": 4.202,
+      "centroid_hz": 154.1,
+      "flatness": 0.0
+     },
+     {
+      "value": 4.0,
+      "broken": [],
+      "rms_db": -27.33,
+      "level_db": 0.5,
+      "timbre_db": 9.313,
+      "centroid_hz": 129.8,
+      "flatness": 0.0
+     },
+     {
+      "value": 6.0,
+      "broken": [],
+      "rms_db": -27.49,
+      "level_db": 0.3,
+      "timbre_db": 6.027,
+      "centroid_hz": 145.7,
+      "flatness": 0.0
+     },
+     {
+      "value": 8.0,
+      "broken": [],
+      "rms_db": -30.28,
+      "level_db": -2.5,
+      "timbre_db": 4.277,
+      "centroid_hz": 115.9,
+      "flatness": 0.0
+     },
+     {
+      "value": 10.0,
+      "broken": [],
+      "rms_db": -25.22,
+      "level_db": 2.6,
+      "timbre_db": 3.566,
+      "centroid_hz": 122.2,
+      "flatness": 0.0
+     },
+     {
+      "value": 12.0,
+      "broken": [],
+      "rms_db": -26.87,
+      "level_db": 0.9,
+      "timbre_db": 4.591,
+      "centroid_hz": 135.7,
+      "flatness": 0.0
+     }
+    ],
+    "shimmer": [
+     {
+      "value": 2.0,
+      "broken": [],
+      "rms_db": -41.25,
+      "level_db": -2.4,
+      "timbre_db": 4.238,
+      "centroid_hz": 783.1,
+      "flatness": 0.0
+     },
+     {
+      "value": 4.0,
+      "broken": [],
+      "rms_db": -35.43,
+      "level_db": 3.5,
+      "timbre_db": 5.065,
+      "centroid_hz": 1023.5,
+      "flatness": 0.0
+     },
+     {
+      "value": 6.0,
+      "broken": [],
+      "rms_db": -33.83,
+      "level_db": 5.1,
+      "timbre_db": 5.22,
+      "centroid_hz": 896.0,
+      "flatness": 0.0
+     },
+     {
+      "value": 8.0,
+      "broken": [],
+      "rms_db": -39.36,
+      "level_db": -0.5,
+      "timbre_db": 4.691,
+      "centroid_hz": 715.3,
+      "flatness": 0.0
+     },
+     {
+      "value": 10.0,
+      "broken": [],
+      "rms_db": -42.29,
+      "level_db": -3.4,
+      "timbre_db": 3.475,
+      "centroid_hz": 926.9,
+      "flatness": 0.0
+     },
+     {
+      "value": 12.0,
+      "broken": [],
+      "rms_db": -41.7,
+      "level_db": -2.8,
+      "timbre_db": 3.628,
+      "centroid_hz": 939.5,
+      "flatness": 0.0
+     }
+    ]
+   },
+   "swept": [
+    2.0,
+    12.0
+   ],
+   "kind": "placement",
+   "safe_places": [
+    2.0,
+    4.0,
+    6.0,
+    8.0,
+    10.0,
+    12.0
+   ],
+   "default": 6.0,
+   "safe": [
+    2.0,
+    12.0
+   ],
+   "curve": []
+  },
+  "unit:beatrepeat:interval": {
+   "unit": true,
+   "vau_default": 8.0,
+   "steps": [
+    2.0,
+    8.0,
+    14.0,
+    20.0,
+    26.0,
+    32.0
+   ],
+   "presets": {
+    "warm-drone": [
+     {
+      "value": 2.0,
+      "broken": [],
+      "rms_db": -30.54,
+      "level_db": -2.7,
+      "timbre_db": 5.28,
+      "centroid_hz": 171.0,
+      "flatness": 0.0
+     },
+     {
+      "value": 8.0,
+      "broken": [],
+      "rms_db": -27.49,
+      "level_db": 0.3,
+      "timbre_db": 6.027,
+      "centroid_hz": 145.7,
+      "flatness": 0.0
+     },
+     {
+      "value": 14.0,
+      "broken": [],
+      "rms_db": -24.79,
+      "level_db": 3.0,
+      "timbre_db": 7.356,
+      "centroid_hz": 183.2,
+      "flatness": 0.0
+     },
+     {
+      "value": 20.0,
+      "broken": [],
+      "rms_db": -30.48,
+      "level_db": -2.7,
+      "timbre_db": 3.985,
+      "centroid_hz": 150.3,
+      "flatness": 0.0
+     },
+     {
+      "value": 26.0,
+      "broken": [],
+      "rms_db": -28.14,
+      "level_db": -0.3,
+      "timbre_db": 2.457,
+      "centroid_hz": 110.2,
+      "flatness": 0.0
+     },
+     {
+      "value": 32.0,
+      "broken": [],
+      "rms_db": -29.17,
+      "level_db": -1.4,
+      "timbre_db": 3.986,
+      "centroid_hz": 191.3,
+      "flatness": 0.0
+     }
+    ],
+    "shimmer": [
+     {
+      "value": 2.0,
+      "broken": [],
+      "rms_db": -38.15,
+      "level_db": 0.7,
+      "timbre_db": 6.915,
+      "centroid_hz": 816.3,
+      "flatness": 0.0
+     },
+     {
+      "value": 8.0,
+      "broken": [],
+      "rms_db": -33.83,
+      "level_db": 5.1,
+      "timbre_db": 5.22,
+      "centroid_hz": 896.0,
+      "flatness": 0.0
+     },
+     {
+      "value": 14.0,
+      "broken": [],
+      "rms_db": -37.82,
+      "level_db": 1.1,
+      "timbre_db": 3.187,
+      "centroid_hz": 1058.9,
+      "flatness": 0.0
+     },
+     {
+      "value": 20.0,
+      "broken": [],
+      "rms_db": -37.82,
+      "level_db": 1.1,
+      "timbre_db": 2.726,
+      "centroid_hz": 902.8,
+      "flatness": 0.0
+     },
+     {
+      "value": 26.0,
+      "broken": [],
+      "rms_db": -37.38,
+      "level_db": 1.5,
+      "timbre_db": 3.843,
+      "centroid_hz": 842.7,
+      "flatness": 0.0
+     },
+     {
+      "value": 32.0,
+      "broken": [],
+      "rms_db": -37.46,
+      "level_db": 1.4,
+      "timbre_db": 2.993,
+      "centroid_hz": 978.7,
+      "flatness": 0.0
+     }
+    ]
+   },
+   "swept": [
+    2.0,
+    32.0
+   ],
+   "default": 8.0,
+   "safe": [
+    2.0,
+    32.0
+   ],
+   "curve": [
+    [
+     0.0,
+     2.0
+    ],
+    [
+     0.2,
+     8.0
+    ],
+    [
+     0.4,
+     14.0
+    ],
+    [
+     0.6,
+     20.0
+    ],
+    [
+     0.8,
+     26.0
+    ],
+    [
+     1.0,
+     32.0
+    ]
+   ],
+   "moved_default": false
+  },
+  "unit:beatrepeat:length": {
+   "unit": true,
+   "vau_default": 2.0,
+   "steps": [
+    1.0,
+    2.0,
+    4.0,
+    7.0,
+    10.0,
+    13.0,
+    16.0
+   ],
+   "presets": {
+    "warm-drone": [
+     {
+      "value": 1.0,
+      "broken": [],
+      "rms_db": -24.36,
+      "level_db": 3.5,
+      "timbre_db": 2.873,
+      "centroid_hz": 139.4,
+      "flatness": 0.0
+     },
+     {
+      "value": 2.0,
+      "broken": [],
+      "rms_db": -27.49,
+      "level_db": 0.3,
+      "timbre_db": 6.027,
+      "centroid_hz": 145.7,
+      "flatness": 0.0
+     },
+     {
+      "value": 4.0,
+      "broken": [],
+      "rms_db": -25.69,
+      "level_db": 2.1,
+      "timbre_db": 5.818,
+      "centroid_hz": 165.7,
+      "flatness": 0.0
+     },
+     {
+      "value": 7.0,
+      "broken": [],
+      "rms_db": -28.22,
+      "level_db": -0.4,
+      "timbre_db": 3.502,
+      "centroid_hz": 137.1,
+      "flatness": 0.0
+     },
+     {
+      "value": 10.0,
+      "broken": [],
+      "rms_db": -28.22,
+      "level_db": -0.4,
+      "timbre_db": 3.502,
+      "centroid_hz": 137.1,
+      "flatness": 0.0
+     },
+     {
+      "value": 13.0,
+      "broken": [],
+      "rms_db": -28.22,
+      "level_db": -0.4,
+      "timbre_db": 3.502,
+      "centroid_hz": 137.1,
+      "flatness": 0.0
+     },
+     {
+      "value": 16.0,
+      "broken": [],
+      "rms_db": -28.22,
+      "level_db": -0.4,
+      "timbre_db": 3.502,
+      "centroid_hz": 137.1,
+      "flatness": 0.0
+     }
+    ],
+    "shimmer": [
+     {
+      "value": 1.0,
+      "broken": [],
+      "rms_db": -36.82,
+      "level_db": 2.1,
+      "timbre_db": 5.379,
+      "centroid_hz": 838.4,
+      "flatness": 0.0
+     },
+     {
+      "value": 2.0,
+      "broken": [],
+      "rms_db": -33.83,
+      "level_db": 5.1,
+      "timbre_db": 5.22,
+      "centroid_hz": 896.0,
+      "flatness": 0.0
+     },
+     {
+      "value": 4.0,
+      "broken": [],
+      "rms_db": -36.29,
+      "level_db": 2.6,
+      "timbre_db": 4.682,
+      "centroid_hz": 1024.8,
+      "flatness": 0.0
+     },
+     {
+      "value": 7.0,
+      "broken": [],
+      "rms_db": -40.39,
+      "level_db": -1.5,
+      "timbre_db": 4.299,
+      "centroid_hz": 703.7,
+      "flatness": 0.0
+     },
+     {
+      "value": 10.0,
+      "broken": [],
+      "rms_db": -40.39,
+      "level_db": -1.5,
+      "timbre_db": 4.299,
+      "centroid_hz": 703.7,
+      "flatness": 0.0
+     },
+     {
+      "value": 13.0,
+      "broken": [],
+      "rms_db": -40.39,
+      "level_db": -1.5,
+      "timbre_db": 4.299,
+      "centroid_hz": 703.7,
+      "flatness": 0.0
+     },
+     {
+      "value": 16.0,
+      "broken": [],
+      "rms_db": -40.39,
+      "level_db": -1.5,
+      "timbre_db": 4.299,
+      "centroid_hz": 703.7,
+      "flatness": 0.0
+     }
+    ]
+   },
+   "swept": [
+    1.0,
+    16.0
+   ],
+   "default": 2.0,
+   "safe": [
+    1.0,
+    16.0
+   ],
+   "curve": [
+    [
+     0.0,
+     1.0
+    ],
+    [
+     0.1667,
+     2.0
+    ],
+    [
+     0.3333,
+     4.0
+    ],
+    [
+     0.5,
+     7.0
+    ],
+    [
+     0.6667,
+     10.0
+    ],
+    [
+     0.8333,
+     13.0
+    ],
+    [
+     1.0,
+     16.0
+    ]
+   ],
+   "moved_default": false
+  },
+  "unit:beatrepeat:mix": {
+   "unit": true,
+   "vau_default": 1.0,
+   "steps": [
+    0.0,
+    0.2,
+    0.4,
+    0.6,
+    0.8,
+    1.0
+   ],
+   "presets": {
+    "warm-drone": [
+     {
+      "value": 0.0,
+      "broken": [],
+      "rms_db": -27.82,
+      "level_db": 0.0,
+      "timbre_db": 0.0,
+      "centroid_hz": 136.9,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.2,
+      "broken": [],
+      "rms_db": -28.6,
+      "level_db": -0.8,
+      "timbre_db": 3.479,
+      "centroid_hz": 118.6,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.4,
+      "broken": [],
+      "rms_db": -30.7,
+      "level_db": -2.9,
+      "timbre_db": 2.74,
+      "centroid_hz": 87.4,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.6,
+      "broken": [],
+      "rms_db": -27.54,
+      "level_db": 0.3,
+      "timbre_db": 4.785,
+      "centroid_hz": 106.3,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.8,
+      "broken": [],
+      "rms_db": -29.58,
+      "level_db": -1.8,
+      "timbre_db": 4.673,
+      "centroid_hz": 118.9,
+      "flatness": 0.0
+     },
+     {
+      "value": 1.0,
+      "broken": [],
+      "rms_db": -27.49,
+      "level_db": 0.3,
+      "timbre_db": 6.027,
+      "centroid_hz": 145.7,
+      "flatness": 0.0
+     }
+    ],
+    "shimmer": [
+     {
+      "value": 0.0,
+      "broken": [],
+      "rms_db": -38.88,
+      "level_db": 0.0,
+      "timbre_db": 0.0,
+      "centroid_hz": 1028.2,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.2,
+      "broken": [],
+      "rms_db": -39.56,
+      "level_db": -0.7,
+      "timbre_db": 4.283,
+      "centroid_hz": 904.0,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.4,
+      "broken": [],
+      "rms_db": -39.85,
+      "level_db": -1.0,
+      "timbre_db": 3.954,
+      "centroid_hz": 774.4,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.6,
+      "broken": [],
+      "rms_db": -36.11,
+      "level_db": 2.8,
+      "timbre_db": 4.115,
+      "centroid_hz": 811.9,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.8,
+      "broken": [],
+      "rms_db": -39.24,
+      "level_db": -0.4,
+      "timbre_db": 4.819,
+      "centroid_hz": 718.2,
+      "flatness": 0.0
+     },
+     {
+      "value": 1.0,
+      "broken": [],
+      "rms_db": -33.83,
+      "level_db": 5.1,
+      "timbre_db": 5.22,
+      "centroid_hz": 896.0,
+      "flatness": 0.0
+     }
+    ]
+   },
+   "swept": [
+    0.0,
+    1.0
+   ],
+   "default": 1.0,
+   "safe": [
+    0.0,
+    1.0
+   ],
+   "curve": [
+    [
+     0.0,
+     0.0
+    ],
+    [
+     0.2,
+     0.2
+    ],
+    [
+     0.4,
+     0.4
+    ],
+    [
+     0.6,
+     0.6
+    ],
+    [
+     0.8,
+     0.8
+    ],
+    [
+     1.0,
+     1.0
+    ]
+   ],
+   "moved_default": false
+  },
+  "unit:compressor:at": {
+   "unit": true,
+   "vau_default": 6.0,
+   "steps": [
+    2.0,
+    4.0,
+    6.0,
+    8.0,
+    10.0,
+    12.0
+   ],
+   "presets": {
+    "warm-drone": [
+     {
+      "value": 2.0,
+      "broken": [],
+      "rms_db": -22.56,
+      "level_db": 5.3,
+      "timbre_db": 3.694,
+      "centroid_hz": 109.1,
+      "flatness": 0.0
+     },
+     {
+      "value": 4.0,
+      "broken": [],
+      "rms_db": -28.54,
+      "level_db": -0.7,
+      "timbre_db": 6.716,
+      "centroid_hz": 125.6,
+      "flatness": 0.0
+     },
+     {
+      "value": 6.0,
+      "broken": [],
+      "rms_db": -27.91,
+      "level_db": -0.1,
+      "timbre_db": 9.174,
+      "centroid_hz": 162.8,
+      "flatness": 0.0
+     },
+     {
+      "value": 8.0,
+      "broken": [],
+      "rms_db": -24.93,
+      "level_db": 2.9,
+      "timbre_db": 6.214,
+      "centroid_hz": 147.4,
+      "flatness": 0.0
+     },
+     {
+      "value": 10.0,
+      "broken": [],
+      "rms_db": -27.25,
+      "level_db": 0.6,
+      "timbre_db": 7.289,
+      "centroid_hz": 175.0,
+      "flatness": 0.0
+     },
+     {
+      "value": 12.0,
+      "broken": [],
+      "rms_db": -26.15,
+      "level_db": 1.7,
+      "timbre_db": 7.192,
+      "centroid_hz": 203.5,
+      "flatness": 0.0
+     }
+    ],
+    "shimmer": [
+     {
+      "value": 2.0,
+      "broken": [],
+      "rms_db": -36.58,
+      "level_db": 2.3,
+      "timbre_db": 6.579,
+      "centroid_hz": 726.9,
+      "flatness": 0.0
+     },
+     {
+      "value": 4.0,
+      "broken": [],
+      "rms_db": -33.68,
+      "level_db": 5.2,
+      "timbre_db": 5.536,
+      "centroid_hz": 754.8,
+      "flatness": 0.0
+     },
+     {
+      "value": 6.0,
+      "broken": [],
+      "rms_db": -32.46,
+      "level_db": 6.4,
+      "timbre_db": 5.691,
+      "centroid_hz": 943.0,
+      "flatness": 0.0
+     },
+     {
+      "value": 8.0,
+      "broken": [],
+      "rms_db": -29.32,
+      "level_db": 9.6,
+      "timbre_db": 5.767,
+      "centroid_hz": 663.0,
+      "flatness": 0.0
+     },
+     {
+      "value": 10.0,
+      "broken": [],
+      "rms_db": -35.98,
+      "level_db": 2.9,
+      "timbre_db": 4.649,
+      "centroid_hz": 679.4,
+      "flatness": 0.0
+     },
+     {
+      "value": 12.0,
+      "broken": [],
+      "rms_db": -31.39,
+      "level_db": 7.5,
+      "timbre_db": 8.478,
+      "centroid_hz": 824.6,
+      "flatness": 0.0
+     }
+    ]
+   },
+   "swept": [
+    2.0,
+    12.0
+   ],
+   "kind": "placement",
+   "safe_places": [
+    2.0,
+    4.0,
+    6.0,
+    8.0,
+    10.0,
+    12.0
+   ],
+   "default": 6.0,
+   "safe": [
+    2.0,
+    12.0
+   ],
+   "curve": []
+  },
+  "unit:compressor:makeup": {
+   "unit": true,
+   "vau_default": 1.0,
+   "steps": [
+    0.25,
+    1.0,
+    1.75,
+    2.5,
+    3.25,
+    4.0
+   ],
+   "presets": {
+    "warm-drone": [
+     {
+      "value": 0.25,
+      "broken": [],
+      "rms_db": -19.05,
+      "level_db": 8.8,
+      "timbre_db": 14.678,
+      "centroid_hz": 72.2,
+      "flatness": 0.0004
+     },
+     {
+      "value": 1.0,
+      "broken": [],
+      "rms_db": -27.91,
+      "level_db": -0.1,
+      "timbre_db": 9.174,
+      "centroid_hz": 162.8,
+      "flatness": 0.0
+     },
+     {
+      "value": 1.75,
+      "broken": [
+       "falls silent (-45 dBFS)"
+      ],
+      "rms_db": -44.98,
+      "level_db": -17.2,
+      "timbre_db": 14.439,
+      "centroid_hz": 48.1,
+      "flatness": 0.04562
+     },
+     {
+      "value": 2.5,
+      "broken": [],
+      "rms_db": -17.68,
+      "level_db": 10.1,
+      "timbre_db": 17.402,
+      "centroid_hz": 195.4,
+      "flatness": 0.00959
+     },
+     {
+      "value": 3.25,
+      "broken": [],
+      "rms_db": -13.6,
+      "level_db": 14.2,
+      "timbre_db": 32.223,
+      "centroid_hz": 4559.9,
+      "flatness": 0.0092
+     },
+     {
+      "value": 4.0,
+      "broken": [],
+      "rms_db": -14.04,
+      "level_db": 13.8,
+      "timbre_db": 28.581,
+      "centroid_hz": 4256.3,
+      "flatness": 0.02009
+     }
+    ],
+    "shimmer": [
+     {
+      "value": 0.25,
+      "broken": [],
+      "rms_db": -28.18,
+      "level_db": 10.7,
+      "timbre_db": 21.358,
+      "centroid_hz": 204.9,
+      "flatness": 0.00115
+     },
+     {
+      "value": 1.0,
+      "broken": [],
+      "rms_db": -32.46,
+      "level_db": 6.4,
+      "timbre_db": 5.691,
+      "centroid_hz": 943.0,
+      "flatness": 0.0
+     },
+     {
+      "value": 1.75,
+      "broken": [
+       "falls silent (-95 dBFS)"
+      ],
+      "rms_db": -94.76,
+      "level_db": -55.9,
+      "timbre_db": 25.867,
+      "centroid_hz": 2489.4,
+      "flatness": 0.09833
+     },
+     {
+      "value": 2.5,
+      "broken": [
+       "falls silent (-43 dBFS)"
+      ],
+      "rms_db": -43.39,
+      "level_db": -4.5,
+      "timbre_db": 25.883,
+      "centroid_hz": 7355.8,
+      "flatness": 0.1189
+     },
+     {
+      "value": 3.25,
+      "broken": [
+       "falls silent (-29 dBFS)"
+      ],
+      "rms_db": -29.36,
+      "level_db": 9.5,
+      "timbre_db": 30.955,
+      "centroid_hz": 8800.4,
+      "flatness": 0.10494
+     },
+     {
+      "value": 4.0,
+      "broken": [],
+      "rms_db": -21.45,
+      "level_db": 17.4,
+      "timbre_db": 25.582,
+      "centroid_hz": 5595.5,
+      "flatness": 0.03082
+     }
+    ]
+   },
+   "swept": [
+    0.25,
+    4.0
+   ],
+   "default": 1.0,
+   "safe": [
+    0.25,
+    1.0
+   ],
+   "curve": [
+    [
+     0.0,
+     0.25
+    ],
+    [
+     1.0,
+     1.0
+    ]
+   ],
+   "moved_default": false
+  },
+  "unit:compressor:ratio": {
+   "unit": true,
+   "vau_default": 4.0,
+   "steps": [
+    1.0,
+    4.0,
+    4.8,
+    8.6,
+    12.4,
+    16.2,
+    20.0
+   ],
+   "presets": {
+    "warm-drone": [
+     {
+      "value": 1.0,
+      "broken": [],
+      "rms_db": -27.82,
+      "level_db": 0.0,
+      "timbre_db": 0.0,
+      "centroid_hz": 136.9,
+      "flatness": 0.0
+     },
+     {
+      "value": 4.0,
+      "broken": [],
+      "rms_db": -27.91,
+      "level_db": -0.1,
+      "timbre_db": 9.174,
+      "centroid_hz": 162.8,
+      "flatness": 0.0
+     },
+     {
+      "value": 4.8,
+      "broken": [],
+      "rms_db": -25.12,
+      "level_db": 2.7,
+      "timbre_db": 8.337,
+      "centroid_hz": 151.4,
+      "flatness": 0.0
+     },
+     {
+      "value": 8.6,
+      "broken": [],
+      "rms_db": -24.42,
+      "level_db": 3.4,
+      "timbre_db": 8.576,
+      "centroid_hz": 113.1,
+      "flatness": 0.0
+     },
+     {
+      "value": 12.4,
+      "broken": [],
+      "rms_db": -23.69,
+      "level_db": 4.1,
+      "timbre_db": 7.994,
+      "centroid_hz": 144.2,
+      "flatness": 0.0
+     },
+     {
+      "value": 16.2,
+      "broken": [],
+      "rms_db": -24.78,
+      "level_db": 3.0,
+      "timbre_db": 6.193,
+      "centroid_hz": 122.2,
+      "flatness": 0.0
+     },
+     {
+      "value": 20.0,
+      "broken": [],
+      "rms_db": -22.66,
+      "level_db": 5.2,
+      "timbre_db": 7.953,
+      "centroid_hz": 118.1,
+      "flatness": 0.0
+     }
+    ],
+    "shimmer": [
+     {
+      "value": 1.0,
+      "broken": [],
+      "rms_db": -38.88,
+      "level_db": 0.0,
+      "timbre_db": 0.0,
+      "centroid_hz": 1028.2,
+      "flatness": 0.0
+     },
+     {
+      "value": 4.0,
+      "broken": [],
+      "rms_db": -32.46,
+      "level_db": 6.4,
+      "timbre_db": 5.691,
+      "centroid_hz": 943.0,
+      "flatness": 0.0
+     },
+     {
+      "value": 4.8,
+      "broken": [],
+      "rms_db": -28.44,
+      "level_db": 10.4,
+      "timbre_db": 7.985,
+      "centroid_hz": 690.8,
+      "flatness": 0.0
+     },
+     {
+      "value": 8.6,
+      "broken": [],
+      "rms_db": -36.56,
+      "level_db": 2.3,
+      "timbre_db": 5.766,
+      "centroid_hz": 729.8,
+      "flatness": 0.0
+     },
+     {
+      "value": 12.4,
+      "broken": [],
+      "rms_db": -38.18,
+      "level_db": 0.7,
+      "timbre_db": 4.942,
+      "centroid_hz": 675.5,
+      "flatness": 0.0
+     },
+     {
+      "value": 16.2,
+      "broken": [],
+      "rms_db": -37.34,
+      "level_db": 1.5,
+      "timbre_db": 4.863,
+      "centroid_hz": 773.9,
+      "flatness": 0.0
+     },
+     {
+      "value": 20.0,
+      "broken": [],
+      "rms_db": -35.08,
+      "level_db": 3.8,
+      "timbre_db": 7.23,
+      "centroid_hz": 744.6,
+      "flatness": 0.0
+     }
+    ]
+   },
+   "swept": [
+    1.0,
+    20.0
+   ],
+   "default": 4.0,
+   "safe": [
+    1.0,
+    20.0
+   ],
+   "curve": [
+    [
+     0.0,
+     1.0
+    ],
+    [
+     0.1667,
+     4.0
+    ],
+    [
+     0.3333,
+     4.8
+    ],
+    [
+     0.5,
+     8.6
+    ],
+    [
+     0.6667,
+     12.4
+    ],
+    [
+     0.8333,
+     16.2
+    ],
+    [
+     1.0,
+     20.0
+    ]
+   ],
+   "moved_default": false
+  },
+  "unit:compressor:thresh": {
+   "unit": true,
+   "vau_default": 1.0,
+   "steps": [
+    0.1,
+    0.68,
+    1.0,
+    1.26,
+    1.84,
+    2.42,
+    3.0
+   ],
+   "presets": {
+    "warm-drone": [
+     {
+      "value": 0.1,
+      "broken": [],
+      "rms_db": -16.54,
+      "level_db": 11.3,
+      "timbre_db": 20.715,
+      "centroid_hz": 181.4,
+      "flatness": 0.00172
+     },
+     {
+      "value": 0.68,
+      "broken": [],
+      "rms_db": -21.08,
+      "level_db": 6.7,
+      "timbre_db": 15.919,
+      "centroid_hz": 101.6,
+      "flatness": 4e-05
+     },
+     {
+      "value": 1.0,
+      "broken": [],
+      "rms_db": -27.91,
+      "level_db": -0.1,
+      "timbre_db": 9.174,
+      "centroid_hz": 162.8,
+      "flatness": 0.0
+     },
+     {
+      "value": 1.26,
+      "broken": [],
+      "rms_db": -18.4,
+      "level_db": 9.4,
+      "timbre_db": 7.508,
+      "centroid_hz": 49.4,
+      "flatness": 0.0
+     },
+     {
+      "value": 1.84,
+      "broken": [],
+      "rms_db": -29.89,
+      "level_db": -2.1,
+      "timbre_db": 4.901,
+      "centroid_hz": 136.5,
+      "flatness": 0.0
+     },
+     {
+      "value": 2.42,
+      "broken": [],
+      "rms_db": -27.82,
+      "level_db": 0.0,
+      "timbre_db": 0.0,
+      "centroid_hz": 136.9,
+      "flatness": 0.0
+     },
+     {
+      "value": 3.0,
+      "broken": [],
+      "rms_db": -27.82,
+      "level_db": 0.0,
+      "timbre_db": 0.0,
+      "centroid_hz": 136.9,
+      "flatness": 0.0
+     }
+    ],
+    "shimmer": [
+     {
+      "value": 0.1,
+      "broken": [],
+      "rms_db": -25.04,
+      "level_db": 13.8,
+      "timbre_db": 24.847,
+      "centroid_hz": 1661.4,
+      "flatness": 0.04245
+     },
+     {
+      "value": 0.68,
+      "broken": [],
+      "rms_db": -26.29,
+      "level_db": 12.6,
+      "timbre_db": 12.827,
+      "centroid_hz": 845.6,
+      "flatness": 0.0
+     },
+     {
+      "value": 1.0,
+      "broken": [],
+      "rms_db": -32.46,
+      "level_db": 6.4,
+      "timbre_db": 5.691,
+      "centroid_hz": 943.0,
+      "flatness": 0.0
+     },
+     {
+      "value": 1.26,
+      "broken": [],
+      "rms_db": -38.22,
+      "level_db": 0.7,
+      "timbre_db": 6.808,
+      "centroid_hz": 693.1,
+      "flatness": 0.0
+     },
+     {
+      "value": 1.84,
+      "broken": [],
+      "rms_db": -37.97,
+      "level_db": 0.9,
+      "timbre_db": 4.008,
+      "centroid_hz": 735.3,
+      "flatness": 0.0
+     },
+     {
+      "value": 2.42,
+      "broken": [],
+      "rms_db": -38.88,
+      "level_db": 0.0,
+      "timbre_db": 0.0,
+      "centroid_hz": 1028.2,
+      "flatness": 0.0
+     },
+     {
+      "value": 3.0,
+      "broken": [],
+      "rms_db": -38.88,
+      "level_db": 0.0,
+      "timbre_db": 0.0,
+      "centroid_hz": 1028.2,
+      "flatness": 0.0
+     }
+    ]
+   },
+   "swept": [
+    0.1,
+    3.0
+   ],
+   "default": 1.0,
+   "safe": [
+    0.1,
+    3.0
+   ],
+   "curve": [
+    [
+     0.0,
+     0.1
+    ],
+    [
+     0.4982,
+     0.68
+    ],
+    [
+     0.7333,
+     1.0
+    ],
+    [
+     0.8,
+     1.26
+    ],
+    [
+     0.8667,
+     1.84
+    ],
+    [
+     0.9333,
+     2.42
+    ],
+    [
+     1.0,
+     3.0
+    ]
+   ],
+   "moved_default": false
+  },
+  "unit:delay:at": {
+   "unit": true,
+   "vau_default": 6.0,
+   "steps": [
+    2.0,
+    4.0,
+    6.0,
+    8.0,
+    10.0,
+    12.0
+   ],
+   "presets": {
+    "warm-drone": [
+     {
+      "value": 2.0,
+      "broken": [],
+      "rms_db": -35.53,
+      "level_db": -7.7,
+      "timbre_db": 4.623,
+      "centroid_hz": 134.0,
+      "flatness": 0.00148
+     },
+     {
+      "value": 4.0,
+      "broken": [],
+      "rms_db": -35.51,
+      "level_db": -7.7,
+      "timbre_db": 6.147,
+      "centroid_hz": 139.2,
+      "flatness": 3e-05
+     },
+     {
+      "value": 6.0,
+      "broken": [],
+      "rms_db": -34.88,
+      "level_db": -7.1,
+      "timbre_db": 5.65,
+      "centroid_hz": 136.5,
+      "flatness": 5e-05
+     },
+     {
+      "value": 8.0,
+      "broken": [],
+      "rms_db": -36.33,
+      "level_db": -8.5,
+      "timbre_db": 6.099,
+      "centroid_hz": 120.2,
+      "flatness": 8e-05
+     },
+     {
+      "value": 10.0,
+      "broken": [],
+      "rms_db": -42.29,
+      "level_db": -14.5,
+      "timbre_db": 8.188,
+      "centroid_hz": 137.8,
+      "flatness": 0.00091
+     },
+     {
+      "value": 12.0,
+      "broken": [],
+      "rms_db": -24.57,
+      "level_db": 3.2,
+      "timbre_db": 10.411,
+      "centroid_hz": 135.9,
+      "flatness": 0.0
+     }
+    ],
+    "shimmer": [
+     {
+      "value": 2.0,
+      "broken": [
+       "falls silent (-52 dBFS)"
+      ],
+      "rms_db": -51.86,
+      "level_db": -13.0,
+      "timbre_db": 12.753,
+      "centroid_hz": 1044.3,
+      "flatness": 0.01602
+     },
+     {
+      "value": 4.0,
+      "broken": [
+       "falls silent (-51 dBFS)"
+      ],
+      "rms_db": -50.95,
+      "level_db": -12.1,
+      "timbre_db": 14.383,
+      "centroid_hz": 697.0,
+      "flatness": 0.02046
+     },
+     {
+      "value": 6.0,
+      "broken": [],
+      "rms_db": -48.78,
+      "level_db": -9.9,
+      "timbre_db": 7.337,
+      "centroid_hz": 696.5,
+      "flatness": 0.00043
+     },
+     {
+      "value": 8.0,
+      "broken": [
+       "falls silent (-49 dBFS)"
+      ],
+      "rms_db": -48.88,
+      "level_db": -10.0,
+      "timbre_db": 7.099,
+      "centroid_hz": 720.5,
+      "flatness": 0.03217
+     },
+     {
+      "value": 10.0,
+      "broken": [],
+      "rms_db": -43.26,
+      "level_db": -4.4,
+      "timbre_db": 9.289,
+      "centroid_hz": 602.7,
+      "flatness": 0.00024
+     },
+     {
+      "value": 12.0,
+      "broken": [
+       "falls silent (-43 dBFS)"
+      ],
+      "rms_db": -42.92,
+      "level_db": -4.0,
+      "timbre_db": 8.259,
+      "centroid_hz": 625.0,
+      "flatness": 0.0067
+     }
+    ]
+   },
+   "swept": [
+    2.0,
+    12.0
+   ],
+   "kind": "placement",
+   "safe_places": [
+    6.0,
+    10.0
+   ],
+   "default": 6.0,
+   "safe": [
+    2.0,
+    12.0
+   ],
+   "curve": []
+  },
+  "unit:delay:feedback": {
+   "unit": true,
+   "vau_default": 0.3,
+   "steps": [
+    0.0,
+    0.19,
+    0.3,
+    0.38,
+    0.57,
+    0.76,
+    0.95
+   ],
+   "presets": {
+    "warm-drone": [
+     {
+      "value": 0.0,
+      "broken": [],
+      "rms_db": -32.28,
+      "level_db": -4.5,
+      "timbre_db": 7.313,
+      "centroid_hz": 139.6,
+      "flatness": 1e-05
+     },
+     {
+      "value": 0.19,
+      "broken": [
+       "falls silent (-40 dBFS)"
+      ],
+      "rms_db": -40.49,
+      "level_db": -12.7,
+      "timbre_db": 6.859,
+      "centroid_hz": 186.5,
+      "flatness": 4e-05
+     },
+     {
+      "value": 0.3,
+      "broken": [],
+      "rms_db": -34.88,
+      "level_db": -7.1,
+      "timbre_db": 5.65,
+      "centroid_hz": 136.5,
+      "flatness": 5e-05
+     },
+     {
+      "value": 0.38,
+      "broken": [],
+      "rms_db": -33.59,
+      "level_db": -5.8,
+      "timbre_db": 5.075,
+      "centroid_hz": 132.4,
+      "flatness": 0.00174
+     },
+     {
+      "value": 0.57,
+      "broken": [
+       "falls silent (-43 dBFS)"
+      ],
+      "rms_db": -43.39,
+      "level_db": -15.6,
+      "timbre_db": 6.193,
+      "centroid_hz": 191.2,
+      "flatness": 0.06124
+     },
+     {
+      "value": 0.76,
+      "broken": [
+       "falls silent (-41 dBFS)"
+      ],
+      "rms_db": -40.95,
+      "level_db": -13.1,
+      "timbre_db": 7.243,
+      "centroid_hz": 153.4,
+      "flatness": 0.07393
+     },
+     {
+      "value": 0.95,
+      "broken": [
+       "falls silent (-32 dBFS)"
+      ],
+      "rms_db": -31.76,
+      "level_db": -3.9,
+      "timbre_db": 26.013,
+      "centroid_hz": 3133.3,
+      "flatness": 0.06737
+     }
+    ],
+    "shimmer": [
+     {
+      "value": 0.0,
+      "broken": [],
+      "rms_db": -45.22,
+      "level_db": -6.3,
+      "timbre_db": 6.894,
+      "centroid_hz": 729.8,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.19,
+      "broken": [
+       "falls silent (-49 dBFS)"
+      ],
+      "rms_db": -48.79,
+      "level_db": -9.9,
+      "timbre_db": 5.718,
+      "centroid_hz": 811.8,
+      "flatness": 0.01809
+     },
+     {
+      "value": 0.3,
+      "broken": [],
+      "rms_db": -48.78,
+      "level_db": -9.9,
+      "timbre_db": 7.337,
+      "centroid_hz": 696.5,
+      "flatness": 0.00043
+     },
+     {
+      "value": 0.38,
+      "broken": [
+       "falls silent (-51 dBFS)"
+      ],
+      "rms_db": -50.64,
+      "level_db": -11.8,
+      "timbre_db": 7.96,
+      "centroid_hz": 710.1,
+      "flatness": 0.05972
+     },
+     {
+      "value": 0.57,
+      "broken": [
+       "falls silent (-55 dBFS)"
+      ],
+      "rms_db": -54.81,
+      "level_db": -15.9,
+      "timbre_db": 12.871,
+      "centroid_hz": 646.6,
+      "flatness": 0.06515
+     },
+     {
+      "value": 0.76,
+      "broken": [
+       "falls silent (-62 dBFS)"
+      ],
+      "rms_db": -62.14,
+      "level_db": -23.3,
+      "timbre_db": 17.964,
+      "centroid_hz": 1482.9,
+      "flatness": 0.08878
+     },
+     {
+      "value": 0.95,
+      "broken": [
+       "falls silent (-41 dBFS)"
+      ],
+      "rms_db": -40.75,
+      "level_db": -1.9,
+      "timbre_db": 28.054,
+      "centroid_hz": 8349.8,
+      "flatness": 0.1293
+     }
+    ]
+   },
+   "swept": [
+    0.0,
+    0.95
+   ],
+   "default": 0.3,
+   "safe": [
+    0.3,
+    0.3
+   ],
+   "curve": [],
+   "moved_default": false
+  },
+  "unit:delay:mix": {
+   "unit": true,
+   "vau_default": 0.2,
+   "steps": [
+    0.0,
+    0.2,
+    0.4,
+    0.6,
+    0.8,
+    1.0
+   ],
+   "presets": {
+    "warm-drone": [
+     {
+      "value": 0.0,
+      "broken": [],
+      "rms_db": -27.82,
+      "level_db": 0.0,
+      "timbre_db": 0.0,
+      "centroid_hz": 136.9,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.2,
+      "broken": [],
+      "rms_db": -34.88,
+      "level_db": -7.1,
+      "timbre_db": 5.65,
+      "centroid_hz": 136.5,
+      "flatness": 5e-05
+     },
+     {
+      "value": 0.4,
+      "broken": [
+       "falls silent (-60 dBFS)"
+      ],
+      "rms_db": -60.44,
+      "level_db": -32.6,
+      "timbre_db": 15.891,
+      "centroid_hz": 70.3,
+      "flatness": 0.06303
+     },
+     {
+      "value": 0.6,
+      "broken": [
+       "falls silent (-41 dBFS)"
+      ],
+      "rms_db": -40.79,
+      "level_db": -13.0,
+      "timbre_db": 9.384,
+      "centroid_hz": 153.8,
+      "flatness": 0.07047
+     },
+     {
+      "value": 0.8,
+      "broken": [
+       "falls silent (-64 dBFS)"
+      ],
+      "rms_db": -64.33,
+      "level_db": -36.5,
+      "timbre_db": 18.511,
+      "centroid_hz": 117.2,
+      "flatness": 0.0859
+     },
+     {
+      "value": 1.0,
+      "broken": [
+       "falls silent (-56 dBFS)"
+      ],
+      "rms_db": -56.38,
+      "level_db": -28.6,
+      "timbre_db": 23.593,
+      "centroid_hz": 1095.3,
+      "flatness": 0.09268
+     }
+    ],
+    "shimmer": [
+     {
+      "value": 0.0,
+      "broken": [],
+      "rms_db": -38.88,
+      "level_db": 0.0,
+      "timbre_db": 0.0,
+      "centroid_hz": 1028.2,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.2,
+      "broken": [],
+      "rms_db": -48.78,
+      "level_db": -9.9,
+      "timbre_db": 7.337,
+      "centroid_hz": 696.5,
+      "flatness": 0.00043
+     },
+     {
+      "value": 0.4,
+      "broken": [
+       "falls silent (-95 dBFS)"
+      ],
+      "rms_db": -95.2,
+      "level_db": -56.3,
+      "timbre_db": 26.066,
+      "centroid_hz": 2803.1,
+      "flatness": 0.08644
+     },
+     {
+      "value": 0.6,
+      "broken": [
+       "falls silent (-53 dBFS)"
+      ],
+      "rms_db": -52.61,
+      "level_db": -13.7,
+      "timbre_db": 22.555,
+      "centroid_hz": 1443.4,
+      "flatness": 0.08493
+     },
+     {
+      "value": 0.8,
+      "broken": [
+       "falls silent (-56 dBFS)"
+      ],
+      "rms_db": -56.2,
+      "level_db": -17.3,
+      "timbre_db": 26.656,
+      "centroid_hz": 3186.9,
+      "flatness": 0.09748
+     },
+     {
+      "value": 1.0,
+      "broken": [
+       "falls silent (-55 dBFS)"
+      ],
+      "rms_db": -54.52,
+      "level_db": -15.6,
+      "timbre_db": 21.423,
+      "centroid_hz": 2873.4,
+      "flatness": 0.10674
+     }
+    ]
+   },
+   "swept": [
+    0.0,
+    1.0
+   ],
+   "default": 0.2,
+   "safe": [
+    0.0,
+    0.2
+   ],
+   "curve": [
+    [
+     0.0,
+     0.0
+    ],
+    [
+     1.0,
+     0.2
+    ]
+   ],
+   "moved_default": false
+  },
+  "unit:delay:time": {
+   "unit": true,
+   "vau_default": 4.0,
+   "steps": [
+    1.0,
+    4.0,
+    7.0,
+    13.0,
+    20.0,
+    26.0,
+    32.0
+   ],
+   "presets": {
+    "warm-drone": [
+     {
+      "value": 1.0,
+      "broken": [
+       "falls silent (-43 dBFS)"
+      ],
+      "rms_db": -42.84,
+      "level_db": -15.0,
+      "timbre_db": 10.183,
+      "centroid_hz": 136.0,
+      "flatness": 0.0046
+     },
+     {
+      "value": 4.0,
+      "broken": [],
+      "rms_db": -34.88,
+      "level_db": -7.1,
+      "timbre_db": 5.65,
+      "centroid_hz": 136.5,
+      "flatness": 5e-05
+     },
+     {
+      "value": 7.0,
+      "broken": [],
+      "rms_db": -37.99,
+      "level_db": -10.2,
+      "timbre_db": 6.587,
+      "centroid_hz": 136.2,
+      "flatness": 0.00271
+     },
+     {
+      "value": 13.0,
+      "broken": [],
+      "rms_db": -31.51,
+      "level_db": -3.7,
+      "timbre_db": 8.206,
+      "centroid_hz": 131.7,
+      "flatness": 0.0
+     },
+     {
+      "value": 20.0,
+      "broken": [],
+      "rms_db": -31.78,
+      "level_db": -4.0,
+      "timbre_db": 4.405,
+      "centroid_hz": 136.9,
+      "flatness": 0.0
+     },
+     {
+      "value": 26.0,
+      "broken": [],
+      "rms_db": -33.58,
+      "level_db": -5.8,
+      "timbre_db": 4.221,
+      "centroid_hz": 135.2,
+      "flatness": 0.0
+     },
+     {
+      "value": 32.0,
+      "broken": [],
+      "rms_db": -29.24,
+      "level_db": -1.4,
+      "timbre_db": 3.27,
+      "centroid_hz": 138.8,
+      "flatness": 0.0
+     }
+    ],
+    "shimmer": [
+     {
+      "value": 1.0,
+      "broken": [],
+      "rms_db": -47.97,
+      "level_db": -9.1,
+      "timbre_db": 7.315,
+      "centroid_hz": 619.7,
+      "flatness": 0.00906
+     },
+     {
+      "value": 4.0,
+      "broken": [],
+      "rms_db": -48.78,
+      "level_db": -9.9,
+      "timbre_db": 7.337,
+      "centroid_hz": 696.5,
+      "flatness": 0.00043
+     },
+     {
+      "value": 7.0,
+      "broken": [
+       "falls silent (-52 dBFS)"
+      ],
+      "rms_db": -51.96,
+      "level_db": -13.1,
+      "timbre_db": 7.029,
+      "centroid_hz": 687.3,
+      "flatness": 0.03034
+     },
+     {
+      "value": 13.0,
+      "broken": [
+       "falls silent (-48 dBFS)"
+      ],
+      "rms_db": -48.19,
+      "level_db": -9.3,
+      "timbre_db": 7.205,
+      "centroid_hz": 684.1,
+      "flatness": 0.0134
+     },
+     {
+      "value": 20.0,
+      "broken": [],
+      "rms_db": -45.43,
+      "level_db": -6.5,
+      "timbre_db": 4.054,
+      "centroid_hz": 947.0,
+      "flatness": 1e-05
+     },
+     {
+      "value": 26.0,
+      "broken": [],
+      "rms_db": -48.27,
+      "level_db": -9.4,
+      "timbre_db": 5.704,
+      "centroid_hz": 676.9,
+      "flatness": 0.00051
+     },
+     {
+      "value": 32.0,
+      "broken": [],
+      "rms_db": -44.59,
+      "level_db": -5.7,
+      "timbre_db": 3.255,
+      "centroid_hz": 754.8,
+      "flatness": 0.0
+     }
+    ]
+   },
+   "swept": [
+    1.0,
+    32.0
+   ],
+   "default": 4.0,
+   "safe": [
+    4.0,
+    4.0
+   ],
+   "curve": [],
+   "moved_default": false
+  },
+  "unit:eq:at": {
+   "unit": true,
+   "vau_default": 8.0,
+   "steps": [
+    2.0,
+    4.0,
+    6.0,
+    8.0,
+    10.0,
+    12.0
+   ],
+   "presets": {
+    "warm-drone": [
+     {
+      "value": 2.0,
+      "broken": [
+       "overdriven (-11 dBFS RMS; the model's own level is \u221228 to \u221241)"
+      ],
+      "rms_db": -10.81,
+      "level_db": 17.0,
+      "timbre_db": 8.809,
+      "centroid_hz": 82.7,
+      "flatness": 0.0
+     },
+     {
+      "value": 4.0,
+      "broken": [
+       "overdriven (-9 dBFS RMS; the model's own level is \u221228 to \u221241)"
+      ],
+      "rms_db": -9.02,
+      "level_db": 18.8,
+      "timbre_db": 14.74,
+      "centroid_hz": 93.0,
+      "flatness": 3e-05
+     },
+     {
+      "value": 6.0,
+      "broken": [
+       "overdriven (-10 dBFS RMS; the model's own level is \u221228 to \u221241)"
+      ],
+      "rms_db": -10.4,
+      "level_db": 17.4,
+      "timbre_db": 9.588,
+      "centroid_hz": 119.5,
+      "flatness": 0.0
+     },
+     {
+      "value": 8.0,
+      "broken": [],
+      "rms_db": -14.72,
+      "level_db": 13.1,
+      "timbre_db": 6.315,
+      "centroid_hz": 96.8,
+      "flatness": 0.0
+     },
+     {
+      "value": 10.0,
+      "broken": [],
+      "rms_db": -19.91,
+      "level_db": 7.9,
+      "timbre_db": 8.349,
+      "centroid_hz": 104.5,
+      "flatness": 0.0
+     },
+     {
+      "value": 12.0,
+      "broken": [],
+      "rms_db": -16.64,
+      "level_db": 11.2,
+      "timbre_db": 6.571,
+      "centroid_hz": 89.9,
+      "flatness": 0.0
+     }
+    ],
+    "shimmer": [
+     {
+      "value": 2.0,
+      "broken": [],
+      "rms_db": -35.46,
+      "level_db": 3.4,
+      "timbre_db": 20.992,
+      "centroid_hz": 1246.8,
+      "flatness": 0.0
+     },
+     {
+      "value": 4.0,
+      "broken": [],
+      "rms_db": -23.4,
+      "level_db": 15.5,
+      "timbre_db": 13.271,
+      "centroid_hz": 880.1,
+      "flatness": 0.0
+     },
+     {
+      "value": 6.0,
+      "broken": [],
+      "rms_db": -28.95,
+      "level_db": 9.9,
+      "timbre_db": 15.758,
+      "centroid_hz": 1144.8,
+      "flatness": 0.00015
+     },
+     {
+      "value": 8.0,
+      "broken": [],
+      "rms_db": -33.98,
+      "level_db": 4.9,
+      "timbre_db": 13.189,
+      "centroid_hz": 842.4,
+      "flatness": 0.00053
+     },
+     {
+      "value": 10.0,
+      "broken": [],
+      "rms_db": -25.53,
+      "level_db": 13.4,
+      "timbre_db": 10.473,
+      "centroid_hz": 1069.1,
+      "flatness": 0.00839
+     },
+     {
+      "value": 12.0,
+      "broken": [],
+      "rms_db": -21.79,
+      "level_db": 17.1,
+      "timbre_db": 18.584,
+      "centroid_hz": 1047.8,
+      "flatness": 4e-05
+     }
+    ]
+   },
+   "swept": [
+    2.0,
+    12.0
+   ],
+   "kind": "placement",
+   "safe_places": [
+    8.0,
+    10.0,
+    12.0
+   ],
+   "default": 8.0,
+   "safe": [
+    2.0,
+    12.0
+   ],
+   "curve": []
+  },
+  "unit:eq:high": {
+   "unit": true,
+   "vau_default": 0.7,
+   "steps": [
+    0.0,
+    0.4,
+    0.7,
+    0.8,
+    1.2,
+    1.6,
+    2.0
+   ],
+   "presets": {
+    "warm-drone": [
+     {
+      "value": 0.0,
+      "broken": [],
+      "rms_db": -14.58,
+      "level_db": 13.2,
+      "timbre_db": 4.911,
+      "centroid_hz": 117.0,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.4,
+      "broken": [],
+      "rms_db": -20.1,
+      "level_db": 7.7,
+      "timbre_db": 8.906,
+      "centroid_hz": 104.6,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.7,
+      "broken": [],
+      "rms_db": -14.72,
+      "level_db": 13.1,
+      "timbre_db": 6.315,
+      "centroid_hz": 96.8,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.8,
+      "broken": [
+       "overdriven (-12 dBFS RMS; the model's own level is \u221228 to \u221241)"
+      ],
+      "rms_db": -11.56,
+      "level_db": 16.3,
+      "timbre_db": 7.53,
+      "centroid_hz": 85.6,
+      "flatness": 0.0
+     },
+     {
+      "value": 1.2,
+      "broken": [
+       "overdriven (-11 dBFS RMS; the model's own level is \u221228 to \u221241)"
+      ],
+      "rms_db": -11.27,
+      "level_db": 16.6,
+      "timbre_db": 8.789,
+      "centroid_hz": 103.3,
+      "flatness": 0.0
+     },
+     {
+      "value": 1.6,
+      "broken": [],
+      "rms_db": -13.73,
+      "level_db": 14.1,
+      "timbre_db": 19.928,
+      "centroid_hz": 159.5,
+      "flatness": 0.0011
+     },
+     {
+      "value": 2.0,
+      "broken": [
+       "clips (0.29% of samples)",
+       "overdriven (-11 dBFS RMS; the model's own level is \u221228 to \u221241)"
+      ],
+      "rms_db": -10.63,
+      "level_db": 17.2,
+      "timbre_db": 28.305,
+      "centroid_hz": 4754.1,
+      "flatness": 0.19873
+     }
+    ],
+    "shimmer": [
+     {
+      "value": 0.0,
+      "broken": [],
+      "rms_db": -25.76,
+      "level_db": 13.1,
+      "timbre_db": 13.982,
+      "centroid_hz": 933.2,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.4,
+      "broken": [],
+      "rms_db": -39.25,
+      "level_db": -0.4,
+      "timbre_db": 12.325,
+      "centroid_hz": 971.3,
+      "flatness": 1e-05
+     },
+     {
+      "value": 0.7,
+      "broken": [],
+      "rms_db": -33.98,
+      "level_db": 4.9,
+      "timbre_db": 13.189,
+      "centroid_hz": 842.4,
+      "flatness": 0.00053
+     },
+     {
+      "value": 0.8,
+      "broken": [],
+      "rms_db": -34.74,
+      "level_db": 4.1,
+      "timbre_db": 11.086,
+      "centroid_hz": 726.0,
+      "flatness": 0.0
+     },
+     {
+      "value": 1.2,
+      "broken": [],
+      "rms_db": -35.0,
+      "level_db": 3.9,
+      "timbre_db": 22.355,
+      "centroid_hz": 1471.5,
+      "flatness": 0.0
+     },
+     {
+      "value": 1.6,
+      "broken": [],
+      "rms_db": -26.86,
+      "level_db": 12.0,
+      "timbre_db": 18.587,
+      "centroid_hz": 8.3,
+      "flatness": 0.0
+     },
+     {
+      "value": 2.0,
+      "broken": [
+       "clips (0.11% of samples)"
+      ],
+      "rms_db": -15.51,
+      "level_db": 23.4,
+      "timbre_db": 28.294,
+      "centroid_hz": 3675.5,
+      "flatness": 0.05807
+     }
+    ]
+   },
+   "swept": [
+    0.0,
+    2.0
+   ],
+   "default": 0.7,
+   "safe": [
+    0.0,
+    0.7
+   ],
+   "curve": [
+    [
+     0.0,
+     0.0
+    ],
+    [
+     0.5,
+     0.4
+    ],
+    [
+     1.0,
+     0.7
+    ]
+   ],
+   "moved_default": false
+  },
+  "unit:eq:low": {
+   "unit": true,
+   "vau_default": 1.3,
+   "steps": [
+    0.0,
+    0.4,
+    0.8,
+    1.2,
+    1.3,
+    1.6,
+    2.0
+   ],
+   "presets": {
+    "warm-drone": [
+     {
+      "value": 0.0,
+      "broken": [],
+      "rms_db": -37.32,
+      "level_db": -9.5,
+      "timbre_db": 7.828,
+      "centroid_hz": 272.5,
+      "flatness": 1e-05
+     },
+     {
+      "value": 0.4,
+      "broken": [],
+      "rms_db": -36.17,
+      "level_db": -8.4,
+      "timbre_db": 8.471,
+      "centroid_hz": 240.8,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.8,
+      "broken": [],
+      "rms_db": -31.87,
+      "level_db": -4.1,
+      "timbre_db": 5.675,
+      "centroid_hz": 191.8,
+      "flatness": 0.0
+     },
+     {
+      "value": 1.2,
+      "broken": [],
+      "rms_db": -16.53,
+      "level_db": 11.3,
+      "timbre_db": 6.34,
+      "centroid_hz": 105.3,
+      "flatness": 0.0
+     },
+     {
+      "value": 1.3,
+      "broken": [],
+      "rms_db": -14.72,
+      "level_db": 13.1,
+      "timbre_db": 6.315,
+      "centroid_hz": 96.8,
+      "flatness": 0.0
+     },
+     {
+      "value": 1.6,
+      "broken": [
+       "overdriven (-10 dBFS RMS; the model's own level is \u221228 to \u221241)"
+      ],
+      "rms_db": -9.77,
+      "level_db": 18.1,
+      "timbre_db": 15.018,
+      "centroid_hz": 91.3,
+      "flatness": 2e-05
+     },
+     {
+      "value": 2.0,
+      "broken": [
+       "overdriven (-9 dBFS RMS; the model's own level is \u221228 to \u221241)"
+      ],
+      "rms_db": -8.8,
+      "level_db": 19.0,
+      "timbre_db": 21.786,
+      "centroid_hz": 240.2,
+      "flatness": 0.00148
+     }
+    ],
+    "shimmer": [
+     {
+      "value": 0.0,
+      "broken": [],
+      "rms_db": -35.03,
+      "level_db": 3.9,
+      "timbre_db": 16.937,
+      "centroid_hz": 551.9,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.4,
+      "broken": [],
+      "rms_db": -36.52,
+      "level_db": 2.4,
+      "timbre_db": 16.003,
+      "centroid_hz": 524.8,
+      "flatness": 1e-05
+     },
+     {
+      "value": 0.8,
+      "broken": [],
+      "rms_db": -31.54,
+      "level_db": 7.3,
+      "timbre_db": 9.064,
+      "centroid_hz": 610.9,
+      "flatness": 0.0
+     },
+     {
+      "value": 1.2,
+      "broken": [],
+      "rms_db": -44.61,
+      "level_db": -5.7,
+      "timbre_db": 10.547,
+      "centroid_hz": 697.0,
+      "flatness": 5e-05
+     },
+     {
+      "value": 1.3,
+      "broken": [],
+      "rms_db": -33.98,
+      "level_db": 4.9,
+      "timbre_db": 13.189,
+      "centroid_hz": 842.4,
+      "flatness": 0.00053
+     },
+     {
+      "value": 1.6,
+      "broken": [],
+      "rms_db": -30.83,
+      "level_db": 8.1,
+      "timbre_db": 14.945,
+      "centroid_hz": 969.0,
+      "flatness": 0.00084
+     },
+     {
+      "value": 2.0,
+      "broken": [
+       "falls silent (-85 dBFS)"
+      ],
+      "rms_db": -85.07,
+      "level_db": -46.2,
+      "timbre_db": 20.234,
+      "centroid_hz": 1398.6,
+      "flatness": 0.16673
+     }
+    ]
+   },
+   "swept": [
+    0.0,
+    2.0
+   ],
+   "default": 1.3,
+   "safe": [
+    0.0,
+    1.3
+   ],
+   "curve": [
+    [
+     0.0,
+     0.0
+    ],
+    [
+     0.1,
+     0.4
+    ],
+    [
+     0.2,
+     0.8
+    ],
+    [
+     0.9,
+     1.2
+    ],
+    [
+     1.0,
+     1.3
+    ]
+   ],
+   "moved_default": false
+  },
+  "unit:eq:mid": {
+   "unit": true,
+   "vau_default": 1.0,
+   "steps": [
+    0.0,
+    0.4,
+    0.8,
+    1.0,
+    1.2,
+    1.6,
+    2.0
+   ],
+   "presets": {
+    "warm-drone": [
+     {
+      "value": 0.0,
+      "broken": [],
+      "rms_db": -22.13,
+      "level_db": 5.7,
+      "timbre_db": 9.164,
+      "centroid_hz": 106.0,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.4,
+      "broken": [],
+      "rms_db": -15.19,
+      "level_db": 12.6,
+      "timbre_db": 5.368,
+      "centroid_hz": 101.0,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.8,
+      "broken": [
+       "overdriven (-12 dBFS RMS; the model's own level is \u221228 to \u221241)"
+      ],
+      "rms_db": -11.7,
+      "level_db": 16.1,
+      "timbre_db": 7.896,
+      "centroid_hz": 85.4,
+      "flatness": 0.0
+     },
+     {
+      "value": 1.0,
+      "broken": [],
+      "rms_db": -14.72,
+      "level_db": 13.1,
+      "timbre_db": 6.315,
+      "centroid_hz": 96.8,
+      "flatness": 0.0
+     },
+     {
+      "value": 1.2,
+      "broken": [],
+      "rms_db": -14.17,
+      "level_db": 13.7,
+      "timbre_db": 7.574,
+      "centroid_hz": 97.6,
+      "flatness": 0.0
+     },
+     {
+      "value": 1.6,
+      "broken": [],
+      "rms_db": -17.65,
+      "level_db": 10.2,
+      "timbre_db": 8.554,
+      "centroid_hz": 103.7,
+      "flatness": 0.0
+     },
+     {
+      "value": 2.0,
+      "broken": [],
+      "rms_db": -14.65,
+      "level_db": 13.2,
+      "timbre_db": 12.767,
+      "centroid_hz": 103.2,
+      "flatness": 0.0
+     }
+    ],
+    "shimmer": [
+     {
+      "value": 0.0,
+      "broken": [],
+      "rms_db": -22.36,
+      "level_db": 16.5,
+      "timbre_db": 13.406,
+      "centroid_hz": 920.3,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.4,
+      "broken": [],
+      "rms_db": -22.19,
+      "level_db": 16.7,
+      "timbre_db": 14.405,
+      "centroid_hz": 923.1,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.8,
+      "broken": [],
+      "rms_db": -39.97,
+      "level_db": -1.1,
+      "timbre_db": 12.476,
+      "centroid_hz": 836.4,
+      "flatness": 1e-05
+     },
+     {
+      "value": 1.0,
+      "broken": [],
+      "rms_db": -33.98,
+      "level_db": 4.9,
+      "timbre_db": 13.189,
+      "centroid_hz": 842.4,
+      "flatness": 0.00053
+     },
+     {
+      "value": 1.2,
+      "broken": [],
+      "rms_db": -27.63,
+      "level_db": 11.3,
+      "timbre_db": 15.856,
+      "centroid_hz": 1104.5,
+      "flatness": 0.0
+     },
+     {
+      "value": 1.6,
+      "broken": [],
+      "rms_db": -32.68,
+      "level_db": 6.2,
+      "timbre_db": 14.521,
+      "centroid_hz": 1174.9,
+      "flatness": 0.0
+     },
+     {
+      "value": 2.0,
+      "broken": [],
+      "rms_db": -18.5,
+      "level_db": 20.4,
+      "timbre_db": 26.67,
+      "centroid_hz": 424.8,
+      "flatness": 1e-05
+     }
+    ]
+   },
+   "swept": [
+    0.0,
+    2.0
+   ],
+   "default": 1.0,
+   "safe": [
+    1.0,
+    2.0
+   ],
+   "curve": [
+    [
+     0.0,
+     1.0
+    ],
+    [
+     0.1333,
+     1.2
+    ],
+    [
+     0.2667,
+     1.6
+    ],
+    [
+     1.0,
+     2.0
+    ]
+   ],
+   "moved_default": false
+  },
+  "unit:erosion:at": {
+   "unit": true,
+   "vau_default": 6.0,
+   "steps": [
+    2.0,
+    4.0,
+    6.0,
+    8.0,
+    10.0,
+    12.0
+   ],
+   "presets": {
+    "warm-drone": [
+     {
+      "value": 2.0,
+      "broken": [],
+      "rms_db": -25.67,
+      "level_db": 2.1,
+      "timbre_db": 4.799,
+      "centroid_hz": 148.1,
+      "flatness": 0.0
+     },
+     {
+      "value": 4.0,
+      "broken": [],
+      "rms_db": -26.37,
+      "level_db": 1.4,
+      "timbre_db": 5.923,
+      "centroid_hz": 156.7,
+      "flatness": 0.0
+     },
+     {
+      "value": 6.0,
+      "broken": [],
+      "rms_db": -29.04,
+      "level_db": -1.2,
+      "timbre_db": 3.369,
+      "centroid_hz": 134.0,
+      "flatness": 0.0
+     },
+     {
+      "value": 8.0,
+      "broken": [],
+      "rms_db": -28.57,
+      "level_db": -0.8,
+      "timbre_db": 4.514,
+      "centroid_hz": 165.5,
+      "flatness": 0.0
+     },
+     {
+      "value": 10.0,
+      "broken": [],
+      "rms_db": -27.57,
+      "level_db": 0.2,
+      "timbre_db": 5.075,
+      "centroid_hz": 172.3,
+      "flatness": 0.0
+     },
+     {
+      "value": 12.0,
+      "broken": [],
+      "rms_db": -29.31,
+      "level_db": -1.5,
+      "timbre_db": 5.5,
+      "centroid_hz": 163.9,
+      "flatness": 0.0
+     }
+    ],
+    "shimmer": [
+     {
+      "value": 2.0,
+      "broken": [],
+      "rms_db": -36.71,
+      "level_db": 2.2,
+      "timbre_db": 5.854,
+      "centroid_hz": 715.5,
+      "flatness": 0.0
+     },
+     {
+      "value": 4.0,
+      "broken": [],
+      "rms_db": -37.76,
+      "level_db": 1.1,
+      "timbre_db": 5.207,
+      "centroid_hz": 748.6,
+      "flatness": 0.0
+     },
+     {
+      "value": 6.0,
+      "broken": [],
+      "rms_db": -35.42,
+      "level_db": 3.5,
+      "timbre_db": 5.387,
+      "centroid_hz": 693.8,
+      "flatness": 0.0
+     },
+     {
+      "value": 8.0,
+      "broken": [],
+      "rms_db": -39.91,
+      "level_db": -1.0,
+      "timbre_db": 5.23,
+      "centroid_hz": 794.8,
+      "flatness": 0.0
+     },
+     {
+      "value": 10.0,
+      "broken": [],
+      "rms_db": -38.8,
+      "level_db": 0.1,
+      "timbre_db": 6.21,
+      "centroid_hz": 695.8,
+      "flatness": 0.0
+     },
+     {
+      "value": 12.0,
+      "broken": [],
+      "rms_db": -35.57,
+      "level_db": 3.3,
+      "timbre_db": 4.529,
+      "centroid_hz": 729.8,
+      "flatness": 0.0
+     }
+    ]
+   },
+   "swept": [
+    2.0,
+    12.0
+   ],
+   "kind": "placement",
+   "safe_places": [
+    2.0,
+    4.0,
+    6.0,
+    8.0,
+    10.0,
+    12.0
+   ],
+   "default": 6.0,
+   "safe": [
+    2.0,
+    12.0
+   ],
+   "curve": []
+  },
+  "unit:erosion:bits": {
+   "unit": true,
+   "vau_default": 6.0,
+   "steps": [
+    1.0,
+    4.0,
+    6.0,
+    7.0,
+    10.0,
+    13.0,
+    16.0
+   ],
+   "presets": {
+    "warm-drone": [
+     {
+      "value": 1.0,
+      "broken": [],
+      "rms_db": -29.95,
+      "level_db": -2.1,
+      "timbre_db": 7.448,
+      "centroid_hz": 130.1,
+      "flatness": 0.0
+     },
+     {
+      "value": 4.0,
+      "broken": [],
+      "rms_db": -23.41,
+      "level_db": 4.4,
+      "timbre_db": 3.649,
+      "centroid_hz": 150.2,
+      "flatness": 0.0
+     },
+     {
+      "value": 6.0,
+      "broken": [],
+      "rms_db": -29.04,
+      "level_db": -1.2,
+      "timbre_db": 3.369,
+      "centroid_hz": 134.0,
+      "flatness": 0.0
+     },
+     {
+      "value": 7.0,
+      "broken": [],
+      "rms_db": -27.4,
+      "level_db": 0.4,
+      "timbre_db": 5.217,
+      "centroid_hz": 168.7,
+      "flatness": 0.0
+     },
+     {
+      "value": 10.0,
+      "broken": [],
+      "rms_db": -28.62,
+      "level_db": -0.8,
+      "timbre_db": 3.968,
+      "centroid_hz": 162.1,
+      "flatness": 0.0
+     },
+     {
+      "value": 13.0,
+      "broken": [],
+      "rms_db": -28.47,
+      "level_db": -0.6,
+      "timbre_db": 5.921,
+      "centroid_hz": 170.5,
+      "flatness": 0.0
+     },
+     {
+      "value": 16.0,
+      "broken": [],
+      "rms_db": -27.82,
+      "level_db": 0.0,
+      "timbre_db": 0.0,
+      "centroid_hz": 136.9,
+      "flatness": 0.0
+     }
+    ],
+    "shimmer": [
+     {
+      "value": 1.0,
+      "broken": [],
+      "rms_db": -35.12,
+      "level_db": 3.8,
+      "timbre_db": 10.215,
+      "centroid_hz": 685.7,
+      "flatness": 0.0
+     },
+     {
+      "value": 4.0,
+      "broken": [],
+      "rms_db": -33.93,
+      "level_db": 5.0,
+      "timbre_db": 5.516,
+      "centroid_hz": 683.7,
+      "flatness": 0.0
+     },
+     {
+      "value": 6.0,
+      "broken": [],
+      "rms_db": -35.42,
+      "level_db": 3.5,
+      "timbre_db": 5.387,
+      "centroid_hz": 693.8,
+      "flatness": 0.0
+     },
+     {
+      "value": 7.0,
+      "broken": [],
+      "rms_db": -36.72,
+      "level_db": 2.2,
+      "timbre_db": 5.103,
+      "centroid_hz": 780.9,
+      "flatness": 0.0
+     },
+     {
+      "value": 10.0,
+      "broken": [],
+      "rms_db": -38.44,
+      "level_db": 0.4,
+      "timbre_db": 3.977,
+      "centroid_hz": 713.1,
+      "flatness": 0.0
+     },
+     {
+      "value": 13.0,
+      "broken": [],
+      "rms_db": -42.26,
+      "level_db": -3.4,
+      "timbre_db": 4.171,
+      "centroid_hz": 838.2,
+      "flatness": 1e-05
+     },
+     {
+      "value": 16.0,
+      "broken": [],
+      "rms_db": -38.88,
+      "level_db": 0.0,
+      "timbre_db": 0.0,
+      "centroid_hz": 1028.2,
+      "flatness": 0.0
+     }
+    ]
+   },
+   "swept": [
+    1.0,
+    16.0
+   ],
+   "default": 6.0,
+   "safe": [
+    1.0,
+    16.0
+   ],
+   "curve": [
+    [
+     0.0,
+     1.0
+    ],
+    [
+     0.1667,
+     4.0
+    ],
+    [
+     0.3333,
+     6.0
+    ],
+    [
+     0.5,
+     7.0
+    ],
+    [
+     0.6667,
+     10.0
+    ],
+    [
+     0.8333,
+     13.0
+    ],
+    [
+     1.0,
+     16.0
+    ]
+   ],
+   "moved_default": false
+  },
+  "unit:erosion:hold": {
+   "unit": true,
+   "vau_default": 1.0,
+   "steps": [
+    1.0,
+    4.0,
+    7.0,
+    10.0,
+    13.0,
+    16.0
+   ],
+   "presets": {
+    "warm-drone": [
+     {
+      "value": 1.0,
+      "broken": [],
+      "rms_db": -29.04,
+      "level_db": -1.2,
+      "timbre_db": 3.369,
+      "centroid_hz": 134.0,
+      "flatness": 0.0
+     },
+     {
+      "value": 4.0,
+      "broken": [],
+      "rms_db": -25.35,
+      "level_db": 2.5,
+      "timbre_db": 9.663,
+      "centroid_hz": 270.4,
+      "flatness": 0.0
+     },
+     {
+      "value": 7.0,
+      "broken": [],
+      "rms_db": -33.06,
+      "level_db": -5.2,
+      "timbre_db": 5.657,
+      "centroid_hz": 117.8,
+      "flatness": 0.0
+     },
+     {
+      "value": 10.0,
+      "broken": [],
+      "rms_db": -32.76,
+      "level_db": -4.9,
+      "timbre_db": 5.836,
+      "centroid_hz": 153.4,
+      "flatness": 0.0
+     },
+     {
+      "value": 13.0,
+      "broken": [],
+      "rms_db": -41.63,
+      "level_db": -13.8,
+      "timbre_db": 6.355,
+      "centroid_hz": 165.8,
+      "flatness": 1e-05
+     },
+     {
+      "value": 16.0,
+      "broken": [],
+      "rms_db": -36.96,
+      "level_db": -9.1,
+      "timbre_db": 6.715,
+      "centroid_hz": 113.1,
+      "flatness": 0.0
+     }
+    ],
+    "shimmer": [
+     {
+      "value": 1.0,
+      "broken": [],
+      "rms_db": -35.42,
+      "level_db": 3.5,
+      "timbre_db": 5.387,
+      "centroid_hz": 693.8,
+      "flatness": 0.0
+     },
+     {
+      "value": 4.0,
+      "broken": [],
+      "rms_db": -35.26,
+      "level_db": 3.6,
+      "timbre_db": 5.787,
+      "centroid_hz": 1027.2,
+      "flatness": 0.0
+     },
+     {
+      "value": 7.0,
+      "broken": [],
+      "rms_db": -41.87,
+      "level_db": -3.0,
+      "timbre_db": 6.194,
+      "centroid_hz": 736.8,
+      "flatness": 1e-05
+     },
+     {
+      "value": 10.0,
+      "broken": [],
+      "rms_db": -37.05,
+      "level_db": 1.8,
+      "timbre_db": 6.35,
+      "centroid_hz": 834.4,
+      "flatness": 0.0
+     },
+     {
+      "value": 13.0,
+      "broken": [],
+      "rms_db": -38.91,
+      "level_db": -0.0,
+      "timbre_db": 10.185,
+      "centroid_hz": 673.8,
+      "flatness": 0.0
+     },
+     {
+      "value": 16.0,
+      "broken": [],
+      "rms_db": -33.93,
+      "level_db": 5.0,
+      "timbre_db": 7.453,
+      "centroid_hz": 1121.4,
+      "flatness": 0.0
+     }
+    ]
+   },
+   "swept": [
+    1.0,
+    16.0
+   ],
+   "default": 1.0,
+   "safe": [
+    1.0,
+    16.0
+   ],
+   "curve": [
+    [
+     0.0,
+     1.0
+    ],
+    [
+     0.08,
+     4.0
+    ],
+    [
+     0.4444,
+     7.0
+    ],
+    [
+     0.5244,
+     10.0
+    ],
+    [
+     0.6044,
+     13.0
+    ],
+    [
+     1.0,
+     16.0
+    ]
+   ],
+   "moved_default": false
+  },
+  "unit:gate:at": {
+   "unit": true,
+   "vau_default": 6.0,
+   "steps": [
+    2.0,
+    4.0,
+    6.0,
+    8.0,
+    10.0,
+    12.0
+   ],
+   "presets": {
+    "warm-drone": [
+     {
+      "value": 2.0,
+      "broken": [],
+      "rms_db": -32.17,
+      "level_db": -4.4,
+      "timbre_db": 9.295,
+      "centroid_hz": 165.1,
+      "flatness": 2e-05
+     },
+     {
+      "value": 4.0,
+      "broken": [],
+      "rms_db": -28.07,
+      "level_db": -0.2,
+      "timbre_db": 4.922,
+      "centroid_hz": 160.2,
+      "flatness": 0.0
+     },
+     {
+      "value": 6.0,
+      "broken": [],
+      "rms_db": -23.04,
+      "level_db": 4.8,
+      "timbre_db": 7.038,
+      "centroid_hz": 162.7,
+      "flatness": 0.0
+     },
+     {
+      "value": 8.0,
+      "broken": [],
+      "rms_db": -24.44,
+      "level_db": 3.4,
+      "timbre_db": 5.25,
+      "centroid_hz": 136.6,
+      "flatness": 0.0
+     },
+     {
+      "value": 10.0,
+      "broken": [],
+      "rms_db": -24.57,
+      "level_db": 3.2,
+      "timbre_db": 6.915,
+      "centroid_hz": 165.3,
+      "flatness": 0.0
+     },
+     {
+      "value": 12.0,
+      "broken": [],
+      "rms_db": -31.74,
+      "level_db": -3.9,
+      "timbre_db": 8.94,
+      "centroid_hz": 220.3,
+      "flatness": 1e-05
+     }
+    ],
+    "shimmer": [
+     {
+      "value": 2.0,
+      "broken": [],
+      "rms_db": -42.91,
+      "level_db": -4.0,
+      "timbre_db": 11.947,
+      "centroid_hz": 626.2,
+      "flatness": 2e-05
+     },
+     {
+      "value": 4.0,
+      "broken": [],
+      "rms_db": -37.6,
+      "level_db": 1.3,
+      "timbre_db": 6.091,
+      "centroid_hz": 765.3,
+      "flatness": 0.0
+     },
+     {
+      "value": 6.0,
+      "broken": [],
+      "rms_db": -36.29,
+      "level_db": 2.6,
+      "timbre_db": 6.162,
+      "centroid_hz": 668.7,
+      "flatness": 0.0
+     },
+     {
+      "value": 8.0,
+      "broken": [],
+      "rms_db": -35.47,
+      "level_db": 3.4,
+      "timbre_db": 7.269,
+      "centroid_hz": 771.4,
+      "flatness": 0.0
+     },
+     {
+      "value": 10.0,
+      "broken": [],
+      "rms_db": -34.41,
+      "level_db": 4.5,
+      "timbre_db": 8.646,
+      "centroid_hz": 724.4,
+      "flatness": 0.0
+     },
+     {
+      "value": 12.0,
+      "broken": [],
+      "rms_db": -39.65,
+      "level_db": -0.8,
+      "timbre_db": 20.647,
+      "centroid_hz": 442.2,
+      "flatness": 7e-05
+     }
+    ]
+   },
+   "swept": [
+    2.0,
+    12.0
+   ],
+   "kind": "placement",
+   "safe_places": [
+    2.0,
+    4.0,
+    6.0,
+    8.0,
+    10.0,
+    12.0
+   ],
+   "default": 6.0,
+   "safe": [
+    2.0,
+    12.0
+   ],
+   "curve": []
+  },
+  "unit:gate:keep": {
+   "unit": true,
+   "vau_default": 0.25,
+   "steps": [
+    0.01,
+    0.208,
+    0.25,
+    0.406,
+    0.604,
+    0.802,
+    1.0
+   ],
+   "presets": {
+    "warm-drone": [
+     {
+      "value": 0.01,
+      "broken": [],
+      "rms_db": -28.17,
+      "level_db": -0.4,
+      "timbre_db": 13.675,
+      "centroid_hz": 197.5,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.208,
+      "broken": [],
+      "rms_db": -19.02,
+      "level_db": 8.8,
+      "timbre_db": 6.59,
+      "centroid_hz": 176.2,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.25,
+      "broken": [],
+      "rms_db": -23.04,
+      "level_db": 4.8,
+      "timbre_db": 7.038,
+      "centroid_hz": 162.7,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.406,
+      "broken": [],
+      "rms_db": -25.34,
+      "level_db": 2.5,
+      "timbre_db": 5.664,
+      "centroid_hz": 176.1,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.604,
+      "broken": [],
+      "rms_db": -25.29,
+      "level_db": 2.5,
+      "timbre_db": 5.263,
+      "centroid_hz": 148.6,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.802,
+      "broken": [],
+      "rms_db": -28.38,
+      "level_db": -0.6,
+      "timbre_db": 2.583,
+      "centroid_hz": 136.4,
+      "flatness": 0.0
+     },
+     {
+      "value": 1.0,
+      "broken": [],
+      "rms_db": -27.82,
+      "level_db": 0.0,
+      "timbre_db": 0.0,
+      "centroid_hz": 136.9,
+      "flatness": 0.0
+     }
+    ],
+    "shimmer": [
+     {
+      "value": 0.01,
+      "broken": [],
+      "rms_db": -34.59,
+      "level_db": 4.3,
+      "timbre_db": 13.832,
+      "centroid_hz": 796.8,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.208,
+      "broken": [],
+      "rms_db": -32.69,
+      "level_db": 6.2,
+      "timbre_db": 7.463,
+      "centroid_hz": 665.1,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.25,
+      "broken": [],
+      "rms_db": -36.29,
+      "level_db": 2.6,
+      "timbre_db": 6.162,
+      "centroid_hz": 668.7,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.406,
+      "broken": [],
+      "rms_db": -36.11,
+      "level_db": 2.8,
+      "timbre_db": 5.627,
+      "centroid_hz": 737.2,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.604,
+      "broken": [],
+      "rms_db": -31.85,
+      "level_db": 7.0,
+      "timbre_db": 5.781,
+      "centroid_hz": 721.7,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.802,
+      "broken": [],
+      "rms_db": -36.3,
+      "level_db": 2.6,
+      "timbre_db": 6.618,
+      "centroid_hz": 699.1,
+      "flatness": 0.0
+     },
+     {
+      "value": 1.0,
+      "broken": [],
+      "rms_db": -38.88,
+      "level_db": 0.0,
+      "timbre_db": 0.0,
+      "centroid_hz": 1028.2,
+      "flatness": 0.0
+     }
+    ]
+   },
+   "swept": [
+    0.01,
+    1.0
+   ],
+   "default": 0.25,
+   "safe": [
+    0.01,
+    1.0
+   ],
+   "curve": [
+    [
+     0.0,
+     0.01
+    ],
+    [
+     0.6667,
+     0.208
+    ],
+    [
+     0.7333,
+     0.25
+    ],
+    [
+     0.8,
+     0.406
+    ],
+    [
+     0.8667,
+     0.604
+    ],
+    [
+     0.9333,
+     0.802
+    ],
+    [
+     1.0,
+     1.0
+    ]
+   ],
+   "moved_default": false
+  },
+  "unit:limiter:at": {
+   "unit": true,
+   "vau_default": 4.0,
+   "steps": [
+    2.0,
+    4.0,
+    6.0,
+    8.0,
+    10.0,
+    12.0
+   ],
+   "presets": {
+    "warm-drone": [
+     {
+      "value": 2.0,
+      "broken": [],
+      "rms_db": -21.14,
+      "level_db": 6.7,
+      "timbre_db": 16.714,
+      "centroid_hz": 420.1,
+      "flatness": 0.0004
+     },
+     {
+      "value": 4.0,
+      "broken": [],
+      "rms_db": -15.68,
+      "level_db": 12.1,
+      "timbre_db": 15.987,
+      "centroid_hz": 88.1,
+      "flatness": 5e-05
+     },
+     {
+      "value": 6.0,
+      "broken": [
+       "overdriven (-11 dBFS RMS; the model's own level is \u221228 to \u221241)"
+      ],
+      "rms_db": -10.63,
+      "level_db": 17.2,
+      "timbre_db": 5.224,
+      "centroid_hz": 142.4,
+      "flatness": 0.0
+     },
+     {
+      "value": 8.0,
+      "broken": [],
+      "rms_db": -32.86,
+      "level_db": -5.0,
+      "timbre_db": 16.455,
+      "centroid_hz": 283.3,
+      "flatness": 8e-05
+     },
+     {
+      "value": 10.0,
+      "broken": [],
+      "rms_db": -19.04,
+      "level_db": 8.8,
+      "timbre_db": 10.175,
+      "centroid_hz": 117.1,
+      "flatness": 0.0
+     },
+     {
+      "value": 12.0,
+      "broken": [],
+      "rms_db": -17.7,
+      "level_db": 10.1,
+      "timbre_db": 8.431,
+      "centroid_hz": 175.8,
+      "flatness": 0.0
+     }
+    ],
+    "shimmer": [
+     {
+      "value": 2.0,
+      "broken": [],
+      "rms_db": -18.67,
+      "level_db": 20.2,
+      "timbre_db": 22.84,
+      "centroid_hz": 269.2,
+      "flatness": 0.00121
+     },
+     {
+      "value": 4.0,
+      "broken": [],
+      "rms_db": -22.37,
+      "level_db": 16.5,
+      "timbre_db": 20.625,
+      "centroid_hz": 1222.3,
+      "flatness": 0.0
+     },
+     {
+      "value": 6.0,
+      "broken": [],
+      "rms_db": -32.76,
+      "level_db": 6.1,
+      "timbre_db": 20.88,
+      "centroid_hz": 923.1,
+      "flatness": 0.00021
+     },
+     {
+      "value": 8.0,
+      "broken": [],
+      "rms_db": -48.0,
+      "level_db": -9.1,
+      "timbre_db": 17.723,
+      "centroid_hz": 861.0,
+      "flatness": 4e-05
+     },
+     {
+      "value": 10.0,
+      "broken": [],
+      "rms_db": -49.33,
+      "level_db": -10.4,
+      "timbre_db": 17.775,
+      "centroid_hz": 1271.5,
+      "flatness": 0.00013
+     },
+     {
+      "value": 12.0,
+      "broken": [],
+      "rms_db": -42.16,
+      "level_db": -3.3,
+      "timbre_db": 7.49,
+      "centroid_hz": 726.5,
+      "flatness": 0.00011
+     }
+    ]
+   },
+   "swept": [
+    2.0,
+    12.0
+   ],
+   "kind": "placement",
+   "safe_places": [
+    2.0,
+    4.0,
+    8.0,
+    10.0,
+    12.0
+   ],
+   "default": 4.0,
+   "safe": [
+    2.0,
+    12.0
+   ],
+   "curve": []
+  },
+  "unit:limiter:ceiling": {
+   "unit": true,
+   "vau_default": 0.99,
+   "steps": [
+    0.5,
+    0.6,
+    0.7,
+    0.8,
+    0.9,
+    0.99,
+    1.0
+   ],
+   "presets": {
+    "warm-drone": [
+     {
+      "value": 0.5,
+      "broken": [],
+      "rms_db": -15.95,
+      "level_db": 11.9,
+      "timbre_db": 18.596,
+      "centroid_hz": 170.8,
+      "flatness": 0.00016
+     },
+     {
+      "value": 0.6,
+      "broken": [],
+      "rms_db": -21.58,
+      "level_db": 6.2,
+      "timbre_db": 24.014,
+      "centroid_hz": 843.5,
+      "flatness": 0.00656
+     },
+     {
+      "value": 0.7,
+      "broken": [],
+      "rms_db": -22.03,
+      "level_db": 5.8,
+      "timbre_db": 17.727,
+      "centroid_hz": 250.8,
+      "flatness": 0.00111
+     },
+     {
+      "value": 0.8,
+      "broken": [],
+      "rms_db": -18.53,
+      "level_db": 9.3,
+      "timbre_db": 16.741,
+      "centroid_hz": 159.3,
+      "flatness": 0.00027
+     },
+     {
+      "value": 0.9,
+      "broken": [],
+      "rms_db": -13.66,
+      "level_db": 14.2,
+      "timbre_db": 18.271,
+      "centroid_hz": 194.1,
+      "flatness": 0.00035
+     },
+     {
+      "value": 0.99,
+      "broken": [],
+      "rms_db": -15.68,
+      "level_db": 12.1,
+      "timbre_db": 15.987,
+      "centroid_hz": 88.1,
+      "flatness": 5e-05
+     },
+     {
+      "value": 1.0,
+      "broken": [],
+      "rms_db": -27.82,
+      "level_db": 0.0,
+      "timbre_db": 0.0,
+      "centroid_hz": 136.9,
+      "flatness": 0.0
+     }
+    ],
+    "shimmer": [
+     {
+      "value": 0.5,
+      "broken": [],
+      "rms_db": -19.89,
+      "level_db": 19.0,
+      "timbre_db": 23.713,
+      "centroid_hz": 399.4,
+      "flatness": 0.00289
+     },
+     {
+      "value": 0.6,
+      "broken": [],
+      "rms_db": -19.38,
+      "level_db": 19.5,
+      "timbre_db": 23.065,
+      "centroid_hz": 289.0,
+      "flatness": 0.00097
+     },
+     {
+      "value": 0.7,
+      "broken": [],
+      "rms_db": -17.66,
+      "level_db": 21.2,
+      "timbre_db": 22.735,
+      "centroid_hz": 474.4,
+      "flatness": 0.00186
+     },
+     {
+      "value": 0.8,
+      "broken": [],
+      "rms_db": -17.39,
+      "level_db": 21.5,
+      "timbre_db": 22.548,
+      "centroid_hz": 244.9,
+      "flatness": 0.00072
+     },
+     {
+      "value": 0.9,
+      "broken": [],
+      "rms_db": -16.54,
+      "level_db": 22.3,
+      "timbre_db": 21.586,
+      "centroid_hz": 237.0,
+      "flatness": 0.00019
+     },
+     {
+      "value": 0.99,
+      "broken": [],
+      "rms_db": -22.37,
+      "level_db": 16.5,
+      "timbre_db": 20.625,
+      "centroid_hz": 1222.3,
+      "flatness": 0.0
+     },
+     {
+      "value": 1.0,
+      "broken": [],
+      "rms_db": -38.88,
+      "level_db": 0.0,
+      "timbre_db": 0.0,
+      "centroid_hz": 1028.2,
+      "flatness": 0.0
+     }
+    ]
+   },
+   "swept": [
+    0.5,
+    1.0
+   ],
+   "default": 0.99,
+   "safe": [
+    0.5,
+    1.0
+   ],
+   "curve": [
+    [
+     0.0,
+     0.5
+    ],
+    [
+     0.0667,
+     0.6
+    ],
+    [
+     0.1333,
+     0.7
+    ],
+    [
+     0.2,
+     0.8
+    ],
+    [
+     0.2667,
+     0.9
+    ],
+    [
+     0.6402,
+     0.99
+    ],
+    [
+     1.0,
+     1.0
+    ]
+   ],
+   "moved_default": false
+  },
+  "unit:multiband:at": {
+   "unit": true,
+   "vau_default": 6.0,
+   "steps": [
+    2.0,
+    4.0,
+    6.0,
+    8.0,
+    10.0,
+    12.0
+   ],
+   "presets": {
+    "warm-drone": [
+     {
+      "value": 2.0,
+      "broken": [],
+      "rms_db": -28.94,
+      "level_db": -1.1,
+      "timbre_db": 6.819,
+      "centroid_hz": 149.7,
+      "flatness": 0.0
+     },
+     {
+      "value": 4.0,
+      "broken": [],
+      "rms_db": -27.67,
+      "level_db": 0.1,
+      "timbre_db": 5.855,
+      "centroid_hz": 104.4,
+      "flatness": 0.0
+     },
+     {
+      "value": 6.0,
+      "broken": [],
+      "rms_db": -26.31,
+      "level_db": 1.5,
+      "timbre_db": 5.794,
+      "centroid_hz": 156.7,
+      "flatness": 0.0
+     },
+     {
+      "value": 8.0,
+      "broken": [],
+      "rms_db": -27.24,
+      "level_db": 0.6,
+      "timbre_db": 4.815,
+      "centroid_hz": 153.7,
+      "flatness": 0.0
+     },
+     {
+      "value": 10.0,
+      "broken": [],
+      "rms_db": -23.58,
+      "level_db": 4.2,
+      "timbre_db": 8.043,
+      "centroid_hz": 124.0,
+      "flatness": 0.0
+     },
+     {
+      "value": 12.0,
+      "broken": [],
+      "rms_db": -23.92,
+      "level_db": 3.9,
+      "timbre_db": 5.815,
+      "centroid_hz": 119.8,
+      "flatness": 0.0
+     }
+    ],
+    "shimmer": [
+     {
+      "value": 2.0,
+      "broken": [],
+      "rms_db": -46.34,
+      "level_db": -7.5,
+      "timbre_db": 5.897,
+      "centroid_hz": 676.3,
+      "flatness": 1e-05
+     },
+     {
+      "value": 4.0,
+      "broken": [],
+      "rms_db": -38.29,
+      "level_db": 0.6,
+      "timbre_db": 6.032,
+      "centroid_hz": 628.3,
+      "flatness": 0.0
+     },
+     {
+      "value": 6.0,
+      "broken": [],
+      "rms_db": -35.62,
+      "level_db": 3.3,
+      "timbre_db": 7.444,
+      "centroid_hz": 696.7,
+      "flatness": 0.0
+     },
+     {
+      "value": 8.0,
+      "broken": [],
+      "rms_db": -35.26,
+      "level_db": 3.6,
+      "timbre_db": 6.12,
+      "centroid_hz": 703.2,
+      "flatness": 0.0
+     },
+     {
+      "value": 10.0,
+      "broken": [],
+      "rms_db": -31.18,
+      "level_db": 7.7,
+      "timbre_db": 8.289,
+      "centroid_hz": 776.2,
+      "flatness": 0.0
+     },
+     {
+      "value": 12.0,
+      "broken": [],
+      "rms_db": -33.1,
+      "level_db": 5.8,
+      "timbre_db": 5.408,
+      "centroid_hz": 601.9,
+      "flatness": 0.0
+     }
+    ]
+   },
+   "swept": [
+    2.0,
+    12.0
+   ],
+   "kind": "placement",
+   "safe_places": [
+    2.0,
+    4.0,
+    6.0,
+    8.0,
+    10.0,
+    12.0
+   ],
+   "default": 6.0,
+   "safe": [
+    2.0,
+    12.0
+   ],
+   "curve": []
+  },
+  "unit:multiband:ratio": {
+   "unit": true,
+   "vau_default": 4.0,
+   "steps": [
+    1.0,
+    4.0,
+    4.8,
+    8.6,
+    12.4,
+    16.2,
+    20.0
+   ],
+   "presets": {
+    "warm-drone": [
+     {
+      "value": 1.0,
+      "broken": [],
+      "rms_db": -27.82,
+      "level_db": 0.0,
+      "timbre_db": 0.0,
+      "centroid_hz": 136.9,
+      "flatness": 0.0
+     },
+     {
+      "value": 4.0,
+      "broken": [],
+      "rms_db": -26.31,
+      "level_db": 1.5,
+      "timbre_db": 5.794,
+      "centroid_hz": 156.7,
+      "flatness": 0.0
+     },
+     {
+      "value": 4.8,
+      "broken": [],
+      "rms_db": -23.99,
+      "level_db": 3.8,
+      "timbre_db": 4.237,
+      "centroid_hz": 170.9,
+      "flatness": 0.0
+     },
+     {
+      "value": 8.6,
+      "broken": [],
+      "rms_db": -23.26,
+      "level_db": 4.6,
+      "timbre_db": 7.462,
+      "centroid_hz": 167.8,
+      "flatness": 0.0
+     },
+     {
+      "value": 12.4,
+      "broken": [],
+      "rms_db": -26.89,
+      "level_db": 0.9,
+      "timbre_db": 6.907,
+      "centroid_hz": 156.2,
+      "flatness": 0.0
+     },
+     {
+      "value": 16.2,
+      "broken": [],
+      "rms_db": -26.27,
+      "level_db": 1.6,
+      "timbre_db": 6.813,
+      "centroid_hz": 163.9,
+      "flatness": 0.0
+     },
+     {
+      "value": 20.0,
+      "broken": [],
+      "rms_db": -25.02,
+      "level_db": 2.8,
+      "timbre_db": 7.375,
+      "centroid_hz": 182.9,
+      "flatness": 0.0
+     }
+    ],
+    "shimmer": [
+     {
+      "value": 1.0,
+      "broken": [],
+      "rms_db": -38.88,
+      "level_db": 0.0,
+      "timbre_db": 0.0,
+      "centroid_hz": 1028.2,
+      "flatness": 0.0
+     },
+     {
+      "value": 4.0,
+      "broken": [],
+      "rms_db": -35.62,
+      "level_db": 3.3,
+      "timbre_db": 7.444,
+      "centroid_hz": 696.7,
+      "flatness": 0.0
+     },
+     {
+      "value": 4.8,
+      "broken": [],
+      "rms_db": -33.8,
+      "level_db": 5.1,
+      "timbre_db": 7.841,
+      "centroid_hz": 777.9,
+      "flatness": 0.0
+     },
+     {
+      "value": 8.6,
+      "broken": [],
+      "rms_db": -33.16,
+      "level_db": 5.7,
+      "timbre_db": 6.471,
+      "centroid_hz": 657.2,
+      "flatness": 0.0
+     },
+     {
+      "value": 12.4,
+      "broken": [],
+      "rms_db": -38.09,
+      "level_db": 0.8,
+      "timbre_db": 5.236,
+      "centroid_hz": 676.6,
+      "flatness": 0.0
+     },
+     {
+      "value": 16.2,
+      "broken": [],
+      "rms_db": -35.69,
+      "level_db": 3.2,
+      "timbre_db": 8.901,
+      "centroid_hz": 781.2,
+      "flatness": 0.0
+     },
+     {
+      "value": 20.0,
+      "broken": [],
+      "rms_db": -37.64,
+      "level_db": 1.2,
+      "timbre_db": 6.675,
+      "centroid_hz": 761.7,
+      "flatness": 0.0
+     }
+    ]
+   },
+   "swept": [
+    1.0,
+    20.0
+   ],
+   "default": 4.0,
+   "safe": [
+    1.0,
+    20.0
+   ],
+   "curve": [
+    [
+     0.0,
+     1.0
+    ],
+    [
+     0.1667,
+     4.0
+    ],
+    [
+     0.3333,
+     4.8
+    ],
+    [
+     0.5,
+     8.6
+    ],
+    [
+     0.6667,
+     12.4
+    ],
+    [
+     0.8333,
+     16.2
+    ],
+    [
+     1.0,
+     20.0
+    ]
+   ],
+   "moved_default": false
+  },
+  "unit:multiband:thresh": {
+   "unit": true,
+   "vau_default": 1.0,
+   "steps": [
+    0.1,
+    0.68,
+    1.0,
+    1.26,
+    1.84,
+    2.42,
+    3.0
+   ],
+   "presets": {
+    "warm-drone": [
+     {
+      "value": 0.1,
+      "broken": [],
+      "rms_db": -34.47,
+      "level_db": -6.6,
+      "timbre_db": 6.842,
+      "centroid_hz": 333.2,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.68,
+      "broken": [],
+      "rms_db": -28.6,
+      "level_db": -0.8,
+      "timbre_db": 5.161,
+      "centroid_hz": 157.1,
+      "flatness": 0.0
+     },
+     {
+      "value": 1.0,
+      "broken": [],
+      "rms_db": -26.31,
+      "level_db": 1.5,
+      "timbre_db": 5.794,
+      "centroid_hz": 156.7,
+      "flatness": 0.0
+     },
+     {
+      "value": 1.26,
+      "broken": [],
+      "rms_db": -24.42,
+      "level_db": 3.4,
+      "timbre_db": 6.247,
+      "centroid_hz": 100.8,
+      "flatness": 0.0
+     },
+     {
+      "value": 1.84,
+      "broken": [],
+      "rms_db": -26.96,
+      "level_db": 0.9,
+      "timbre_db": 3.438,
+      "centroid_hz": 115.6,
+      "flatness": 0.0
+     },
+     {
+      "value": 2.42,
+      "broken": [],
+      "rms_db": -28.84,
+      "level_db": -1.0,
+      "timbre_db": 5.338,
+      "centroid_hz": 138.0,
+      "flatness": 0.0
+     },
+     {
+      "value": 3.0,
+      "broken": [],
+      "rms_db": -29.04,
+      "level_db": -1.2,
+      "timbre_db": 5.488,
+      "centroid_hz": 204.9,
+      "flatness": 0.0
+     }
+    ],
+    "shimmer": [
+     {
+      "value": 0.1,
+      "broken": [],
+      "rms_db": -34.8,
+      "level_db": 4.1,
+      "timbre_db": 10.924,
+      "centroid_hz": 628.5,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.68,
+      "broken": [],
+      "rms_db": -33.78,
+      "level_db": 5.1,
+      "timbre_db": 6.901,
+      "centroid_hz": 701.8,
+      "flatness": 0.0
+     },
+     {
+      "value": 1.0,
+      "broken": [],
+      "rms_db": -35.62,
+      "level_db": 3.3,
+      "timbre_db": 7.444,
+      "centroid_hz": 696.7,
+      "flatness": 0.0
+     },
+     {
+      "value": 1.26,
+      "broken": [],
+      "rms_db": -36.57,
+      "level_db": 2.3,
+      "timbre_db": 7.258,
+      "centroid_hz": 776.0,
+      "flatness": 0.0
+     },
+     {
+      "value": 1.84,
+      "broken": [],
+      "rms_db": -36.19,
+      "level_db": 2.7,
+      "timbre_db": 8.556,
+      "centroid_hz": 779.3,
+      "flatness": 0.0
+     },
+     {
+      "value": 2.42,
+      "broken": [],
+      "rms_db": -40.29,
+      "level_db": -1.4,
+      "timbre_db": 7.801,
+      "centroid_hz": 866.6,
+      "flatness": 0.0
+     },
+     {
+      "value": 3.0,
+      "broken": [],
+      "rms_db": -40.4,
+      "level_db": -1.5,
+      "timbre_db": 7.467,
+      "centroid_hz": 826.9,
+      "flatness": 0.0
+     }
+    ]
+   },
+   "swept": [
+    0.1,
+    3.0
+   ],
+   "default": 1.0,
+   "safe": [
+    0.1,
+    3.0
+   ],
+   "curve": [
+    [
+     0.0,
+     0.1
+    ],
+    [
+     0.6667,
+     0.68
+    ],
+    [
+     0.7333,
+     1.0
+    ],
+    [
+     0.8,
+     1.26
+    ],
+    [
+     0.8667,
+     1.84
+    ],
+    [
+     0.9333,
+     2.42
+    ],
+    [
+     1.0,
+     3.0
+    ]
+   ],
+   "moved_default": false
+  },
+  "unit:neuron:at": {
+   "unit": true,
+   "vau_default": -1.0,
+   "steps": [
+    -1.0,
+    0.0,
+    3.0,
+    6.0,
+    9.0,
+    11.0
+   ],
+   "presets": {
+    "warm-drone": [
+     {
+      "value": -1.0,
+      "broken": [],
+      "rms_db": -32.55,
+      "level_db": -4.7,
+      "timbre_db": 4.432,
+      "centroid_hz": 129.9,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.0,
+      "broken": [],
+      "rms_db": -26.84,
+      "level_db": 1.0,
+      "timbre_db": 5.843,
+      "centroid_hz": 76.4,
+      "flatness": 0.0
+     },
+     {
+      "value": 3.0,
+      "broken": [],
+      "rms_db": -28.98,
+      "level_db": -1.2,
+      "timbre_db": 3.837,
+      "centroid_hz": 171.4,
+      "flatness": 0.0
+     },
+     {
+      "value": 6.0,
+      "broken": [],
+      "rms_db": -26.8,
+      "level_db": 1.0,
+      "timbre_db": 3.734,
+      "centroid_hz": 160.0,
+      "flatness": 0.0
+     },
+     {
+      "value": 9.0,
+      "broken": [],
+      "rms_db": -33.18,
+      "level_db": -5.4,
+      "timbre_db": 5.672,
+      "centroid_hz": 170.3,
+      "flatness": 0.0
+     },
+     {
+      "value": 11.0,
+      "broken": [],
+      "rms_db": -26.93,
+      "level_db": 0.9,
+      "timbre_db": 4.715,
+      "centroid_hz": 150.3,
+      "flatness": 0.0
+     }
+    ],
+    "shimmer": [
+     {
+      "value": -1.0,
+      "broken": [],
+      "rms_db": -34.48,
+      "level_db": 4.4,
+      "timbre_db": 7.655,
+      "centroid_hz": 699.3,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.0,
+      "broken": [],
+      "rms_db": -38.34,
+      "level_db": 0.5,
+      "timbre_db": 6.176,
+      "centroid_hz": 719.5,
+      "flatness": 0.0
+     },
+     {
+      "value": 3.0,
+      "broken": [],
+      "rms_db": -32.93,
+      "level_db": 6.0,
+      "timbre_db": 6.036,
+      "centroid_hz": 729.5,
+      "flatness": 0.0
+     },
+     {
+      "value": 6.0,
+      "broken": [],
+      "rms_db": -35.77,
+      "level_db": 3.1,
+      "timbre_db": 6.632,
+      "centroid_hz": 792.6,
+      "flatness": 0.0
+     },
+     {
+      "value": 9.0,
+      "broken": [],
+      "rms_db": -37.53,
+      "level_db": 1.4,
+      "timbre_db": 6.268,
+      "centroid_hz": 748.4,
+      "flatness": 0.0
+     },
+     {
+      "value": 11.0,
+      "broken": [],
+      "rms_db": -37.33,
+      "level_db": 1.6,
+      "timbre_db": 5.938,
+      "centroid_hz": 702.4,
+      "flatness": 0.0
+     }
+    ]
+   },
+   "swept": [
+    -1.0,
+    11.0
+   ],
+   "kind": "placement",
+   "safe_places": [
+    -1.0,
+    0.0,
+    3.0,
+    6.0,
+    9.0,
+    11.0
+   ],
+   "default": -1.0,
+   "safe": [
+    -1.0,
+    11.0
+   ],
+   "curve": []
+  },
+  "unit:neuron:value": {
+   "unit": true,
+   "vau_default": 6.0,
+   "steps": [
+    -20.0,
+    -12.0,
+    -4.0,
+    4.0,
+    6.0,
+    12.0,
+    20.0
+   ],
+   "presets": {
+    "warm-drone": [
+     {
+      "value": -20.0,
+      "broken": [],
+      "rms_db": -25.17,
+      "level_db": 2.6,
+      "timbre_db": 5.473,
+      "centroid_hz": 145.9,
+      "flatness": 0.0
+     },
+     {
+      "value": -12.0,
+      "broken": [],
+      "rms_db": -34.36,
+      "level_db": -6.5,
+      "timbre_db": 4.681,
+      "centroid_hz": 199.0,
+      "flatness": 0.0
+     },
+     {
+      "value": -4.0,
+      "broken": [],
+      "rms_db": -29.71,
+      "level_db": -1.9,
+      "timbre_db": 4.711,
+      "centroid_hz": 167.9,
+      "flatness": 0.0
+     },
+     {
+      "value": 4.0,
+      "broken": [],
+      "rms_db": -28.47,
+      "level_db": -0.6,
+      "timbre_db": 3.956,
+      "centroid_hz": 147.5,
+      "flatness": 0.0
+     },
+     {
+      "value": 6.0,
+      "broken": [],
+      "rms_db": -32.55,
+      "level_db": -4.7,
+      "timbre_db": 4.432,
+      "centroid_hz": 129.9,
+      "flatness": 0.0
+     },
+     {
+      "value": 12.0,
+      "broken": [],
+      "rms_db": -25.0,
+      "level_db": 2.8,
+      "timbre_db": 6.899,
+      "centroid_hz": 149.8,
+      "flatness": 0.0
+     },
+     {
+      "value": 20.0,
+      "broken": [],
+      "rms_db": -28.49,
+      "level_db": -0.7,
+      "timbre_db": 7.035,
+      "centroid_hz": 201.4,
+      "flatness": 0.0
+     }
+    ],
+    "shimmer": [
+     {
+      "value": -20.0,
+      "broken": [],
+      "rms_db": -38.85,
+      "level_db": 0.0,
+      "timbre_db": 6.293,
+      "centroid_hz": 787.2,
+      "flatness": 0.0
+     },
+     {
+      "value": -12.0,
+      "broken": [],
+      "rms_db": -35.22,
+      "level_db": 3.7,
+      "timbre_db": 5.531,
+      "centroid_hz": 713.2,
+      "flatness": 0.0
+     },
+     {
+      "value": -4.0,
+      "broken": [],
+      "rms_db": -35.04,
+      "level_db": 3.8,
+      "timbre_db": 6.745,
+      "centroid_hz": 745.6,
+      "flatness": 0.0
+     },
+     {
+      "value": 4.0,
+      "broken": [],
+      "rms_db": -34.19,
+      "level_db": 4.7,
+      "timbre_db": 5.867,
+      "centroid_hz": 684.5,
+      "flatness": 0.0
+     },
+     {
+      "value": 6.0,
+      "broken": [],
+      "rms_db": -34.48,
+      "level_db": 4.4,
+      "timbre_db": 7.655,
+      "centroid_hz": 699.3,
+      "flatness": 0.0
+     },
+     {
+      "value": 12.0,
+      "broken": [],
+      "rms_db": -38.02,
+      "level_db": 0.9,
+      "timbre_db": 6.792,
+      "centroid_hz": 721.8,
+      "flatness": 0.0
+     },
+     {
+      "value": 20.0,
+      "broken": [],
+      "rms_db": -36.05,
+      "level_db": 2.8,
+      "timbre_db": 8.585,
+      "centroid_hz": 781.2,
+      "flatness": 0.0
+     }
+    ]
+   },
+   "swept": [
+    -20.0,
+    20.0
+   ],
+   "default": 6.0,
+   "safe": [
+    -20.0,
+    20.0
+   ],
+   "curve": [
+    [
+     0.0,
+     -20.0
+    ],
+    [
+     0.0667,
+     -12.0
+    ],
+    [
+     0.1333,
+     -4.0
+    ],
+    [
+     0.2,
+     4.0
+    ],
+    [
+     0.2667,
+     6.0
+    ],
+    [
+     0.3333,
+     12.0
+    ],
+    [
+     1.0,
+     20.0
+    ]
+   ],
+   "moved_default": false
+  },
+  "unit:reverb:at": {
+   "unit": true,
+   "vau_default": 6.0,
+   "steps": [
+    2.0,
+    4.0,
+    6.0,
+    8.0,
+    10.0,
+    12.0
+   ],
+   "presets": {
+    "warm-drone": [
+     {
+      "value": 2.0,
+      "broken": [],
+      "rms_db": -31.44,
+      "level_db": -3.6,
+      "timbre_db": 5.287,
+      "centroid_hz": 127.9,
+      "flatness": 0.0
+     },
+     {
+      "value": 4.0,
+      "broken": [],
+      "rms_db": -30.6,
+      "level_db": -2.8,
+      "timbre_db": 5.761,
+      "centroid_hz": 147.5,
+      "flatness": 0.0
+     },
+     {
+      "value": 6.0,
+      "broken": [],
+      "rms_db": -33.75,
+      "level_db": -5.9,
+      "timbre_db": 7.116,
+      "centroid_hz": 141.3,
+      "flatness": 1e-05
+     },
+     {
+      "value": 8.0,
+      "broken": [],
+      "rms_db": -35.77,
+      "level_db": -8.0,
+      "timbre_db": 6.467,
+      "centroid_hz": 156.1,
+      "flatness": 0.0
+     },
+     {
+      "value": 10.0,
+      "broken": [],
+      "rms_db": -35.12,
+      "level_db": -7.3,
+      "timbre_db": 7.213,
+      "centroid_hz": 134.1,
+      "flatness": 0.00034
+     },
+     {
+      "value": 12.0,
+      "broken": [],
+      "rms_db": -31.79,
+      "level_db": -4.0,
+      "timbre_db": 7.841,
+      "centroid_hz": 101.7,
+      "flatness": 0.0
+     }
+    ],
+    "shimmer": [
+     {
+      "value": 2.0,
+      "broken": [
+       "falls silent (-51 dBFS)"
+      ],
+      "rms_db": -51.13,
+      "level_db": -12.2,
+      "timbre_db": 6.93,
+      "centroid_hz": 687.1,
+      "flatness": 0.00139
+     },
+     {
+      "value": 4.0,
+      "broken": [
+       "falls silent (-52 dBFS)"
+      ],
+      "rms_db": -51.65,
+      "level_db": -12.8,
+      "timbre_db": 9.741,
+      "centroid_hz": 593.8,
+      "flatness": 0.04736
+     },
+     {
+      "value": 6.0,
+      "broken": [],
+      "rms_db": -42.76,
+      "level_db": -3.9,
+      "timbre_db": 6.411,
+      "centroid_hz": 630.4,
+      "flatness": 0.0
+     },
+     {
+      "value": 8.0,
+      "broken": [],
+      "rms_db": -42.42,
+      "level_db": -3.5,
+      "timbre_db": 5.218,
+      "centroid_hz": 659.0,
+      "flatness": 0.0
+     },
+     {
+      "value": 10.0,
+      "broken": [],
+      "rms_db": -43.54,
+      "level_db": -4.7,
+      "timbre_db": 4.963,
+      "centroid_hz": 663.8,
+      "flatness": 0.0
+     },
+     {
+      "value": 12.0,
+      "broken": [],
+      "rms_db": -40.22,
+      "level_db": -1.3,
+      "timbre_db": 6.761,
+      "centroid_hz": 609.6,
+      "flatness": 0.0
+     }
+    ]
+   },
+   "swept": [
+    2.0,
+    12.0
+   ],
+   "kind": "placement",
+   "safe_places": [
+    6.0,
+    8.0,
+    10.0,
+    12.0
+   ],
+   "default": 6.0,
+   "safe": [
+    2.0,
+    12.0
+   ],
+   "curve": []
+  },
+  "unit:reverb:decay": {
+   "unit": true,
+   "vau_default": 0.8,
+   "steps": [
+    0.0,
+    0.1998,
+    0.3996,
+    0.5994,
+    0.7992,
+    0.8,
+    0.999
+   ],
+   "presets": {
+    "warm-drone": [
+     {
+      "value": 0.0,
+      "broken": [],
+      "rms_db": -27.81,
+      "level_db": 0.0,
+      "timbre_db": 7.073,
+      "centroid_hz": 147.5,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.1998,
+      "broken": [],
+      "rms_db": -31.98,
+      "level_db": -4.2,
+      "timbre_db": 7.685,
+      "centroid_hz": 172.4,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.3996,
+      "broken": [],
+      "rms_db": -29.47,
+      "level_db": -1.6,
+      "timbre_db": 6.207,
+      "centroid_hz": 146.3,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.5994,
+      "broken": [],
+      "rms_db": -33.1,
+      "level_db": -5.3,
+      "timbre_db": 12.336,
+      "centroid_hz": 154.4,
+      "flatness": 0.00025
+     },
+     {
+      "value": 0.7992,
+      "broken": [],
+      "rms_db": -32.28,
+      "level_db": -4.5,
+      "timbre_db": 5.066,
+      "centroid_hz": 140.8,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.8,
+      "broken": [],
+      "rms_db": -33.75,
+      "level_db": -5.9,
+      "timbre_db": 7.116,
+      "centroid_hz": 141.3,
+      "flatness": 1e-05
+     },
+     {
+      "value": 0.999,
+      "broken": [],
+      "rms_db": -33.03,
+      "level_db": -5.2,
+      "timbre_db": 7.292,
+      "centroid_hz": 141.8,
+      "flatness": 0.0
+     }
+    ],
+    "shimmer": [
+     {
+      "value": 0.0,
+      "broken": [
+       "falls silent (-45 dBFS)"
+      ],
+      "rms_db": -44.67,
+      "level_db": -5.8,
+      "timbre_db": 7.644,
+      "centroid_hz": 659.6,
+      "flatness": 0.00028
+     },
+     {
+      "value": 0.1998,
+      "broken": [],
+      "rms_db": -40.92,
+      "level_db": -2.0,
+      "timbre_db": 7.65,
+      "centroid_hz": 633.8,
+      "flatness": 4e-05
+     },
+     {
+      "value": 0.3996,
+      "broken": [
+       "falls silent (-50 dBFS)"
+      ],
+      "rms_db": -50.43,
+      "level_db": -11.5,
+      "timbre_db": 7.693,
+      "centroid_hz": 620.5,
+      "flatness": 0.00035
+     },
+     {
+      "value": 0.5994,
+      "broken": [],
+      "rms_db": -45.11,
+      "level_db": -6.2,
+      "timbre_db": 8.677,
+      "centroid_hz": 666.5,
+      "flatness": 1e-05
+     },
+     {
+      "value": 0.7992,
+      "broken": [],
+      "rms_db": -42.71,
+      "level_db": -3.8,
+      "timbre_db": 5.657,
+      "centroid_hz": 670.0,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.8,
+      "broken": [],
+      "rms_db": -42.76,
+      "level_db": -3.9,
+      "timbre_db": 6.411,
+      "centroid_hz": 630.4,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.999,
+      "broken": [],
+      "rms_db": -42.02,
+      "level_db": -3.1,
+      "timbre_db": 5.871,
+      "centroid_hz": 623.5,
+      "flatness": 0.0
+     }
+    ]
+   },
+   "swept": [
+    0.0,
+    0.999
+   ],
+   "default": 0.8,
+   "safe": [
+    0.5994,
+    0.999
+   ],
+   "curve": [
+    [
+     0.0,
+     0.5994
+    ],
+    [
+     0.3333,
+     0.7992
+    ],
+    [
+     0.6667,
+     0.8
+    ],
+    [
+     1.0,
+     0.999
+    ]
+   ],
+   "moved_default": false
+  },
+  "unit:reverb:mix": {
+   "unit": true,
+   "vau_default": 0.2,
+   "steps": [
+    0.0,
+    0.2,
+    0.4,
+    0.6,
+    0.8,
+    1.0
+   ],
+   "presets": {
+    "warm-drone": [
+     {
+      "value": 0.0,
+      "broken": [],
+      "rms_db": -27.82,
+      "level_db": 0.0,
+      "timbre_db": 0.0,
+      "centroid_hz": 136.9,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.2,
+      "broken": [],
+      "rms_db": -33.75,
+      "level_db": -5.9,
+      "timbre_db": 7.116,
+      "centroid_hz": 141.3,
+      "flatness": 1e-05
+     },
+     {
+      "value": 0.4,
+      "broken": [
+       "falls silent (-54 dBFS)"
+      ],
+      "rms_db": -54.05,
+      "level_db": -26.2,
+      "timbre_db": 10.932,
+      "centroid_hz": 181.9,
+      "flatness": 0.04359
+     },
+     {
+      "value": 0.6,
+      "broken": [
+       "falls silent (-49 dBFS)"
+      ],
+      "rms_db": -49.45,
+      "level_db": -21.6,
+      "timbre_db": 6.774,
+      "centroid_hz": 130.8,
+      "flatness": 0.0689
+     },
+     {
+      "value": 0.8,
+      "broken": [
+       "falls silent (-40 dBFS)"
+      ],
+      "rms_db": -39.52,
+      "level_db": -11.7,
+      "timbre_db": 8.463,
+      "centroid_hz": 156.7,
+      "flatness": 0.07499
+     },
+     {
+      "value": 1.0,
+      "broken": [
+       "falls silent (-63 dBFS)"
+      ],
+      "rms_db": -62.58,
+      "level_db": -34.8,
+      "timbre_db": 19.101,
+      "centroid_hz": 118.4,
+      "flatness": 0.08276
+     }
+    ],
+    "shimmer": [
+     {
+      "value": 0.0,
+      "broken": [],
+      "rms_db": -38.88,
+      "level_db": 0.0,
+      "timbre_db": 0.0,
+      "centroid_hz": 1028.2,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.2,
+      "broken": [],
+      "rms_db": -42.76,
+      "level_db": -3.9,
+      "timbre_db": 6.411,
+      "centroid_hz": 630.4,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.4,
+      "broken": [
+       "falls silent (-75 dBFS)"
+      ],
+      "rms_db": -74.98,
+      "level_db": -36.1,
+      "timbre_db": 18.682,
+      "centroid_hz": 644.9,
+      "flatness": 0.07582
+     },
+     {
+      "value": 0.6,
+      "broken": [
+       "falls silent (-95 dBFS)"
+      ],
+      "rms_db": -95.19,
+      "level_db": -56.3,
+      "timbre_db": 25.812,
+      "centroid_hz": 2855.9,
+      "flatness": 0.08438
+     },
+     {
+      "value": 0.8,
+      "broken": [
+       "falls silent (-52 dBFS)"
+      ],
+      "rms_db": -51.53,
+      "level_db": -12.6,
+      "timbre_db": 17.043,
+      "centroid_hz": 583.1,
+      "flatness": 0.0793
+     },
+     {
+      "value": 1.0,
+      "broken": [
+       "falls silent (-48 dBFS)"
+      ],
+      "rms_db": -48.0,
+      "level_db": -9.1,
+      "timbre_db": 26.369,
+      "centroid_hz": 512.5,
+      "flatness": 0.09654
+     }
+    ]
+   },
+   "swept": [
+    0.0,
+    1.0
+   ],
+   "default": 0.2,
+   "safe": [
+    0.0,
+    0.2
+   ],
+   "curve": [
+    [
+     0.0,
+     0.0
+    ],
+    [
+     1.0,
+     0.2
+    ]
+   ],
+   "moved_default": false
+  },
+  "unit:saturator:at": {
+   "unit": true,
+   "vau_default": 6.0,
+   "steps": [
+    2.0,
+    4.0,
+    6.0,
+    8.0,
+    10.0,
+    12.0
+   ],
+   "presets": {
+    "warm-drone": [
+     {
+      "value": 2.0,
+      "broken": [
+       "overdriven (-10 dBFS RMS; the model's own level is \u221228 to \u221241)"
+      ],
+      "rms_db": -10.11,
+      "level_db": 17.7,
+      "timbre_db": 8.257,
+      "centroid_hz": 106.2,
+      "flatness": 0.0
+     },
+     {
+      "value": 4.0,
+      "broken": [],
+      "rms_db": -13.23,
+      "level_db": 14.6,
+      "timbre_db": 10.821,
+      "centroid_hz": 77.3,
+      "flatness": 0.0
+     },
+     {
+      "value": 6.0,
+      "broken": [],
+      "rms_db": -12.33,
+      "level_db": 15.5,
+      "timbre_db": 8.565,
+      "centroid_hz": 90.2,
+      "flatness": 0.0
+     },
+     {
+      "value": 8.0,
+      "broken": [],
+      "rms_db": -25.64,
+      "level_db": 2.2,
+      "timbre_db": 5.513,
+      "centroid_hz": 166.4,
+      "flatness": 0.0
+     },
+     {
+      "value": 10.0,
+      "broken": [],
+      "rms_db": -24.51,
+      "level_db": 3.3,
+      "timbre_db": 7.239,
+      "centroid_hz": 135.2,
+      "flatness": 0.0
+     },
+     {
+      "value": 12.0,
+      "broken": [],
+      "rms_db": -22.5,
+      "level_db": 5.3,
+      "timbre_db": 8.524,
+      "centroid_hz": 224.9,
+      "flatness": 0.0
+     }
+    ],
+    "shimmer": [
+     {
+      "value": 2.0,
+      "broken": [],
+      "rms_db": -27.87,
+      "level_db": 11.0,
+      "timbre_db": 22.665,
+      "centroid_hz": 737.9,
+      "flatness": 0.0174
+     },
+     {
+      "value": 4.0,
+      "broken": [
+       "falls silent (-53 dBFS)"
+      ],
+      "rms_db": -52.71,
+      "level_db": -13.8,
+      "timbre_db": 14.044,
+      "centroid_hz": 664.7,
+      "flatness": 0.00046
+     },
+     {
+      "value": 6.0,
+      "broken": [],
+      "rms_db": -45.45,
+      "level_db": -6.6,
+      "timbre_db": 22.981,
+      "centroid_hz": 1319.3,
+      "flatness": 6e-05
+     },
+     {
+      "value": 8.0,
+      "broken": [],
+      "rms_db": -41.47,
+      "level_db": -2.6,
+      "timbre_db": 15.169,
+      "centroid_hz": 734.4,
+      "flatness": 3e-05
+     },
+     {
+      "value": 10.0,
+      "broken": [],
+      "rms_db": -50.24,
+      "level_db": -11.4,
+      "timbre_db": 19.337,
+      "centroid_hz": 858.1,
+      "flatness": 0.00012
+     },
+     {
+      "value": 12.0,
+      "broken": [],
+      "rms_db": -33.43,
+      "level_db": 5.5,
+      "timbre_db": 21.249,
+      "centroid_hz": 131.9,
+      "flatness": 9e-05
+     }
+    ]
+   },
+   "swept": [
+    2.0,
+    12.0
+   ],
+   "kind": "placement",
+   "safe_places": [
+    6.0,
+    8.0,
+    10.0,
+    12.0
+   ],
+   "default": 6.0,
+   "safe": [
+    2.0,
+    12.0
+   ],
+   "curve": []
+  },
+  "unit:saturator:drive": {
+   "unit": true,
+   "vau_default": 1.0,
+   "steps": [
+    0.1,
+    1.0,
+    2.08,
+    4.06,
+    6.04,
+    8.02,
+    10.0
+   ],
+   "presets": {
+    "warm-drone": [
+     {
+      "value": 0.1,
+      "broken": [],
+      "rms_db": -27.47,
+      "level_db": 0.4,
+      "timbre_db": 5.706,
+      "centroid_hz": 180.3,
+      "flatness": 0.0
+     },
+     {
+      "value": 1.0,
+      "broken": [],
+      "rms_db": -12.33,
+      "level_db": 15.5,
+      "timbre_db": 8.565,
+      "centroid_hz": 90.2,
+      "flatness": 0.0
+     },
+     {
+      "value": 2.08,
+      "broken": [
+       "overdriven (-10 dBFS RMS; the model's own level is \u221228 to \u221241)"
+      ],
+      "rms_db": -9.9,
+      "level_db": 17.9,
+      "timbre_db": 9.631,
+      "centroid_hz": 86.1,
+      "flatness": 0.0
+     },
+     {
+      "value": 4.06,
+      "broken": [],
+      "rms_db": -25.24,
+      "level_db": 2.6,
+      "timbre_db": 22.38,
+      "centroid_hz": 108.1,
+      "flatness": 0.00429
+     },
+     {
+      "value": 6.04,
+      "broken": [],
+      "rms_db": -25.19,
+      "level_db": 2.6,
+      "timbre_db": 17.794,
+      "centroid_hz": 108.7,
+      "flatness": 0.00282
+     },
+     {
+      "value": 8.02,
+      "broken": [],
+      "rms_db": -20.6,
+      "level_db": 7.2,
+      "timbre_db": 23.331,
+      "centroid_hz": 533.3,
+      "flatness": 0.00488
+     },
+     {
+      "value": 10.0,
+      "broken": [],
+      "rms_db": -17.0,
+      "level_db": 10.8,
+      "timbre_db": 16.065,
+      "centroid_hz": 240.2,
+      "flatness": 0.00016
+     }
+    ],
+    "shimmer": [
+     {
+      "value": 0.1,
+      "broken": [],
+      "rms_db": -32.98,
+      "level_db": 5.9,
+      "timbre_db": 6.521,
+      "centroid_hz": 727.1,
+      "flatness": 0.0
+     },
+     {
+      "value": 1.0,
+      "broken": [],
+      "rms_db": -45.45,
+      "level_db": -6.6,
+      "timbre_db": 22.981,
+      "centroid_hz": 1319.3,
+      "flatness": 6e-05
+     },
+     {
+      "value": 2.08,
+      "broken": [],
+      "rms_db": -36.56,
+      "level_db": 2.3,
+      "timbre_db": 17.318,
+      "centroid_hz": 1218.9,
+      "flatness": 0.07736
+     },
+     {
+      "value": 4.06,
+      "broken": [],
+      "rms_db": -25.89,
+      "level_db": 13.0,
+      "timbre_db": 23.295,
+      "centroid_hz": 251.8,
+      "flatness": 0.00042
+     },
+     {
+      "value": 6.04,
+      "broken": [],
+      "rms_db": -22.18,
+      "level_db": 16.7,
+      "timbre_db": 24.814,
+      "centroid_hz": 87.9,
+      "flatness": 0.00159
+     },
+     {
+      "value": 8.02,
+      "broken": [],
+      "rms_db": -22.36,
+      "level_db": 16.5,
+      "timbre_db": 23.579,
+      "centroid_hz": 305.5,
+      "flatness": 0.00526
+     },
+     {
+      "value": 10.0,
+      "broken": [],
+      "rms_db": -24.2,
+      "level_db": 14.7,
+      "timbre_db": 21.246,
+      "centroid_hz": 490.1,
+      "flatness": 0.00016
+     }
+    ]
+   },
+   "swept": [
+    0.1,
+    10.0
+   ],
+   "default": 1.0,
+   "safe": [
+    0.1,
+    1.0
+   ],
+   "curve": [
+    [
+     0.0,
+     0.1
+    ],
+    [
+     1.0,
+     1.0
+    ]
+   ],
+   "moved_default": false
+  },
+  "unit:saturator:mix": {
+   "unit": true,
+   "vau_default": 1.0,
+   "steps": [
+    0.0,
+    0.2,
+    0.4,
+    0.6,
+    0.8,
+    1.0
+   ],
+   "presets": {
+    "warm-drone": [
+     {
+      "value": 0.0,
+      "broken": [],
+      "rms_db": -27.82,
+      "level_db": 0.0,
+      "timbre_db": 0.0,
+      "centroid_hz": 136.9,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.2,
+      "broken": [],
+      "rms_db": -27.51,
+      "level_db": 0.3,
+      "timbre_db": 5.45,
+      "centroid_hz": 156.5,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.4,
+      "broken": [],
+      "rms_db": -22.47,
+      "level_db": 5.4,
+      "timbre_db": 6.921,
+      "centroid_hz": 114.1,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.6,
+      "broken": [],
+      "rms_db": -19.79,
+      "level_db": 8.0,
+      "timbre_db": 6.904,
+      "centroid_hz": 126.0,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.8,
+      "broken": [],
+      "rms_db": -13.17,
+      "level_db": 14.7,
+      "timbre_db": 7.591,
+      "centroid_hz": 109.1,
+      "flatness": 0.0
+     },
+     {
+      "value": 1.0,
+      "broken": [],
+      "rms_db": -12.33,
+      "level_db": 15.5,
+      "timbre_db": 8.565,
+      "centroid_hz": 90.2,
+      "flatness": 0.0
+     }
+    ],
+    "shimmer": [
+     {
+      "value": 0.0,
+      "broken": [],
+      "rms_db": -38.88,
+      "level_db": 0.0,
+      "timbre_db": 0.0,
+      "centroid_hz": 1028.2,
+      "flatness": 0.0
+     },
+     {
+      "value": 0.2,
+      "broken": [],
+      "rms_db": -42.87,
+      "level_db": -4.0,
+      "timbre_db": 7.274,
+      "centroid_hz": 791.0,
+      "flatness": 1e-05
+     },
+     {
+      "value": 0.4,
+      "broken": [],
+      "rms_db": -35.39,
+      "level_db": 3.5,
+      "timbre_db": 17.596,
+      "centroid_hz": 806.5,
+      "flatness": 1e-05
+     },
+     {
+      "value": 0.6,
+      "broken": [],
+      "rms_db": -38.97,
+      "level_db": -0.1,
+      "timbre_db": 15.679,
+      "centroid_hz": 663.5,
+      "flatness": 2e-05
+     },
+     {
+      "value": 0.8,
+      "broken": [],
+      "rms_db": -43.69,
+      "level_db": -4.8,
+      "timbre_db": 16.287,
+      "centroid_hz": 802.4,
+      "flatness": 2e-05
+     },
+     {
+      "value": 1.0,
+      "broken": [],
+      "rms_db": -45.45,
+      "level_db": -6.6,
+      "timbre_db": 22.981,
+      "centroid_hz": 1319.3,
+      "flatness": 6e-05
+     }
+    ]
+   },
+   "swept": [
+    0.0,
+    1.0
+   ],
+   "default": 1.0,
+   "safe": [
+    0.0,
+    1.0
+   ],
+   "curve": [
+    [
+     0.0,
+     0.0
+    ],
+    [
+     0.08,
+     0.2
+    ],
+    [
+     0.4748,
+     0.4
+    ],
+    [
+     0.5548,
+     0.6
+    ],
+    [
+     0.6348,
+     0.8
+    ],
+    [
+     1.0,
+     1.0
+    ]
+   ],
+   "moved_default": false
+  },
+  "unit:shifter:angle": {
+   "unit": true,
+   "vau_default": 45.0,
+   "steps": [
+    -180.0,
+    -108.0,
+    -36.0,
+    36.0,
+    45.0,
+    108.0,
+    180.0
+   ],
+   "presets": {
+    "warm-drone": [
+     {
+      "value": -180.0,
+      "broken": [],
+      "rms_db": -49.09,
+      "level_db": -21.3,
+      "timbre_db": 12.447,
+      "centroid_hz": 435.9,
+      "flatness": 2e-05
+     },
+     {
+      "value": -108.0,
+      "broken": [],
+      "rms_db": -40.28,
+      "level_db": -12.5,
+      "timbre_db": 9.61,
+      "centroid_hz": 244.0,
+      "flatness": 0.0
+     },
+     {
+      "value": -36.0,
+      "broken": [],
+      "rms_db": -40.87,
+      "level_db": -13.0,
+      "timbre_db": 8.486,
+      "centroid_hz": 204.2,
+      "flatness": 1e-05
+     },
+     {
+      "value": 36.0,
+      "broken": [],
+      "rms_db": -31.58,
+      "level_db": -3.8,
+      "timbre_db": 8.724,
+      "centroid_hz": 246.1,
+      "flatness": 0.0
+     },
+     {
+      "value": 45.0,
+      "broken": [],
+      "rms_db": -43.27,
+      "level_db": -15.5,
+      "timbre_db": 10.156,
+      "centroid_hz": 347.1,
+      "flatness": 1e-05
+     },
+     {
+      "value": 108.0,
+      "broken": [],
+      "rms_db": -31.81,
+      "level_db": -4.0,
+      "timbre_db": 10.834,
+      "centroid_hz": 205.4,
+      "flatness": 0.00013
+     },
+     {
+      "value": 180.0,
+      "broken": [],
+      "rms_db": -49.09,
+      "level_db": -21.3,
+      "timbre_db": 12.447,
+      "centroid_hz": 435.9,
+      "flatness": 2e-05
+     }
+    ],
+    "shimmer": [
+     {
+      "value": -180.0,
+      "broken": [],
+      "rms_db": -38.0,
+      "level_db": 0.9,
+      "timbre_db": 17.93,
+      "centroid_hz": 561.2,
+      "flatness": 1e-05
+     },
+     {
+      "value": -108.0,
+      "broken": [],
+      "rms_db": -38.55,
+      "level_db": 0.3,
+      "timbre_db": 19.228,
+      "centroid_hz": 368.8,
+      "flatness": 1e-05
+     },
+     {
+      "value": -36.0,
+      "broken": [],
+      "rms_db": -24.08,
+      "level_db": 14.8,
+      "timbre_db": 27.095,
+      "centroid_hz": 207.3,
+      "flatness": 0.0
+     },
+     {
+      "value": 36.0,
+      "broken": [],
+      "rms_db": -31.96,
+      "level_db": 6.9,
+      "timbre_db": 25.918,
+      "centroid_hz": 176.0,
+      "flatness": 1e-05
+     },
+     {
+      "value": 45.0,
+      "broken": [],
+      "rms_db": -36.38,
+      "level_db": 2.5,
+      "timbre_db": 25.393,
+      "centroid_hz": 486.8,
+      "flatness": 0.00014
+     },
+     {
+      "value": 108.0,
+      "broken": [],
+      "rms_db": -32.04,
+      "level_db": 6.8,
+      "timbre_db": 19.123,
+      "centroid_hz": 457.4,
+      "flatness": 1e-05
+     },
+     {
+      "value": 180.0,
+      "broken": [],
+      "rms_db": -38.0,
+      "level_db": 0.9,
+      "timbre_db": 17.93,
+      "centroid_hz": 561.2,
+      "flatness": 1e-05
+     }
+    ]
+   },
+   "swept": [
+    -180.0,
+    180.0
+   ],
+   "default": 45.0,
+   "safe": [
+    -180.0,
+    180.0
+   ],
+   "curve": [
+    [
+     0.0,
+     -180.0
+    ],
+    [
+     0.0667,
+     -108.0
+    ],
+    [
+     0.3763,
+     -36.0
+    ],
+    [
+     0.4999,
+     36.0
+    ],
+    [
+     0.5665,
+     45.0
+    ],
+    [
+     0.7412,
+     108.0
+    ],
+    [
+     1.0,
+     180.0
+    ]
+   ],
+   "moved_default": false
+  },
+  "unit:shifter:at": {
+   "unit": true,
+   "vau_default": 6.0,
+   "steps": [
+    2.0,
+    4.0,
+    6.0,
+    8.0,
+    10.0,
+    12.0
+   ],
+   "presets": {
+    "warm-drone": [
+     {
+      "value": 2.0,
+      "broken": [],
+      "rms_db": -34.47,
+      "level_db": -6.6,
+      "timbre_db": 13.762,
+      "centroid_hz": 186.5,
+      "flatness": 1e-05
+     },
+     {
+      "value": 4.0,
+      "broken": [],
+      "rms_db": -35.23,
+      "level_db": -7.4,
+      "timbre_db": 9.023,
+      "centroid_hz": 284.1,
+      "flatness": 1e-05
+     },
+     {
+      "value": 6.0,
+      "broken": [],
+      "rms_db": -43.27,
+      "level_db": -15.5,
+      "timbre_db": 10.156,
+      "centroid_hz": 347.1,
+      "flatness": 1e-05
+     },
+     {
+      "value": 8.0,
+      "broken": [],
+      "rms_db": -32.09,
+      "level_db": -4.3,
+      "timbre_db": 8.298,
+      "centroid_hz": 96.6,
+      "flatness": 1e-05
+     },
+     {
+      "value": 10.0,
+      "broken": [],
+      "rms_db": -31.7,
+      "level_db": -3.9,
+      "timbre_db": 11.001,
+      "centroid_hz": 143.6,
+      "flatness": 0.0
+     },
+     {
+      "value": 12.0,
+      "broken": [],
+      "rms_db": -40.7,
+      "level_db": -12.9,
+      "timbre_db": 14.109,
+      "centroid_hz": 721.3,
+      "flatness": 1e-05
+     }
+    ],
+    "shimmer": [
+     {
+      "value": 2.0,
+      "broken": [],
+      "rms_db": -31.53,
+      "level_db": 7.4,
+      "timbre_db": 24.785,
+      "centroid_hz": 309.1,
+      "flatness": 1e-05
+     },
+     {
+      "value": 4.0,
+      "broken": [],
+      "rms_db": -37.08,
+      "level_db": 1.8,
+      "timbre_db": 22.438,
+      "centroid_hz": 430.8,
+      "flatness": 0.0
+     },
+     {
+      "value": 6.0,
+      "broken": [],
+      "rms_db": -36.38,
+      "level_db": 2.5,
+      "timbre_db": 25.393,
+      "centroid_hz": 486.8,
+      "flatness": 0.00014
+     },
+     {
+      "value": 8.0,
+      "broken": [],
+      "rms_db": -42.54,
+      "level_db": -3.7,
+      "timbre_db": 22.492,
+      "centroid_hz": 410.6,
+      "flatness": 0.0
+     },
+     {
+      "value": 10.0,
+      "broken": [],
+      "rms_db": -36.22,
+      "level_db": 2.7,
+      "timbre_db": 29.532,
+      "centroid_hz": 331.5,
+      "flatness": 0.0
+     },
+     {
+      "value": 12.0,
+      "broken": [],
+      "rms_db": -26.78,
+      "level_db": 12.1,
+      "timbre_db": 20.523,
+      "centroid_hz": 290.7,
+      "flatness": 1e-05
+     }
+    ]
+   },
+   "swept": [
+    2.0,
+    12.0
+   ],
+   "kind": "placement",
+   "safe_places": [
+    2.0,
+    4.0,
+    6.0,
+    8.0,
+    10.0,
+    12.0
+   ],
+   "default": 6.0,
+   "safe": [
+    2.0,
+    12.0
+   ],
+   "curve": []
+  }
+ },
+ "ears": {},
+ "floor": {
+  "warm-drone": {
+   "timbre_db": 7.14,
+   "level_sd_db": 2.73,
+   "level_range_db": 8.85,
+   "seeds": 7
+  },
+  "shimmer": {
+   "timbre_db": 5.87,
+   "level_sd_db": 1.03,
+   "level_range_db": 2.94,
+   "seeds": 7
+  },
+  "dark-field": {
+   "timbre_db": 4.39,
+   "level_sd_db": 4.41,
+   "level_range_db": 13.25,
+   "seeds": 7
+  },
+  "glass": {
+   "timbre_db": 15.36,
+   "level_sd_db": 1.58,
+   "level_range_db": 4.59,
+   "seeds": 7
+  }
+ }
+}

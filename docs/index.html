@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Abliterator</title>
+  <meta name="description" content="Abliterator: vector bending for a music model, live. It changes the vectors the model computes with, between its transformer layers, while it plays, and you hear the change a tenth of a second later. Saved sounds are layered on eight tracks. A Vector Lab tool.">
+  <link rel="icon" href="img/mark.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#f3f2ee" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0e1015" media="(prefers-color-scheme: dark)">
+  <meta property="og:title" content="Abliterator: vector bending for a music model">
+  <meta property="og:description" content="Steer, squash and turn the vectors a music model computes with, between its transformer layers, while it plays. A live instrument that runs on your own machine.">
+  <meta property="og:type" content="website">
+  <meta property="og:image:width" content="1280">
+  <meta property="og:image:height" content="640">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta property="og:url" content="https://vector-lab-tools.github.io/abliterator/">
+  <meta property="og:image" content="https://vector-lab-tools.github.io/abliterator/img/share.png">
+  <script>(function(){try{var t=localStorage.getItem('abl-theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+  <link rel="stylesheet" href="style.css?v=a7fbc234">
+  <link rel="stylesheet" href="audio.css?v=75a41c3f">
+</head>
+<body>
+<!-- Written by hand. Copyright (C) 2026 David M. Berry. SPDX-License-Identifier: GPL-3.0-or-later -->
+<a class="skip" href="#main">Skip to the content</a>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="./" aria-label="Abliterator, home">
+      <img src="img/mark.svg" alt="">
+      <span class="brand-block">
+        <span class="brand-name">Abliterator</span>
+        <span class="brand-tagline">A Vector Lab instrument</span>
+      </span>
+    </a>
+    <div class="head-tools">
+      <nav class="site-nav" aria-label="Sections">
+        <a href="#listen">Listen</a>
+        <a href="#make">Make</a>
+        <a href="#how">How it works</a>
+        <a href="abliteration.html">What is Abliteration?</a>
+        <a href="units.html">Model layers</a>
+        <a href="#musical">Musical knobs</a>
+        <a href="#session">Session</a>
+        <a href="#start">Get started</a>
+        <a href="faq.html">FAQ</a>
+        <span class="nav-sep" aria-hidden="true"></span>
+        <a class="ext" href="https://github.com/vector-lab-tools/abliterator">GitHub</a>
+        <a class="ext vau" href="https://vector-lab-tools.github.io/vector-abliteration-units/" title="Vector Abliteration Units: the units on the Model layers row">VAU ↗</a>
+      </nav>
+      <button class="theme-toggle" type="button" aria-label="Switch between light and dark" title="Switch between light and dark">
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<section class="hero">
+  <canvas class="hero-scope" id="hero-scope" aria-hidden="true"></canvas>
+  <div class="wrap hero-inner">
+    <span class="kicker">Vector Lab · instrument · alpha · version 0.2.0</span>
+    <h1><span class="glitch" id="title" data-text="Abliterator">Abliterator</span></h1>
+    <p class="tagline">Vector bending for a music model, played live. The model writes a new frame of stereo audio at every step; Abliterator steers its residual stream, puts units between its transformer layers, and runs the result through a synth's output section. Sounds you like are saved to a library and layered on eight tracks. The engine is Magenta RealTime 2 by default, with MusicGen as a second; the instrument talks to each through the same engine interface, so other models can be added. It runs on your own machine.</p>
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="#listen">Listen</a>
+      <a class="btn" href="#how">How it works</a>
+      <a class="btn" href="https://github.com/vector-lab-tools/abliterator">Source on GitHub</a>
+      <a class="btn" href="https://vector-lab-tools.github.io/vector-abliteration-units/">The VAU standard</a>
+    </div>
+    <figure class="hero-shot">
+      <a class="screen shot" href="img/make.webp" data-cap="Make while it plays: the Engine (Magenta RT 2 small, the Warm drone preset, seed 1, guidance 3, temperature 1.3, top-k 40) with its scope, stereo meters and stereo field; the Signal path, with the stream going through the model's twelve layers, the codec, the model's sound and four effects, on to the Output section with the compressor at work and the OUT meter; under Model layers, Steer at brightness 0.1 and pulse 0.03 with LFO 1 moving the brightness dose, then Neuron in block 3, Quantise and Running Average at layer 6, each with its live display, and a Scope reading layer 6; the effects Drive, EQ 8, Plate and Delay; and the modulation sources along the foot. CPU and GPU load are at the top right.">
+        <img src="img/make.webp" width="2000" height="1250" alt="The Make view of Abliterator: the sound library on the left; the Engine panel with preset, a style box, Seed, Guidance, Temperature and Top-k knobs, a waveform scope, left and right meters, Width and Spread knobs and a round stereo field scope; the Signal path panel, a diagram of the model's twelve layers with dots for Steer and the units, the codec, the model's sound and the effects; the Output section with knobs, switches, Dynamics LEDs and a tall OUT meter; the Model layers row with the Steer card (an XY pad and two dose knobs), Neuron with its cell drawing, Quantise with values in and out, Running Average with a trace, and a Scope; four effect cards, Drive, EQ 8 with its curve, Plate and Delay; and the modulation sources with the LFO editor below. The top bar reads version 0.2.0, CPU load 9% and GPU load 66%.">
+        <span class="zoom">Zoom</span>
+      </a>
+    </figure>
+    <div class="stats" aria-label="Abliterator in figures">
+      <div><b>40 ms</b><span>A frame of 48 kHz stereo per step, on Magenta RT 2</span></div>
+      <div><b>≈ 25 ms</b><span>To make it, on an Apple M5</span></div>
+      <div><b>≈ 100 ms</b><span>From a turn of a knob to the sound</span></div>
+      <div><b>2</b><span>Engines: Magenta RT 2 and MusicGen</span></div>
+      <div><b>13</b><span>VAU units between the model's layers</span></div>
+      <div><b>11</b><span>Effects, up to eight in a chain</span></div>
+    </div>
+  </div>
+</section>
+
+<main class="content" id="main">
+
+  <div class="wrap toc-strip" aria-label="On this page">
+    <a href="#what">Overview</a><a href="#listen">Listen</a><a href="#make">Make</a><a href="#how">How it works</a><a href="#musical">Musical knobs</a><a href="#modulation">Modulation</a><a href="#session">Session</a><a href="#holes">Rabbit holes</a><a href="#start">Getting started</a><a href="#credits">Credits</a><a href="abliteration.html">What is Abliteration? ↗</a><a href="faq.html">FAQ ↗</a>
+  </div>
+
+  <!-- 01 -->
+  <section class="section wrap reveal" id="what">
+    <span class="num">01</span>
+    <h2>Overview</h2>
+    <p class="lede">Abliterator is an instrument for vector bending: it changes the vectors a music model computes with while it plays, and you hear the change about a tenth of a second after you make it. <a href="abliteration.html">What is Abliteration?</a> says where the name comes from and what vector bending means for sound design, with demonstrations.</p>
+    <p>The default engine is <a href="https://github.com/magenta/magenta-realtime">Magenta RealTime 2</a> small, in 8-bit on Apple's MLX. MusicGen small (Meta) is a second engine, with Steer but without the model-layer units, and other models can be added behind the same engine interface. Everything on this page is Magenta RT 2 unless it says otherwise. Given a style prompt (“slow ambient drone, warm analogue pads, no drums”) and a seed, it writes a 40 ms frame of 48 kHz stereo audio at each step, reading what it has already played. Abliterator changes that step from inside in two ways:</p>
+    <ul>
+      <li><b>Steer</b> adds a direction to the model's residual stream at layer 6, a dose of “brighter” or “darker”, “more pulse” or “beatless”, set on an XY pad. The directions come from pairs of prompts, written as editable Markdown.</li>
+      <li><b>Model layers</b> are <a href="https://vector-lab-tools.github.io/vector-abliteration-units/">Vector Abliteration Units</a> placed between the model's 12 transformer layers: Lookback, Running Average, Tanh Squash, Quantise, Rotate, Abliterate and the rest. They act on the stream of numbers the model thinks in, not on the audio.</li>
+    </ul>
+    <p>After the model come the things a synth has: auto level, an <b>effect chain</b> of up to eight (reverb, plate and hall, each of the last two with a 2020s, 1980s or 1970s colour, delay, chorus, drive, a three-band EQ, EQ 8 with a low and a high cut, filter, crush and de-click, in any order), a compressor and gate, stereo width, a low-pass, a limiter and a volume. Twelve <b>modulation</b> sources (three LFOs, three envelopes, two random sources and four macros) move the knobs while it plays, the units' and the effects' as well as the model's. A sound you like is saved as you heard it, with a recipe that replays it exactly, and goes to <b>Session</b>, where eight tracks loop and layer the saved sounds.</p>
+    <div class="viz" id="viz-path" role="group" aria-label="Animated figure: the signal path from the prompt through the model's twelve layers, the codec and the output section, with switches for Steer, Model layers and Effects">
+      <svg viewBox="0 0 960 330" aria-hidden="true"></svg>
+      <div class="bar"><span class="lab">The signal path</span>
+        <button type="button" data-k="steer" aria-pressed="true">Steer</button>
+        <button type="button" data-k="layers" aria-pressed="true">Model layers</button>
+        <button type="button" data-k="fx" aria-pressed="true">Effects</button></div>
+      <div class="readout" aria-live="polite"></div>
+    </div>
+    <p class="viz-cap"><b>The signal path, sketched.</b> Steer and the Model layers change what the model writes; the effects change the audio it has written. The waveforms here are drawn, not recorded. Steer and Model layers have the same switches on the Make panel, and a move of either is recorded in a saved sound's recipe.</p>
+  </section>
+
+  <!-- 02 -->
+  <section class="section wrap reveal" id="listen">
+    <span class="num">02</span>
+    <h2>Listen</h2>
+    <p>Sounds saved from the instrument on this machine, made while it was being built. Each card shows the preset, its prompt, the seed and any model-layer units. These are the model's output before the effects; the instrument now saves a sound as it was heard, after them. The scope and the spectrum above the cards follow whatever is playing: your browser's own analysis of it where the browser allows that (Chrome, Firefox), or else its waveform and spectrogram, drawn when the site was built. Every sound on this site is a recording: a web page cannot run the model, which plays live only in the instrument on a Mac with Apple silicon.</p>
+    <div class="scope-deck" id="scope-deck">
+      <canvas id="live-scope" aria-label="Oscilloscope of the sound playing"></canvas>
+      <canvas id="live-spec" aria-label="Spectrum of the sound playing"></canvas>
+      <div class="scope-label"><span id="now-playing">nothing playing</span><span class="raw">scope · spectrum, 40 Hz to 20 kHz</span></div>
+    </div>
+    <div class="sounds" id="sounds"></div>
+    <p class="viz-cap" style="margin-top:0.6rem">Magenta RT 2 small, 8-bit MLX, 48 kHz stereo, on an Apple M5 with 24 GB. The model writes quietly (−28 to −41 dBFS), so for this page each sound is raised to about −20 dBFS with a limiter, and every sweep render in the figures below by the same 12 dB. MP3 at 160 kbit/s; the instrument saves WAV.</p>
+  </section>
+
+  <!-- 03 -->
+  <section class="section wrap reveal" id="make">
+    <span class="num">03</span>
+    <h2>Make</h2>
+    <p>Make is the instrument, laid out as a synth panel and compact enough to fit one laptop screen. Every knob sends while it turns. Press <kbd>▶</kbd> and the model plays the preset; everything on the panel changes the sound from the next frame. There are twenty-five presets in six groups (ambient, electronic, beats, acoustic, orchestral, experimental), or type a style of your own under the menu: the engine makes its tokens in about 90 ms and plays it, or switches to it while playing, and keeps it under Your prompts.</p>
+    <div class="clips">
+      <figure class="clip tilt" style="--w:440px;--mw:560px">
+        <a class="shot" href="img/c-engine.webp" data-cap="The Engine while it plays: Magenta RT 2 small, the Warm drone preset and its prompt, a box to type a style of your own, and four knobs: the Seed (with a die beside it for a random one; it takes effect at the next ▶), Guidance, Temperature and Top-k. On the right, the scope of the last three seconds (scrolling left, the newest at the marked edge), left and right meters with their peaks, the peak, RMS and correlation, Width and Spread, and the stereo field with its correlation bar."><img src="img/c-engine.webp" width="750" height="307" loading="lazy" alt="The Engine panel: the engine menu reading Magenta RT 2 small with 8-bit, 48 kHz stereo, Playing; the preset Warm drone with its prompt and a style box; knobs for Seed 1 with a small die beside it, Guidance 3.0, Temperature 1.30 and Top-k 40; on the right a blue waveform scope, green L and R meter bars with peak, RMS and correlation readouts, Width and Spread knobs, and a round scope of the stereo field."></a>
+        <figcaption><span class="tag">Engine</span>A preset or a style typed in, the seed and the sampler as knobs, with the scope, stereo meters and the stereo field beside them.</figcaption>
+      </figure>
+      <figure class="clip blue tilt2" style="--w:260px;--mw:330px">
+        <a class="shot" href="img/c-signal.webp" data-cap="The Signal path while it plays: the stream enters from the Engine and goes through the model's twelve layers, drawn as columns, with a lane for Steer (amber, at layer 6) and one for each unit (green, a dot at each layer or block where it acts), lit by how much each changes the stream. Quantise's card was selected, so its lane is named and the others dim. Below, the codec, the model's sound and the four effects, on to the Output panel beside it. Dots run along both paths while it plays, and a faint band sweeps the layers."><img src="img/c-signal.webp" width="436" height="307" loading="lazy" alt="The Signal path panel: a wide box labelled Model 12 layers, Steer and model units, with twelve columns, an amber dot near the top at layer 6 and green dots at the layers where units act, Quantise named on its lane; below it Codec SpectroStream, The model's sound with a thin waveform, and Effects with four lit cells reading 4 of 4 on, joined by lines with small arrows, and an arrow out to the right."></a>
+        <figcaption><span class="tag">Signal path</span>The route through the model and out as sound, live. A selected card lights its unit's lane.</figcaption>
+      </figure>
+      <figure class="clip green" style="--w:150px;--mw:190px">
+        <a class="shot" href="img/c-output.webp" data-cap="Output while it plays: a low-pass at 16 kHz, volume 0.50, a buffer of three frames (120 ms) ahead of the sound card, auto level, limiter and De-click on, Bypass off. Dynamics: a compressor at 3.1:1 from −30 dBFS with fast attack, the gate off. The rows show the compressor's and gate's reduction on LEDs, auto level's gain and the limiter's pull. The OUT meter lights in cells, green, amber from −6 dB and red from −1 dB, with a hold line on each channel's peak."><img src="img/c-output.webp" width="230" height="307" loading="lazy" alt="The Output panel: knobs for Low-pass 16.0k, Volume 0.50 and Buffer 120 ms; switches Bypass, Level, Limiter and De-click, two by two; Dyn, Fast and Peak switches over Ratio, Thresh, Release and Gate knobs; rows of LEDs for Comp, Gate, Auto and Limit with their readings; and a tall OUT meter of green cells."></a>
+        <figcaption><span class="tag">Output</span>De-click, auto level, Dynamics (a compressor and gate), low-pass, limiter and volume, with Bypass to hear the model before them.</figcaption>
+      </figure>
+    </div>
+    <div class="clips">
+      <figure class="clip blue tilt2" style="--w:260px;--mw:330px">
+        <a class="shot" href="img/c-steer.webp" data-cap="Steer, the first card on the Model layers row, fixed at layer 6: an XY pad with Brightness across and Pulse up, each a dose along a direction in the residual stream at layer 6, as a share of the stream's size. Full range lets the dose go where the sound breaks. Here LFO 1 moves Brightness about its knob (the gold dot; the white dot is the knob). Below, the doses heard over the last ten seconds, modulation included. The ‹ folds the card to a narrow strip; switched off, it folds the same way."><img src="img/c-steer.webp" width="397" height="260" loading="lazy" alt="The Steer card: its power light and name, Layer 6 fixed and a fold button; an XY pad, dark to bright across and beatless to pulse up, with a white dot at the knobs' setting and a gold dot where LFO 1 has moved it; Brightness +0.100 and Pulse +0.030 knobs; a Centre button and a Full range checkbox; and a small chart of the doses over the last ten seconds."></a>
+        <figcaption><span class="tag">Steer</span>Two directions on a pad, at layer 6. The knobs keep to the range the measurements found musical.</figcaption>
+      </figure>
+      <figure class="clip red" style="--w:150px;--mw:190px">
+        <a class="shot" href="img/c-layer.webp" data-cap="A Lookback card at layer 6: Layer, Time (4 frames), Feedback (0.30) and Mix (0.20) as knobs. The ⚠ on Time and Feedback marks settings that held up only at these values in the measurements. Below, the last 32 frames, newest on the left, with the frames it reads back lit as it acts; here the reading is simulated, so the page could be captured without the engine."><img src="img/c-layer.webp" width="186" height="258" loading="lazy" alt="The Lookback card: its power light, name and remove button; knobs for Layer 6, Time 4 with a warning mark, Feedback 0.30 with a warning mark and Mix 0.20; a row of 32 small cells with every fourth one lit, reading 4 frames, 160 ms; a help button; beside it the empty slot for adding a unit."></a>
+        <figcaption><span class="tag">Model layer</span>Lookback at layer 6, with its taps lit. Its mix is measured; 0.5 silences the model.</figcaption>
+      </figure>
+      <figure class="clip" style="--w:520px;--mw:760px">
+        <a class="shot" href="img/c-effects.webp" data-cap="An effect chain of four between IN and OUT: Drive, with its meter of how hard the curve is driven; EQ 8, with a low cut at 120 Hz, 400 Hz down 4 dB and 2.5 kHz up 3 dB, drawn as its curve; De-click, with the count of bursts it has redrawn; and Plate in its 1980s colour. The ✕ removes an effect, its name drags it to another place, a + in the gap between two adds one there, and the dashed + adds one at the end, up to eight in all."><img src="img/c-effects.webp" width="1428" height="267" loading="lazy" alt="The Effects panel, between IN and OUT labels: a narrow Drive card with a small row of level cells and a CLIP mark and three knobs offset left and right (Drive 3.0×, Tone 9.0k, Mix 1.00); EQ 8, with a response curve over eight knobs (Low cut 120, 60 Hz 0.0, 150 Hz 0.0, 400 Hz −4.0, 1 kHz 0.0, 2.5 kHz +3.0, 6 kHz 0.0, High cut 20.0k) and a Slope of 12 or 24 dB; a narrow De-click card reading Fixed 17 over Sensitivity 0.50 and Longest 1 ms; Plate, with Decay 2.5 s, Size 1.00, Pre-delay 10 ms, Damp 0.30, Mod 0.50, Mix 0.30 and Colour set to 1980s; then a dashed + to add another."></a>
+        <figcaption><span class="tag">Effects</span>Up to eight effects on the audio, added in any gap, removed and dragged into order. A saved sound keeps them.</figcaption>
+      </figure>
+    </div>
+    <figure>
+      <a class="shot" href="img/c-mod.webp" data-cap="Modulation: three LFOs, three envelopes and two random sources along the top, each drawing what it does (a macro's tile appears once it moves something); the LFO tab below with shape, rate, amount, phase, symmetry and smoothing, and each LFO's links with their sends. LFO 1 moves Brightness and the low-pass, LFO 2 the Lookback unit's mix."><img src="img/c-mod.webp" width="1300" height="332" loading="lazy" alt="The modulation strip: tiles LFO 1, LFO 2, LFO 3, ENV 1, ENV 2, ENV 3, RAND 1 and RAND 2, each with a small drawing of its signal, and below them the LFO editor with five wave shapes and Rate, Amount, Phase, Symmetry and Smooth knobs for each LFO; LFO 1 at 0.20 Hz and 80% linked to Brightness at 0.35 and Low-pass at −0.20, LFO 2 a triangle linked to Lookback Mix at 0.30."><span class="zoom">Zoom</span></a>
+      <figcaption><b>Modulation.</b> Twelve sources. Drag a source onto any knob that takes one: the Steer doses, Guidance, Temperature, the output's low-pass and volume, every knob of a Model layers unit and of an effect. Each source is a function of the frame's time, so a saved sound replays its modulation exactly.</figcaption>
+    </figure>
+    <figure class="clip" style="--w:280px;--mw:360px">
+      <a class="shot" href="img/c-send.webp" data-cap="LFO 1 selected: the Steer card's knobs have turned into its sends, Pulse at +0.12, drawn from 12 o'clock in its colour. Its badge is being dragged onto Brightness, which lights up to take it."><img src="img/c-send.webp" width="397" height="260" loading="lazy" alt="The Steer card with LFO 1 selected: the Brightness and Pulse knobs show sends instead of values, Pulse at +0.12 with a gold arc, and a small LFO 1 badge with a sine glyph over the glowing Brightness knob."></a>
+      <figcaption><span class="tag">Sends</span>Click a source and the knobs it can move become its sends: drag up for more, down for less, double-click to unlink. Its badge drops onto a knob to link it.</figcaption>
+    </figure>
+    <figure>
+      <a class="shot" href="img/c-listen.webp" data-cap="Listen (≋ in the top bar): the model's lane while it plays the Warm drone. Partway through, a Brightness dose of 0.2 was set: the low drone fades and higher material comes in. A second lane shows the tracks' mix."><img src="img/c-listen.webp" width="1400" height="384" loading="lazy" alt="The Listen view: a wide spectrogram from 40 Hz to 20 kHz in violet, amber and white; on the left a strong band near 150 Hz with partials above it, on the right, after the Brightness move, the low band gone and bright partials between 500 Hz and 5 kHz."><span class="zoom">Zoom</span></a>
+      <figcaption><b>Listen</b> (≋) shows what you hear as a spectrogram while it plays: the model after its effects and output section on one lane, the tracks' mix on another, the last ten seconds of each, in the same colours and on the same scale as the spectrograms on this site. The Engine panel's scope switches between the waveform and the same spectrogram.</figcaption>
+    </figure>
+  </section>
+
+  <!-- 04 -->
+  <section class="section wrap reveal" id="how">
+    <span class="num">04</span>
+    <h2>How it works</h2>
+
+    <h3 id="frames">Frame by frame</h3>
+    <div class="split">
+      <div>
+        <p>Magenta RT 2 is an autoregressive transformer over audio tokens. Each step it writes the tokens of one 40 ms frame, reading the frames it has written and a style embedding of the prompt, and a codec turns the tokens into 1,920 stereo samples. On an Apple M5 the small model takes about 25 ms a step, so it keeps ahead of real time with about 15 ms to spare.</p>
+        <p>The engine runs in its own process and keeps a few frames ahead of the sound card: the <b>buffer</b>, two frames (80 ms) by default. A move you make is applied to the next frame the model writes, and you hear it when that frame reaches the card. With two frames ahead and the card's own 22 ms, that is about 102 ms; a measured move took 107 ms.</p>
+        <p>A shorter buffer answers sooner and drops out when a step runs long. The top bar shows <b>GPU load</b>, the time the slowest steps take as a share of the 40 ms frame (over 100% the model is falling behind), and <b>CPU load</b>, the share of the processor the instrument uses. When a frame is late anyway, the last block the card played goes on, mirrored so that it starts where the sound stopped, and fades out over 30 ms; the audio crossfades back in over 5 ms when it arrives, so a dropout is heard as a short dip, without a click. Saved sounds are taken from the frames the model wrote, not from what reached the card, so a dropout heard live is not in a saved sound. Freeze renders a sound again offline from its recipe.</p>
+        <p>Some settings make the model itself write clicks: bursts a few samples long that swing up and down, sometimes to full scale, and sound like a bad splice. Neuron pushed hard at one block does it, and so does Quantise at 6 bits (85 a minute on the Warm drone, none at 8). <b>De-click</b>, the first stage of the output section, finds samples that jump far above the local level and reverse direction from one sample to the next, and redraws each burst as a straight line between the good samples either side. It looks 64 samples (1.3 ms) ahead. With Neuron at ×14.45 on block 3, the steps heard above half the peak fell from 27 to 2; on clean techno, jazz and gamelan it touched 3 to 12 places in 45 seconds. It is on by default and has a switch in Output; sounds saved before version 0.1.4 replay without it.</p>
+      </div>
+      <div>
+        <div class="viz" id="viz-frames" role="group" aria-label="Animated figure: frames written by the model ahead of the sound card, with a move travelling through the buffer">
+          <svg viewBox="0 0 520 330" aria-hidden="true"></svg>
+          <div class="bar"><span class="lab">Buffer</span>
+            <label>frames <input type="range" min="1" max="6" value="2" data-k="lead"><output>2</output></label>
+            <button type="button" data-act="move">Turn a knob</button></div>
+          <div class="readout" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <h3 id="steer">Steer: a dose along a direction</h3>
+    <p>A direction is made from pairs of prompts that differ in one quality: “bright airy ambient pad, high shimmering tones, no drums” against the same piece asked for dark, low and muffled. The engine runs both lists through the model and takes the difference of the mean residual streams at each layer. Steer adds that difference at layer 6, scaled by the dose, which is a share of the stream's typical size: a dose of 0.1 adds a tenth. The two shipped directions, Brightness and Pulse, are in <code>backend/config/contrasts/</code> as editable Markdown.</p>
+    <p>On the Warm drone preset the brightness dose takes the spectral centroid from about 140 Hz at 0 to 1.8 kHz at 0.2 and 2 kHz at 0.4. Below 0 the centroid hardly moves and the level rises instead, by 15 dB at −0.2. Pulse's measured range is narrower, 0 to 0.05.</p>
+
+    <h3 id="layers">Model layers: units between the transformer layers</h3>
+    <p>The model-layer units are <a href="https://vector-lab-tools.github.io/vector-abliteration-units/">Vector Abliteration Units</a>. VAU names its Core units for what they do to the vectors, with a small v before the name (vLookback, vNorm Shrink) to mark them as vector effects; a unit's help gives that name, and its strip the name without the v, in VAU's short form (Shrink for Norm Shrink, Average for Running Average, Clamp for Component Clamp). One unit has a name of its own here: VAU's Position Repeat is Frame Repeat, since on this engine its positions are 40 ms frames of sound, and its help gives VAU's name. A unit at layer 6 changes what layers 6 to 11 read. Steer is the first card on the row, fixed at layer 6, since it acts there in the same way: it adds a direction to the stream, scaled by the stream's size and the dose. In its old place at the top, the Signal path draws the route live, from the Engine through the twelve layers (Steer and each unit marked where it acts) and the codec, then as sound through the effects and on to the Output panel beside it. While the model plays, each card shows what its unit is doing, from 32 of the stream's values read going in and coming out at the strip and the stream's size after against before: values listed for Quantise and Component Clamp, pixels for Sparsify, out against in for Tanh Squash, a trace for Running Average, gain LEDs for Norm Shrink, Band Shrink and Principal Bands, lit taps for Lookback, a lamp for each repeat in Frame Repeat, an arc for Rotate, and for Neuron a cell that swells and fires with the value it leaves in the neuron it changes most. A unit without a display of its own has a green light that breathes while it acts.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Unit</th><th>What it does to the stream</th></tr></thead>
+        <tbody>
+          <tr><td>Lookback</td><td>Adds the stream from a few frames back, with feedback</td></tr>
+          <tr><td>Running Average</td><td>Adds a decaying average of the earlier frames</td></tr>
+          <tr><td>Frame Repeat</td><td>Replays the stream of the frames just before over the last few of each run</td></tr>
+          <tr><td>Tanh Squash</td><td>Soft-clips each dimension, harder as the drive rises</td></tr>
+          <tr><td>Norm Shrink</td><td>Above a threshold, reduces the stream's size by a ratio</td></tr>
+          <tr><td>Band Shrink</td><td>The same, on three bands of principal directions separately</td></tr>
+          <tr><td>Component Clamp</td><td>Clamps the largest components at a quantile ceiling</td></tr>
+          <tr><td>Principal Bands</td><td>Scales three bands of the stream's principal directions</td></tr>
+          <tr><td>Quantise</td><td>Rounds the stream to fewer levels</td></tr>
+          <tr><td>Sparsify</td><td>Keeps each position's largest components and zeroes the rest</td></tr>
+          <tr><td>Rotate</td><td>Rotates the stream in the plane of two directions</td></tr>
+          <tr><td>Abliterate</td><td>Removes a direction from what attention and the MLPs write</td></tr>
+          <tr><td>Neuron</td><td>Edits named MLP neurons: scale, add, set, zero</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="unit-desk-note">Each unit as a card on the Model layers row, at the defaults measured on this engine, with the display it shows while the model plays. The displays here are drawn from simulated readings, so the page could be captured without the engine. Scroll along the row; a name opens the unit's card, with its whole sweep to listen to.</p>
+    <div class="unit-desk" tabindex="0" aria-label="The thirteen units' strips; scroll sideways for more">
+        <figure class="ucard">
+          <a class="shot" href="img/strips/delay.webp" data-cap="Lookback on the Model layers row, at the defaults measured on this engine. Its card on the Model layers page has its sweep to listen to."><img src="img/strips/delay.webp" width="144" height="178" loading="lazy" alt="The Lookback strip at its defaults."></a>
+          <figcaption><b><a href="units.html#u-delay">Lookback</a></b><span class="uwhat">Adds the stream from some positions back: an echo, with feedback</span></figcaption>
+        </figure>
+        <figure class="ucard">
+          <a class="shot" href="img/strips/reverb.webp" data-cap="Running Average on the Model layers row, at the defaults measured on this engine. Its card on the Model layers page has its sweep to listen to."><img src="img/strips/reverb.webp" width="144" height="178" loading="lazy" alt="The Running Average strip at its defaults."></a>
+          <figcaption><b><a href="units.html#u-reverb">Running Average</a></b><span class="uwhat">Adds a decaying average of the earlier positions</span></figcaption>
+        </figure>
+        <figure class="ucard">
+          <a class="shot" href="img/strips/beatrepeat.webp" data-cap="Frame Repeat on the Model layers row, at the defaults measured on this engine. Its card on the Model layers page has its sweep to listen to."><img src="img/strips/beatrepeat.webp" width="144" height="178" loading="lazy" alt="The Frame Repeat strip at its defaults."></a>
+          <figcaption><b><a href="units.html#u-beatrepeat">Frame Repeat</a></b><span class="uwhat">In every run of positions, replays the stream of the few positions before over the last few: a stutter</span></figcaption>
+        </figure>
+        <figure class="ucard">
+          <a class="shot" href="img/strips/compressor.webp" data-cap="Norm Shrink on the Model layers row, at the defaults measured on this engine. Its card on the Model layers page has its sweep to listen to."><img src="img/strips/compressor.webp" width="144" height="178" loading="lazy" alt="The Norm Shrink strip at its defaults."></a>
+          <figcaption><b><a href="units.html#u-compressor">Norm Shrink</a></b><span class="uwhat">Above a threshold, reduces the stream's size at each position by a ratio</span></figcaption>
+        </figure>
+        <figure class="ucard">
+          <a class="shot" href="img/strips/saturator.webp" data-cap="Tanh Squash on the Model layers row, at the defaults measured on this engine. Its card on the Model layers page has its sweep to listen to."><img src="img/strips/saturator.webp" width="144" height="178" loading="lazy" alt="The Tanh Squash strip at its defaults."></a>
+          <figcaption><b><a href="units.html#u-saturator">Tanh Squash</a></b><span class="uwhat">Soft-clips each dimension of the stream, harder as the drive rises</span></figcaption>
+        </figure>
+        <figure class="ucard">
+          <a class="shot" href="img/strips/erosion.webp" data-cap="Quantise on the Model layers row, at the defaults measured on this engine. Its card on the Model layers page has its sweep to listen to."><img src="img/strips/erosion.webp" width="144" height="217" loading="lazy" alt="The Quantise strip at its defaults."></a>
+          <figcaption><b><a href="units.html#u-erosion">Quantise</a></b><span class="uwhat">Quantises the stream to few levels, or holds it over several positions</span></figcaption>
+        </figure>
+        <figure class="ucard">
+          <a class="shot" href="img/strips/gate.webp" data-cap="Sparsify on the Model layers row, at the defaults measured on this engine. Its card on the Model layers page has its sweep to listen to."><img src="img/strips/gate.webp" width="144" height="217" loading="lazy" alt="The Sparsify strip at its defaults."></a>
+          <figcaption><b><a href="units.html#u-gate">Sparsify</a></b><span class="uwhat">Keeps only each position's largest components and zeroes the rest, making the stream sparse</span></figcaption>
+        </figure>
+        <figure class="ucard">
+          <a class="shot" href="img/strips/limiter.webp" data-cap="Component Clamp on the Model layers row, at the defaults measured on this engine. Its card on the Model layers page has its sweep to listen to."><img src="img/strips/limiter.webp" width="144" height="217" loading="lazy" alt="The Component Clamp strip at its defaults."></a>
+          <figcaption><b><a href="units.html#u-limiter">Component Clamp</a></b><span class="uwhat">Clamps each position's largest components at a ceiling set by a quantile of their sizes</span></figcaption>
+        </figure>
+        <figure class="ucard">
+          <a class="shot" href="img/strips/eq.webp" data-cap="Principal Bands on the Model layers row, at the defaults measured on this engine. Its card on the Model layers page has its sweep to listen to."><img src="img/strips/eq.webp" width="144" height="217" loading="lazy" alt="The Principal Bands strip at its defaults."></a>
+          <figcaption><b><a href="units.html#u-eq">Principal Bands</a></b><span class="uwhat">Scales three bands of the stream's principal directions: low, mid, high</span></figcaption>
+        </figure>
+        <figure class="ucard">
+          <a class="shot" href="img/strips/multiband.webp" data-cap="Band Shrink on the Model layers row, at the defaults measured on this engine. Its card on the Model layers page has its sweep to listen to."><img src="img/strips/multiband.webp" width="144" height="178" loading="lazy" alt="The Band Shrink strip at its defaults."></a>
+          <figcaption><b><a href="units.html#u-multiband">Band Shrink</a></b><span class="uwhat">Compresses the stream separately in three bands of its principal directions: low, mid, high</span></figcaption>
+        </figure>
+        <figure class="ucard">
+          <a class="shot" href="img/strips/shifter.webp" data-cap="Rotate on the Model layers row, at the defaults measured on this engine. Its card on the Model layers page has its sweep to listen to."><img src="img/strips/shifter.webp" width="144" height="217" loading="lazy" alt="The Rotate strip at its defaults."></a>
+          <figcaption><b><a href="units.html#u-shifter">Rotate</a></b><span class="uwhat">Rotates the stream in the plane of two directions</span></figcaption>
+        </figure>
+        <figure class="ucard">
+          <a class="shot" href="img/strips/abliterate.webp" data-cap="Abliterate on the Model layers row, at the defaults measured on this engine. Its card on the Model layers page has its sweep to listen to."><img src="img/strips/abliterate.webp" width="288" height="226" loading="lazy" alt="The Abliterate strip at its defaults."></a>
+          <figcaption><b><a href="units.html#u-abliterate">Abliterate</a></b><span class="uwhat">Removes a direction from what attention and MLPs write, with a strength that peaks at one block and tapers</span></figcaption>
+        </figure>
+        <figure class="ucard">
+          <a class="shot" href="img/strips/neuron.webp" data-cap="Neuron on the Model layers row, at the defaults measured on this engine. Its card on the Model layers page has its sweep to listen to."><img src="img/strips/neuron.webp" width="288" height="226" loading="lazy" alt="The Neuron strip at its defaults."></a>
+          <figcaption><b><a href="units.html#u-neuron">Neuron</a></b><span class="uwhat">Scales, adds to, sets, zeroes, flips or clamps single MLP neurons in one block</span></figcaption>
+        </figure>
+    </div>
+    <p>vMorph, the fourteenth VAU unit, needs texts to fit itself to and is not offered yet. The units' code is PyTorch and the model runs on MLX; a bridge hands each unit the stream at its layer for the one position being written, and hands back the change. Each crossing makes the GPU wait for the CPU, so Neuron and Quantise, which act value by value, run as MLX versions of the same arithmetic instead, checked against VAU's own units: Neuron in all twelve blocks now adds under a millisecond to a step, where the bridge added nine.</p>
+    <p><a href="units.html"><b>Model layers</b></a> has a page of its own: where the units' code lives and how Abliterator hosts it, a diagram of where each unit acts inside the model with its measured placements, a card for each unit with a drawing of what it does and its whole sweep to listen to, and the scope.</p>
+
+    <h3 id="effects">Effects: after the model</h3>
+    <p>The effects act on audio the model has already written. They are written for this instrument in numpy and scipy, and each gives the same output whatever block size it is fed: 512 samples live, a 40 ms frame offline, a whole file in a test. The reverb is a feedback delay network of eight lines with a Householder mix and four allpass diffusers before it, after Signalsmith's “Let's write a reverb”. Delay has a low-pass in its loop and a ping-pong switch; chorus reads two modulated delays in quadrature; drive is gain-matched tanh with a tone filter; EQ and filter are RBJ biquads; EQ 8 is a Butterworth low cut, six bells at 60 Hz, 150 Hz, 400 Hz, 1 kHz, 2.5 kHz and 6 kHz, and a Butterworth high cut, the cuts 12 or 24 dB an octave; crush reduces bits and sample rate; De-click is the output section's de-click as an effect, with a sensitivity and the longest burst it redraws, so it can sit before a reverb. The chain runs from IN to OUT in one row that scrolls sideways; a + in the gap between two effects adds one there, and the light in the panel's header bypasses the whole chain with a 20 ms crossfade. Filter and the two EQs draw their response curves, and Drive has a small meter of how hard its curve is driven, with a CLIP mark.</p>
+  </section>
+
+  <!-- 05 -->
+  <section class="section wrap reveal" id="musical">
+    <span class="num">05</span>
+    <h2>Musical knobs</h2>
+    <p>A synth such as Arturia's MiniFreak spends its knob travel where the sound is good. A model's controls do not come that way: a Steer dose of 0.4 overdrives the Warm drone, a Lookback mix of 0.5 silences it. So every control was swept on several presets, each render measured, and each knob's travel shaped so that most of it falls where the sound holds.</p>
+    <ul>
+      <li><b>The sweep.</b> Each control at a range of settings, everything else at its default: 260 renders on the four ambient presets for the engine's controls, and 725 six-second renders on two of them for the model-layer units' settings and placements. The other presets, and styles typed in, use these ranges until they have been swept too.</li>
+      <li><b>The measures.</b> Level, clipping, silence, spectral centroid, flatness, a long-term spectrum in 48 bands and spectral flux. A setting counts as broken if it clips more than 0.1% of samples, goes silent, drops 24 dB, overdrives above −12 dBFS, or turns to noise.</li>
+      <li><b>The noise floor.</b> A sampler that changes at all takes a different path from then on, so each preset was also played at its defaults on six more seeds. Seeds alone move the spectrum about 8 dB; a control's change counts only beyond that.</li>
+      <li><b>The curve.</b> The knob's ends are the measured safe range; 40% of its travel is shared out evenly over the steps and the rest by how far each step moves the sound beyond the seeds' spread.</li>
+    </ul>
+    <div class="viz" id="viz-knob" role="group" aria-label="Interactive figure: the Brightness knob with its measured range and travel curve; turning it plays the real three-second render at the nearest swept dose and shows its spectrum">
+      <svg viewBox="0 0 960 400" aria-hidden="true"></svg>
+      <div class="bar"><span class="lab">Brightness on Warm drone · seed 1 · real renders</span>
+        <button type="button" data-act="listen" aria-pressed="false">Listen while turning</button>
+        <button type="button" data-act="full" aria-pressed="false">Full range</button></div>
+      <div class="readout" aria-live="polite"></div>
+    </div>
+    <p class="viz-cap"><b>Turn the knob</b> (drag it, scroll over it, or use the arrow keys). Each step is a real three-second render from the sweep; the bars are its long-term spectrum and the line its centroid. Red marks the doses that broke on this preset; outside the lit arc, doses broke on another preset. With Full range off the knob keeps to the measured range, −0.2 to 1, and about half its travel lies between −0.05 and 0.15.</p>
+    <figure>
+      <a class="shot" href="img/c-tune.webp" data-cap="Tune: the brightness sweep on four presets. Each cell is three seconds; the upper figure is the level against the default, in dB, the lower how far the spectrum moved with the level taken out. Red cells broke. The selects below set the knob's range by ear."><img src="img/c-tune.webp" width="1300" height="337" loading="lazy" alt="The Tune grid for Steer: Brightness: four rows of presets (Warm drone, Shimmering pad, Dark field, Glass chords) against doses from −1 to 1, each cell with two figures; the cells at −1 and −0.6 are red, the default column outlined in blue; below, selects reading −0.2 to 1 and buttons Set this range and Back to the measured range."><span class="zoom">Zoom</span></a>
+      <figcaption><b>Tune</b> (◎ in the top bar) lays every sweep out as a grid of clips. Click a cell to hear it. The measures are a first pass; the range a knob keeps to can be set by ear here, and the ear's range wins.</figcaption>
+    </figure>
+  </section>
+
+  <!-- 06 -->
+  <section class="section wrap reveal" id="modulation">
+    <span class="num">06</span>
+    <h2>Modulation</h2>
+    <div class="split">
+      <div>
+        <p>A link from a source to a knob has a send. Drag a source's tile onto the knob to link it; with the source selected, the knob shows the send instead of its value, and dragging it up raises the send, down lowers it, below zero turning the movement over. The source does not add to the knob's value. It moves the knob along its travel, so an LFO on Brightness swings through the calibrated curve and spends its time where the knob does: in the musical part of the range, slowing where the sound changes fastest.</p>
+        <p>Sources are functions of the frame's time. An LFO has five shapes, a rate, an amount (its amplitude, scaling every knob it moves), a phase, a symmetry and smoothing; each of the three envelopes rises and falls over the sound's length; a random source holds a new value at its rate and can glide to it. A recipe records the links, the curves and the sound's length, so a frozen sound replays its modulation frame for frame.</p>
+        <p>A Model layers unit's knob can be modulated too. The unit fixes its settings when it is attached, so the engine attaches it again whenever the source moves the knob by a step (a 512th of its travel), handing it the memory it had: Lookback's echoes carry on through the movement. Live play and a render do this at the same frames, and two renders of a modulated unit match bit for bit.</p>
+      </div>
+      <div>
+        <div class="viz" id="viz-lfo" role="group" aria-label="Animated figure: an LFO moving the Brightness knob along its calibrated travel">
+          <svg viewBox="0 0 520 330" aria-hidden="true"></svg>
+          <div class="bar"><span class="lab">LFO 1 → Brightness</span>
+            <button type="button" data-shape="sine" aria-pressed="true">sine</button>
+            <button type="button" data-shape="tri" aria-pressed="false">triangle</button>
+            <button type="button" data-shape="square" aria-pressed="false">square</button>
+            <label>depth <input type="range" min="0" max="1" step="0.01" value="0.35" data-k="depth"><output>0.35</output></label></div>
+          <div class="readout" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 07 -->
+  <section class="section wrap reveal" id="session">
+    <span class="num">07</span>
+    <h2>Session</h2>
+    <p>Session is the other side: eight tracks of saved sounds. Drag a sound from the browser onto a track; click a clip to start it and again to stop it. A clip loops or plays once. Tracks play on their own stream beside the live model, so you can play the instrument over them.</p>
+    <div class="shots">
+      <figure>
+        <a class="shot" href="img/c-grid.webp" data-cap="The Session grid: eight tracks, five holding saved sounds; Track 2 holds two clips, one at a time."><img src="img/c-grid.webp" width="1300" height="255" loading="lazy" alt="The session grid: tracks Drone, Track 2 to Track 8; clips such as Warm drone, Dark field, Glass chords and a frozen Glass chords; plus and stop buttons under each."><span class="zoom">Zoom</span></a>
+        <figcaption><b>The grid.</b> One clip plays per track at a time, as in a clip launcher.</figcaption>
+      </figure>
+      <figure>
+        <a class="shot" href="img/c-mixer.webp" data-cap="The mixer as console channel strips: per track, pan, mute, solo, export, effects (gain, high-pass, low-pass, delay, reverb), and a fader with a ladder of LEDs from OL to −36 and a Hold button, reading the track's peak after its effects and fader, beside a scale from 10 to ∞ on a console's taper."><img src="img/c-mixer.webp" width="875" height="487" loading="lazy" alt="Five channel strips: Drone at −4.0 dB, Track 2 at −7.0 dB panned L40, Tracks 3 to 5 at 0.0 dB; each with Pan, M, S and export buttons, an Effects fold, a metal fader cap in a black slot with a 10 to ∞ scale, and a column of LEDs labelled OL, 0, −3, −6, −12, −18, −27, −36 under a Hold button, the lower green ones lit on the tracks that are playing."><span class="zoom">Zoom</span></a>
+        <figcaption><b>The mixer.</b> Channel strips: pan, mute, solo, effects, and a fader with LEDs and Hold reading each track's peak; a limiter and LEDs on the mix; exports of a track or the mix. The foot of a fader is silence.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- 08 -->
+  <section class="section wrap reveal" id="holes">
+    <span class="num">08</span>
+    <h2>Rabbit holes</h2>
+    <p>Things the measurements turned up. The sounds are the sweep's own renders.</p>
+    <div class="cards">
+      <div class="card hole"><h3>Lookback at VAU's own mix</h3>
+        <span class="chain">delay layer=6 time=4 feedback=0.3 mix=0.5</span>
+        <div class="lookback" id="lookback"></div>
+        <p>Lookback at VAU's default mix of 0.5, on layer 6, silences the music model: the Warm drone falls from −28 to −49 dBFS with 96% of its 40 ms frames silent. At 0.4 it reaches −60, and the Shimmering pad goes entirely silent. Above 0.2 every mix measured stayed mostly silent, so Lookback starts at 0.2.</p></div>
+      <div class="card hole"><h3>A dose of −1</h3>
+        <p>Brightness at −1 on the Warm drone clips 0.4% of its samples at −8 dBFS RMS, where the model's own level runs from −28 to −41. On the dark side the sound gets louder, not darker: from 0 to −0.2 the level rises 15 dB and the centroid stays between 80 and 140 Hz. The knob stops at −0.2.</p></div>
+      <div class="card hole"><h3>As far as a seed</h3>
+        <p>Guidance, Temperature and Top-k each move the spectrum about as far as changing the seed does. They change the music without moving its timbre in one direction, which is why they are not on the Steer pad.</p></div>
+      <div class="card hole"><h3>A unit fixed at one setting</h3>
+        <p>Lookback's time and feedback held up on both presets only at their defaults, 4 frames and 0.3. Every other value broke one of them. The knobs still turn, marked ⚠.</p></div>
+      <div class="card hole"><h3>Principal Bands at layer 8</h3>
+        <p>Principal Bands breaks the sound at layers 2 to 6 and holds at 8. The placement menu marks the layers that broke.</p></div>
+      <div class="card hole"><h3>Brightness by numbers</h3>
+        <p>On the Warm drone the centroid goes from 137 Hz at a dose of 0 to 942 Hz at 0.1 and 1.71 kHz at 0.15, then flattens near 2 kHz from 0.4. Most of the change is in the first 0.15, which is where the knob spends its travel.</p></div>
+    </div>
+  </section>
+
+  <!-- 09 -->
+  <section class="section wrap reveal" id="start">
+    <span class="num">09</span>
+    <h2>Getting started</h2>
+    <p>Requirements: a Mac with Apple silicon (Magenta RT 2 runs on MLX), Python 3.12, and <a href="https://github.com/astral-sh/uv">uv</a> or pip. The model's weights (about 2.9 GB) are not in this repository; <code>magenta-rt</code> keeps them in <code>$MAGENTA_HOME</code>, by default <code>~/Documents/Magenta</code>.</p>
+    <div class="term"><div class="label"><span>Install and run</span><span class="raw">port 8775</span></div><pre><code><span class="in">git clone https://github.com/vector-lab-tools/abliterator</span>
+<span class="in">cd abliterator</span>
+<span class="in">./setup.sh --mrt2</span>   <span class="c"># .venv for the server, .venv-mrt2 for the engine (MLX)</span>
+<span class="in">./launch.sh</span>          <span class="c"># starts the server on http://127.0.0.1:8775/ and opens the page</span>
+<span class="in">.venv/bin/python -m pytest -q</span>         <span class="c"># the app's tests</span>
+<span class="in">.venv-mrt2/bin/python -m pytest -q tests/test_mrt2.py</span>   <span class="c"># the engine's</span></code></pre></div>
+    <p>The server listens on this machine only and refuses writes without its own header. Sound goes to the default output device through <code>sounddevice</code>. The page is a control surface: it sends moves and reads the engine's state a few times a second, and plays nothing itself. MusicGen small is offered as a second engine, slower to answer (about 285 ms) and without the model-layer units.</p>
+    <p>The calibration the knobs use ships in <code>data/calibration/mrt2_small.json</code>. To measure again on your own machine: <code>bench/sweep.py</code>, <code>bench/sweep_units.py</code>, then <code>python -m abliterator.calibrate</code>.</p>
+  </section>
+
+  <!-- 10 -->
+  <section class="section wrap reveal" id="vau">
+    <span class="num">10</span>
+    <h2>Vector Lab</h2>
+    <div class="links">
+      <a href="https://github.com/vector-lab-tools/abliterator"><b>Abliterator on GitHub</b><span>The backend, the page, the bench scripts and the tests</span></a>
+      <a href="abliteration.html"><b>What is Abliteration?</b><span>Abliteration, and what it means for sound design</span></a>
+      <a href="faq.html"><b>FAQ</b><span>Questions people ask about it</span></a>
+      <a href="https://vector-lab-tools.github.io/vector-abliteration-units/"><b>VAU</b><span>The unit standard this instrument hosts</span></a>
+      <a href="https://vector-lab-tools.github.io"><b>Vector Lab</b><span>The other tools and the map</span></a>
+    </div>
+  </section>
+
+  <!-- 11 -->
+  <section class="section wrap reveal" id="credits">
+    <span class="num">11</span>
+    <h2>Credits</h2>
+    <ul>
+      <li><b>Terence Broad</b>: the instrument took shape after his Sussex AI seminar, “Expanding the generative space”, at the University of Sussex on 14 October 2026. His network bending, transformations inserted into a trained generative network while it runs, is what the Model layers do to a music model (Broad, Berns, Colton and Grierson 2021, <a href="https://arxiv.org/abs/2107.05599">arXiv:2107.05599</a>; Broad, Leymarie and Grierson 2021, <a href="https://arxiv.org/abs/2005.12420">arXiv:2005.12420</a>).</li>
+      <li><b>Magenta RealTime 2</b> by Google DeepMind's Magenta team: the model (weights CC-BY 4.0, code Apache-2.0), used through its <code>magenta-rt</code> package. Its weights are not redistributed here.</li>
+      <li><b>MusicGen</b> small (Meta; weights CC-BY-NC 4.0), the second engine, through Hugging Face Transformers, and likewise not redistributed.</li>
+      <li><b>Signalsmith Audio</b>'s “Let's write a reverb”, for the shape of the reverb. The code is this project's.</li>
+      <li><b>Arturia's MiniFreak</b>, whose knobs keep to musical regions, for the idea behind the calibrated curves; <b>Ableton Live</b>, for the Session view and the layout. Abliterator is not affiliated with either company.</li>
+    </ul>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="foot">
+      <img src="img/mark.svg" alt="">
+      <div>
+        <p><b>Abliterator</b>, a <a href="https://vector-lab-tools.github.io">Vector Lab</a> tool. David M. Berry, University of Sussex. Free software under the GNU General Public License, version 3 or later (GPL-3.0-or-later).</p>
+        <p><a href="https://github.com/vector-lab-tools/abliterator">Repository</a> · <a href="https://vector-lab-tools.github.io/vector-abliteration-units/">Vector Abliteration Units</a></p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Screenshot, enlarged" hidden>
+  <button type="button" aria-label="Close">✕</button>
+  <img alt="">
+  <div class="cap"></div>
+</div>
+
+<audio id="player" preload="none"></audio>
+<script src="spec-index.js?v=989cfc11"></script>
+<script src="media.js?v=e1db11f7"></script>
+<script src="site.js?v=abdc9fe1"></script>
+</body>
+</html>

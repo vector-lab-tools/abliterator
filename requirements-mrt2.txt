@@ -1,0 +1,13 @@
+# The Magenta RT 2 engine's environment (.venv-mrt2): MLX, no torch. Made by ./setup.sh --mrt2.
+# magenta-rt 2.0.3 was swept before first install (wheel sha256 02ccf971…be74). Its models live in
+# $MAGENTA_HOME/magenta-rt-v2 (default ~/Documents/Magenta) and are not redistributed.
+magenta-rt==2.0.3
+mlx==0.32.4
+numpy>=1.26
+scipy>=1.11
+soundfile>=0.12
+sounddevice>=0.4.6
+PyYAML>=6.0
+pytest>=8
+vector-abliteration-units @ git+https://github.com/vector-lab-tools/vector-abliteration-units@8e3b6524976ebb2dce89d941d836f44bec6986cf
+# torch comes with vau (CPU use only here: the strips' edits run on one position of the stream per step)

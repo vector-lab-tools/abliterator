@@ -1,0 +1,21 @@
+cff-version: 1.2.0
+message: "If you use Abliterator, please cite it as below."
+title: "Abliterator"
+abstract: "Vector bending for a music model, played live: steer, squash and turn the vectors Magenta RealTime 2 computes with, between its transformer layers, while it plays."
+type: software
+authors:
+  - family-names: "Berry"
+    given-names: "David M."
+    affiliation: "University of Sussex"
+    orcid: "https://orcid.org/0000-0002-7737-5586"
+version: "0.2.0"
+date-released: "2026-11-17"
+license: GPL-3.0-or-later
+repository-code: "https://github.com/vector-lab-tools/abliterator"
+url: "https://vector-lab-tools.github.io/abliterator/"
+keywords:
+  - vector bending
+  - abliteration
+  - music generation
+  - interpretability
+  - Vector Lab

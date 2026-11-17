@@ -1,0 +1,181 @@
+<!doctype html>
+<!-- Abliterator. Copyright (C) 2026 David M. Berry. SPDX-License-Identifier: GPL-3.0-or-later -->
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Abliterator</title>
+<link rel="icon" href="mark.svg">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="bar">
+  <div class="brand" id="brand" role="button" tabindex="0" title="About Abliterator"><img src="mark.svg" alt=""><span>Abliterator</span><span class="ver" id="ver"></span></div>
+  <div class="transport viewswap" role="group" aria-label="View">
+    <button class="tp" id="vw-make" aria-pressed="true" title="Make: play the model, apply vector bending with the Steer and the model-layer units, and save what it plays as sounds">☰ Make</button>
+    <button class="tp" id="vw-ses" aria-pressed="false" title="Session: trigger and layer the saved sounds on eight tracks">▦ Session</button>
+    <button class="tp" id="vw-tune" aria-pressed="false" title="Tune: listen across each control's range and set where it is musical; the knobs then keep to it">◎ Tune</button>
+    <button class="tp" id="vw-listen" aria-pressed="false" title="Listen: watch what you hear as a spectrogram, the model and the tracks each on a lane">≋ Listen</button>
+  </div>
+  <div class="transport" role="group" aria-label="Transport">
+    <button class="tp play" id="play" title="Play" aria-label="Play" disabled>▶</button>
+    <button class="tp stop" id="stop" title="Stop" aria-label="Stop" disabled>■</button>
+    <button class="tp rec" id="snapbtn" title="Save the last seconds the model played as a sound" aria-label="Save the last seconds" disabled>◉</button>
+  </div>
+  <div class="modelchip" id="modelchip">connecting…</div>
+  <div class="loads"><span title="CPU load: the share of this computer's processor (all its cores) that Abliterator, the server and the model's process, is using">CPU load <b id="om-cpu">–</b></span><span title="GPU load: the model's time to make a frame on the GPU (the slowest 5%) against the frame's length. Over 100% it falls behind and the buffer covers the gap; a longer Buffer, or fewer units, helps.">GPU load <b id="om-load">–</b></span></div>
+  <button class="icon-btn" id="themebtn" title="Theme: the system's, light or dark">◐</button>
+  <button class="icon-btn" id="setbtn" title="Settings: the model, and about Abliterator" aria-haspopup="dialog">⚙</button>
+</header>
+<div class="setpanel" id="unithelp" role="dialog" aria-modal="true" aria-label="Unit help" hidden>
+  <div class="setbox uhbox">
+    <div class="sethead"><div class="uht"></div><button class="icon-btn uhclose" title="Close (Esc)">✕</button></div>
+    <div class="setbody uhbody"></div>
+  </div>
+</div>
+<div class="setpanel" id="setpanel" role="dialog" aria-modal="true" aria-label="Settings" hidden>
+  <div class="setbox">
+    <div class="sethead"><div class="settabs" role="tablist"><button role="tab" data-t="model" aria-selected="true">Model</button><button role="tab" data-t="about" aria-selected="false">About</button></div><button class="icon-btn" id="setclose" title="Close (Esc)">✕</button></div>
+    <div class="setbody" id="setbody"></div>
+  </div>
+</div>
+
+<main>
+  <div id="mid">
+    <aside id="browser" aria-label="Browser">
+      <div class="br-head">
+        <input type="search" id="brsearch" placeholder="Search sounds" aria-label="Search the sounds">
+        <button class="br-fold" id="brfold" title="Fold the browser away" aria-label="Fold the browser">◂</button>
+      </div>
+      <div class="br-body">
+        <details open><summary>Sounds<span class="n" id="nsounds"></span></summary><div id="sounds"></div></details>
+        <details><summary>Sessions</summary><div id="sessions"></div></details>
+        <details><summary>Exports</summary><div id="exports"></div></details>
+      </div>
+      <button class="br-rail" id="brrail" title="Show the browser" aria-label="Show the browser">▸</button>
+    </aside>
+
+    <div id="top">
+      <!-- ================================================================ MAKE: the instrument as a synth panel -->
+      <section id="v-make">
+        <div class="synth" id="synth">
+          <div class="pn" id="pn-engine">
+            <div class="ph"><span class="pw on"></span><b>Engine</b><select id="engine" class="psel" aria-label="Engine"></select><span class="pinfo"><span id="modelinfo"></span> · <span class="readout" id="readout">Ready</span></span></div>
+            <div class="eng">
+              <div class="engl">
+                <div class="prow"><button class="ib" id="presetprev" title="The previous preset">‹</button><select id="preset" class="psel wide" aria-label="Preset"></select><button class="ib" id="presetnext" title="The next preset">›</button></div>
+                <div class="pnote" id="prompt"></div>
+                <form class="prow" id="pform"><input id="ptype" class="ptype" maxlength="240" placeholder="Type a style: dusty jazz trio, brushed drums" aria-label="A style prompt of your own" autocomplete="off"><button class="ib" id="puse" type="submit" title="Play this style (it is kept under Your prompts)">↵</button><button class="ib" id="pdel" type="button" hidden title="Remove this prompt from Your prompts">✕</button></form>
+                <input id="seed" type="number" min="0" step="1" value="1" hidden>
+                <div class="krow" id="engknobs"></div>
+                <label class="pchk" id="mg-only" hidden><input type="checkbox" id="cfg"> Guidance ×3 (MusicGen; over budget here)</label>
+                <div class="engsave">
+                  <div class="saverow">
+                  <input id="sndname" placeholder="Name the sound (optional)">
+                  <button class="pb" id="snapsave" disabled title="Save the last seconds the model made (dropouts are not in them)">◉ Last <select id="snaplen"><option>4</option><option selected>8</option><option>16</option><option>30</option><option>60</option></select> s</button>
+                  <button class="pb" id="freeze" disabled title="Render the current settings, modulation included, offline from the start">❄ Freeze <select id="frzlen"><option>10</option><option selected>20</option><option>30</option><option>60</option></select> s</button>
+                  </div>
+                  <div class="pprog" id="frzprog" hidden><i></i></div>
+                </div>
+              </div>
+              <div class="engr">
+                <div class="scopewrap"><canvas id="scope" width="1000" height="220" aria-label="The last three seconds the model made"></canvas>
+                  <div class="scopemode" role="group" aria-label="Scope"><button data-sm="wave" aria-pressed="true" title="The waveform of the last three seconds the model made">Wave</button><button data-sm="spec" aria-pressed="false" title="The spectrogram of the last three seconds heard, 40 Hz to 20 kHz">Spectrum</button></div></div>
+                <div class="engfoot"><div class="outcol"><div class="scopemode chmode" role="group" aria-label="Channels"><button data-ch="mono" aria-pressed="true" title="The two channels mixed">Mono</button><button data-ch="stereo" aria-pressed="false" title="Left and right, one above the other">Stereo</button></div><div class="outm" id="outm" title="What comes out: each channel's level (bar) and peak (tick); the peak, the level, the left-right correlation, and how much of each 40 ms frame the model's step takes"></div></div><div class="widen" id="widen"></div><div class="gonio" title="The stereo field of what you hear: each dot a left-right sample pair; a vertical line is mono, a cloud is wide, a horizontal line is out of phase. Under it, the left-right correlation, −1 to +1."><canvas id="gonio" width="240" height="240" aria-label="Stereo field"></canvas><div class="gcorr"><i></i><b></b></div></div></div>
+              </div>
+            </div>
+          </div>
+          <div class="pn" id="pn-steer">
+            <div class="ph"><b>Signal path</b></div>
+            <div class="flow" id="flow"></div>
+          </div>
+          <div class="pn" id="pn-out">
+            <div class="ph"><span class="pw on"></span><b>Output</b></div>
+            <div class="outp"><div class="outcol2"><div class="outk" id="outknobs"></div><div class="dyn" id="dyn"></div><div class="stages" id="stages" title="What the automatic stages are doing while it plays"></div></div><div id="outmeter"></div></div>
+          </div>
+          <div class="pn" id="pn-bend">
+            <div class="ph"><button class="pw on" id="pw-layers" aria-pressed="true" title="Model layers on or off: off plays the model without vector bending, keeping the units on the desk"></button><b>Model layers</b><span class="pinfo">Vector bending VAU units</span></div>
+            <div class="bendrow">
+              <div class="strip steercard" id="steercard">
+                <div class="sh"><button class="led" id="pw-steer" aria-pressed="true" title="Steer on or off: off plays every dose at 0, keeping the knobs where they are"></button><span class="st" title="Steer adds a direction to the model's stream at layer 6, scaled by the stream's size and the dose: h + |h| · dose · d. Its place is fixed: its directions and the doses' musical ranges were measured there.">Steer</span><span class="sat">layer 6 · fixed</span><button class="fold" id="steerfold" type="button" aria-expanded="true" title="Fold Steer to a narrow strip; it keeps playing">‹</button></div>
+            <div class="steer">
+                  <div class="padwrap"><div class="ax y" id="ylab"></div><canvas id="xy" width="440" height="440" aria-label="XY pad: two Steer doses"></canvas><div class="ax x" id="xlab"></div></div>
+                  <div class="steerside"><div class="doses" id="doseknobs"></div>
+                    <div class="steerctl"><button class="ib" id="centre">Centre</button><label class="pchk"><input type="checkbox" id="full"> Full range</label></div>
+                    <div class="dosehist" title="The doses the model is playing with, over the last ten seconds, modulation included"><canvas id="dosehist" width="300" height="120"></canvas><div class="dhk"></div></div></div>
+                </div>
+              </div>
+              <div class="bend" id="stripdesk"></div>
+            </div>
+          </div>
+          <div class="pn" id="pn-fx">
+            <div class="ph"><button class="pw on" id="pw-fx" aria-pressed="true" title="Effects on or off: off passes the model's sound by the chain, keeping the effects in it"></button><b>Effects</b></div>
+            <div class="fxrow" id="fxrow"></div>
+          </div>
+          <div class="modstrip" id="modstrip" role="toolbar" aria-label="Modulation sources"></div>
+          <div class="pn" id="pn-edit">
+            <div class="tabs" id="modtabs" role="tablist">
+              <button data-k="lfo" aria-selected="true">LFO</button><button data-k="env">Envelope</button><button data-k="rand">Random</button><button data-k="macro">Macros</button>
+              <span class="tabnote" id="assignnote">Drag a source above onto a knob to link it.</span>
+            </div>
+            <div class="editor" id="editor"></div>
+          </div>
+        </div>
+        <div class="foot">
+          <p><b>On the word.</b> Music models do not refuse, so there is no refusal direction here. "Abliteration" is used in an extended sense: steering and ablating concept directions in the model's residual stream while it plays. The directions are made from contrast prompts by difference of means and may be weak; published work finds many audio features readable but hard to steer.</p>
+          <p>Magenta RealTime 2 small (Google DeepMind), weights licensed CC-BY 4.0 and code Apache-2.0. MusicGen small (Meta), weights licensed CC-BY-NC 4.0. Both are downloaded to this machine and not redistributed. Abliterator is GPL-3.0-or-later.</p>
+        </div>
+      </section>
+
+      <!-- ================================================================ TUNE: the listening grid -->
+      <section id="v-listen" hidden>
+        <div class="listen">
+          <div class="lane" id="lane-model"><div class="lanehead"><b>Model</b><span class="lanestate"></span><span class="lanefig"></span></div><div class="laneview"><canvas width="1600" height="300"></canvas><span class="lax"><i>20k</i><i>5k</i><i>1k</i><i>200</i><i>40</i></span></div></div>
+          <div class="lane" id="lane-desk"><div class="lanehead"><b>Tracks</b><span class="lanestate"></span><span class="lanefig"></span></div><div class="laneview"><canvas width="1600" height="300"></canvas><span class="lax"><i>20k</i><i>5k</i><i>1k</i><i>200</i><i>40</i></span></div></div>
+          <p class="listennote">What you hear, as it reaches the sound card: the model after its effects and output section, and the tracks' mix, each the last ten seconds, 40 Hz at the foot to 20 kHz at the top. The same picture as the website's spectrograms. ▶ plays the model here; Session starts the tracks.</p>
+        </div>
+      </section>
+      <section id="v-tune" hidden>
+        <div class="card">
+          <h2>Tune <span class="aside" id="tunemade"></span></h2>
+          <div class="tunetabs" id="tunetabs"></div>
+          <p class="note" id="tunenote" style="margin:10px 0">Each cell is three seconds of a preset with this control at that setting, and everything else at its default. Click to listen. Red: the measures found it broken. Dim: outside the knob's range now. The figures are the level, and how far the spectrum moved with the level taken out, both against the default.</p>
+          <div class="tunewrap"><table class="tune" id="tunegrid"></table></div>
+          <div class="row" style="margin-top:12px">
+            <span class="note">The knob keeps to</span>
+            <select id="tunelo"></select><span class="note">to</span><select id="tunehi"></select>
+            <button class="b small primary" id="tunesave">Set this range</button>
+            <button class="b small" id="tuneclear">Back to the measured range</button>
+            <span class="note" id="tunefloor"></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================================ SESSION -->
+      <section id="v-session" hidden>
+        <div class="card">
+          <h2>Session <span class="aside">drag a sound from the browser onto a track; click a clip to start it, click it again to stop</span></h2>
+          <div class="sess-wrap"><div class="sess" id="sess"></div></div>
+          <div class="row" style="margin-top:14px">
+            <button class="b small primary" id="dplay">▶ Start every track</button>
+            <button class="b small" id="dstop">■ Stop every track</button>
+            <span class="note">Tracks play on their own stream, beside the live model, so you can play the instrument over them.</span>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div id="dock">
+    <div class="dock-handle" id="dockhandle" tabindex="0" role="separator" aria-orientation="horizontal" aria-label="Resize the dock" title="Drag to resize; double-click folds it"></div>
+    <div class="dockbody" id="dock-ses" hidden>
+      <div class="desk" id="mixdesk"></div>
+    </div>
+  </div>
+</main>
+
+<footer class="infobar"><span id="infotext"></span><span id="infostatus"></span></footer>
+<audio id="audition" preload="none"></audio>
+<script src="app.js"></script>
+</body>
+</html>

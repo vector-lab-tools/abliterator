@@ -1,0 +1,9 @@
+.venv/
+_tmp/
+__pycache__/
+*.wav
+.venv-mrt2/
+data/*
+!data/calibration/
+data/calibration/*
+!data/calibration/mrt2_small.json

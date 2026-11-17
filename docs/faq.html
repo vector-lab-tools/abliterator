@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FAQ · Abliterator</title>
+  <meta name="description" content="Questions about Abliterator: what it is, what it needs, how it sounds, what breaks and why, and what happens to the sounds you make.">
+  <meta property="og:title" content="FAQ · Abliterator">
+  <meta property="og:description" content="Questions about Abliterator, an instrument for vector bending a music model while it plays.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://vector-lab-tools.github.io/abliterator/img/share.png">
+  <meta property="og:image:width" content="1280">
+  <meta property="og:image:height" content="640">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="img/mark.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#f3f2ee" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0e1015" media="(prefers-color-scheme: dark)">
+  <script>(function(){try{var t=localStorage.getItem('abl-theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+  <link rel="stylesheet" href="style.css?v=a7fbc234">
+  <link rel="stylesheet" href="audio.css?v=75a41c3f">
+</head>
+<body>
+<!-- Written by hand. Copyright (C) 2026 David M. Berry. SPDX-License-Identifier: GPL-3.0-or-later -->
+<a class="skip" href="#main">Skip to the content</a>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="./" aria-label="Abliterator, home">
+      <img src="img/mark.svg" alt="">
+      <span class="brand-block">
+        <span class="brand-name">Abliterator</span>
+        <span class="brand-tagline">FAQ</span>
+      </span>
+    </a>
+    <div class="head-tools">
+      <nav class="site-nav" aria-label="Pages">
+        <a href="./">Home</a>
+        <a href="abliteration.html">What is Abliteration?</a>
+        <a href="units.html">Model layers</a>
+        <a href="faq.html" class="on">FAQ</a>
+        <span class="nav-sep" aria-hidden="true"></span>
+        <a class="ext" href="https://github.com/vector-lab-tools/abliterator">GitHub</a>
+      </nav>
+      <button class="theme-toggle" type="button" aria-label="Switch between light and dark" title="Switch between light and dark">
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<section class="hero hero-short">
+  <canvas class="hero-scope" id="hero-scope" aria-hidden="true"></canvas>
+  <div class="wrap hero-inner">
+    <span class="kicker">Abliterator · questions</span>
+    <h1><span class="glitch" id="title" data-text="FAQ">FAQ</span></h1>
+    <p class="tagline">What it is, what it needs, how it sounds, what breaks and why, and what happens to the sounds you make.</p>
+  </div>
+</section>
+
+<main class="content faq" id="main">
+  <section class="section wrap reveal">
+
+    <h3>What it is</h3>
+    <details open><summary>What is Abliterator?</summary><div>
+      <p>An instrument for vector bending: it plays a generative music model live and lets you change the vectors the model computes with while it plays. You choose a style prompt and a seed, press play, and shape the sound with the Steer pad, units between the model's layers, effects on its output, and modulation. Sounds you like are saved, with a recipe that replays them exactly, and layered on eight tracks in Session.</p>
+    </div></details>
+    <details><summary>Are the sounds on this site live?</summary><div>
+      <p>No. They are recordings, made with the instrument on an Apple M5 and saved as MP3s: saved sounds, and renders from the measurement sweeps. A web page cannot run the model; it plays live only in the instrument, on your own machine. The spectrograms were computed from those recordings when the site was built; the scope and spectrum over the Listen cards are your browser's own analysis of what is playing.</p>
+    </div></details>
+    <details><summary>Is it an AI music generator?</summary><div>
+      <p>The model writes all of the audio, so in that sense yes. It is played the way a synthesiser is played: continuously, with knobs, and with what you hear about a tenth of a second after each move. There is no request and wait for a finished piece.</p>
+    </div></details>
+    <details><summary>What does “Abliterator” mean?</summary><div>
+      <p>The name comes from abliteration, removing a direction from a model's internal vectors, a technique first used to stop chat models refusing; the ending makes it an instrument, as oscillator, modulator and vocoder are. Abliterator uses the word for any change to a model's internal vectors while it runs, on a model that writes sound. <a href="abliteration.html">What is Abliteration?</a> has the history, and demonstrations of what it does to sound.</p>
+    </div></details>
+    <details><summary>Who made it?</summary><div>
+      <p>David M. Berry, at the University of Sussex, as a <a href="https://vector-lab-tools.github.io">Vector Lab</a> instrument. It is free software, GPL-3.0-or-later.</p>
+    </div></details>
+
+    <h3>Sound</h3>
+    <details><summary>Do the Model layers process audio?</summary><div>
+      <p>No. They act on the numbers the model computes with (its residual stream, 1,024 numbers per 40 ms frame), between and inside its transformer layers, before any audio exists. The effects are the part that processes audio, after the model. <a href="units.html">Model layers</a> shows where each unit acts.</p>
+    </div></details>
+    <details><summary>Why is there a small v in the units' help (vLookback, vNorm Shrink)?</summary><div>
+      <p>The v is VAU's mark for the units of its Core Collection, the vector effects the vau package ships. VAU names them for what they do to the stream: Lookback, Running Average, Norm Shrink and so on. Until VAU 0.2.3 they had studio names (vDelay, vReverb, vCompressor), which on an instrument with a real delay and reverb on its output would be taken for audio effects. A strip shows the name without the v. Frame Repeat is the one unit named differently here: VAU calls it Position Repeat, since its positions are tokens in a text model and frames of sound in this one.</p>
+    </div></details>
+    <details><summary>Can I play my own audio into it?</summary><div>
+      <p>Not in this version. The model plays from a style prompt and a seed.</p>
+    </div></details>
+    <details><summary>Can I write my own prompts?</summary><div>
+      <p>Yes. Type a style in the box under the preset menu on the Engine panel and press Enter: the engine makes the prompt's tokens (about 90 ms) and plays it, or switches to it if the model is already playing. It is kept under <b>Your prompts</b> in the menu, in <code>data/prompts.json</code>, and ✕ removes it. The twenty-five presets are prompts, sampler settings and seeds in <code>backend/config/presets.md</code>, as an editable block; edit it and restart the server. The knobs' ranges were measured on the ambient presets, and a new style uses them until it has been swept in Tune.</p>
+    </div></details>
+    <details><summary>How do I modulate a knob?</summary><div>
+      <p>Drag a source's tile (an LFO, an envelope, a random source, or a macro from the Macros tab) onto the knob; a badge with the source's shape follows the pointer, and the knobs that can take it light up. With the source selected, each knob it can move shows its send: drag the knob up for more, down for less, and double-click to unlink. Esc turns the knobs back into their values. Steer doses, Guidance, Temperature, the low-pass, the volume, and every knob of a Model layers unit and of an effect can be modulated. An LFO's Amount scales every send from it at once.</p>
+    </div></details>
+    <details><summary>Why do some settings break the sound, and what are the ⚠ marks?</summary><div>
+      <p>A model's controls do not stay musical across their whole range: a Steer dose of 0.4 overdrives the Warm drone, and Lookback at a mix of 0.5 silences it. Every control and unit setting was swept on several presets and measured, and each knob now keeps to the range where the sound held. A ⚠ on a unit's knob or placement marks a setting that broke the sound on at least one preset. <b>Full range</b> on the Steer card unlocks the doses; the Tune view (◎) lets you listen to every measured setting and set a knob's range by ear.</p>
+    </div></details>
+    <details><summary>Why does it sometimes drop out?</summary><div>
+      <p>The model must write each 40 ms frame in less than 40 ms. On an Apple M5 it takes about 25 ms; when a step runs long, the sound card runs out and you hear a gap. The <b>Buffer</b> knob keeps more frames ahead, which costs latency. GPU load in the top bar shows how close the steps come to 40 ms; units other than Neuron and Quantise add time at each layer they sit on, since they run in PyTorch through the bridge. A dropout fades out and back in over a few milliseconds, without a click. Saved sounds are taken from the frames the model wrote, not from what reached the sound card, so a dropout heard live is not in them.</p>
+    </div></details>
+    <details><summary>Why do I hear clicks with some units?</summary><div>
+      <p>A unit that pushes the model hard can make it write short bursts, a few samples that swing up and down, which sound like two pieces of audio spliced badly. Neuron at a large scale and Quantise at 6 bits or fewer do it most. They are in the model's output, not the playback: the engine logs the sound card's underflows and any jump between the blocks it sends, and neither appears when they happen. <b>De-click</b> in Output (on by default) redraws each burst as a straight line between the samples either side, with 1.3 ms of look-ahead. Turn it off to hear what the model wrote.</p>
+    </div></details>
+    <details><summary>How long from a move to the sound?</summary><div>
+      <p>About 100 ms with the default buffer of two frames: the move goes into the next frame the model writes, and you hear it when that frame reaches the sound card. A measured move took 107 ms.</p>
+    </div></details>
+    <details><summary>What is the scope?</summary><div>
+      <p>A meter you can put on the Model layers row. It draws the model's stream at its layer as the model plays: its shape, its bands, and how it moves, including its reading along the Brightness and Pulse directions. It changes nothing and is not saved with sounds.</p>
+    </div></details>
+
+    <h3>Sounds and files</h3>
+    <details><summary>Can I get the same sound again?</summary><div>
+      <p>Yes. The same seed, preset, settings and moves give the same audio, sample for sample. Every saved sound keeps its recipe, and Freeze renders it again from the recipe at the length you choose.</p>
+    </div></details>
+    <details><summary>What format are sounds saved in, and where?</summary><div>
+      <p>WAV, 48 kHz stereo, 32-bit float, in <code>data/snapshots/</code>: the sound as you heard it (after the effects and the output section) and the model's own output. Session exports a track or the mix as WAV to <code>data/exports/</code>.</p>
+    </div></details>
+    <details><summary>Can I use it with my DAW? Is it a plug-in?</summary><div>
+      <p>Export WAV and bring it in. A plug-in for Ableton Live is planned, with the Make panel as its interface, and not built. Abliterator is not affiliated with Ableton.</p>
+    </div></details>
+
+    <h3>Models and machines</h3>
+    <details><summary>Which models does it play?</summary><div>
+      <p>Magenta RealTime 2 small by default, in 8-bit on Apple's MLX. MusicGen small is a second engine, with Steer but without the model-layer units, and slower to answer (about 285 ms). Both run through the same engine interface; adding another model means writing an engine for it.</p>
+    </div></details>
+    <details><summary>What do I need?</summary><div>
+      <p>A Mac with Apple silicon, Python 3.12, and uv or pip. Magenta RT 2's weights take about 2.9 GB and are kept in <code>$MAGENTA_HOME</code>, by default <code>~/Documents/Magenta</code>. It has been built and measured on an Apple M5 with 24 GB; other machines have not been tested.</p>
+    </div></details>
+    <details><summary>Does it need the internet?</summary><div>
+      <p>To install it, and to fetch the models. After that it runs on your own machine.</p>
+    </div></details>
+    <details><summary>What licences apply?</summary><div>
+      <p>Abliterator is GPL-3.0-or-later. The models have their own: Magenta RealTime 2's weights are CC-BY 4.0 and its code Apache-2.0; MusicGen's weights are CC-BY-NC 4.0, which does not allow commercial use. Read them before you publish what you make. Abliterator is not affiliated with Google DeepMind or Meta.</p>
+    </div></details>
+
+    <h3>The units</h3>
+    <details><summary>What is VAU?</summary><div>
+      <p><a href="https://vector-lab-tools.github.io/vector-abliteration-units/">Vector Abliteration Units</a>, a standard and a Python package of small units that change, or read, what a model computes from inside. Abliterator installs the package and hosts its units on the Model layers row. No unit's code is in this repository.</p>
+    </div></details>
+    <details><summary>Can I write my own unit?</summary><div>
+      <p>A unit is one Python file with a manifest, written to the VAU standard; the VAU repository describes how. Abliterator offers the units the installed VAU package provides.</p>
+    </div></details>
+
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="foot">
+      <img src="img/mark.svg" alt="">
+      <div>
+        <p><b>Abliterator</b>, a <a href="https://vector-lab-tools.github.io">Vector Lab</a> tool. David M. Berry, University of Sussex. GPL-3.0-or-later.</p>
+        <p><a href="./">Home</a> · <a href="abliteration.html">What is Abliteration?</a> · <a href="units.html">Model layers</a> · <a href="https://github.com/vector-lab-tools/abliterator">Repository</a></p>
+      </div>
+    </div>
+  </div>
+</footer>
+<audio id="player" preload="none"></audio>
+<script src="site.js?v=abdc9fe1"></script>
+</body>
+</html>

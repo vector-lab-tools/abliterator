@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Model Layers · Abliterator</title>
+  <meta name="description" content="The Vector Abliteration Units in Abliterator: where their code lives, where they act inside Magenta RealTime 2, and what each one does to the sound, measured and playable.">
+  <meta property="og:title" content="Model layers · Abliterator">
+  <meta property="og:description" content="Where the Vector Abliteration Units live and act inside the model, and what each one did to the sound when it was measured.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://vector-lab-tools.github.io/abliterator/img/share.png">
+  <meta property="og:image:width" content="1280">
+  <meta property="og:image:height" content="640">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="img/mark.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#f3f2ee" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0e1015" media="(prefers-color-scheme: dark)">
+  <script>(function(){try{var t=localStorage.getItem('abl-theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+  <link rel="stylesheet" href="style.css?v=a7fbc234">
+  <link rel="stylesheet" href="audio.css?v=75a41c3f">
+</head>
+<body>
+<!-- Written by hand. Copyright (C) 2026 David M. Berry. SPDX-License-Identifier: GPL-3.0-or-later -->
+<a class="skip" href="#main">Skip to the content</a>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="./" aria-label="Abliterator, home">
+      <img src="img/mark.svg" alt="">
+      <span class="brand-block">
+        <span class="brand-name">Abliterator</span>
+        <span class="brand-tagline">Model layers</span>
+      </span>
+    </a>
+    <div class="head-tools">
+      <nav class="site-nav" aria-label="Sections">
+        <a href="./">Home</a>
+        <a href="abliteration.html">What is Abliteration?</a>
+        <a href="#where">Where they live</a>
+        <a href="#inside">Inside the model</a>
+        <a href="#units">The units</a>
+        <a href="#scope">Scope</a>
+        <a href="faq.html">FAQ</a>
+        <span class="nav-sep" aria-hidden="true"></span>
+        <a class="ext" href="https://github.com/vector-lab-tools/abliterator">GitHub</a>
+        <a class="ext vau" href="https://vector-lab-tools.github.io/vector-abliteration-units/">VAU ↗</a>
+      </nav>
+      <button class="theme-toggle" type="button" aria-label="Switch between light and dark" title="Switch between light and dark">
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<section class="hero hero-short">
+  <canvas class="hero-scope" id="hero-scope" aria-hidden="true"></canvas>
+  <div class="wrap hero-inner">
+    <span class="kicker">Abliterator · model layers · Vector Abliteration Units</span>
+    <h1><span class="glitch" id="title" data-text="Model layers">Model layers</span></h1>
+    <p class="tagline">The units on the Model layers row are not audio effects. They are <a href="https://vector-lab-tools.github.io/vector-abliteration-units/">Vector Abliteration Units</a> (VAU), small programs that change the numbers Magenta RealTime 2 computes with, between and inside its transformer layers, while it plays. This page shows where their code lives, where they act in the model, and what each one did to the sound when it was measured.</p>
+  </div>
+</section>
+
+<main class="content" id="main">
+
+  <!-- 01 -->
+  <section class="section wrap reveal" id="where">
+    <span class="num">01</span>
+    <h2>Where the units live</h2>
+    <p class="lede">No unit's code is in Abliterator. VAU is a standard and a Python package of its own, <code>vau</code>, kept in <a href="https://github.com/vector-lab-tools/vector-abliteration-units">its own repository</a>. Abliterator is a <b>host</b>: it installs the package, and gives the units the places in the model they ask for.</p>
+    <div class="viz" id="viz-where" role="group" aria-label="Animated figure: the VAU package, the Abliterator host, and the model, with the stream of one frame passing through a unit">
+      <svg viewBox="0 0 960 360" aria-hidden="true"></svg>
+      <div class="readout" aria-live="polite"></div>
+    </div>
+    <ul>
+      <li><b>In the VAU package</b> each unit is one Python file with a manifest: its parameters with their ranges and tips, the kind of place it acts on (the stream at a layer, or the output of a block's attention or MLP), and what it needs from its host (the stream's statistics, a direction, the frame's position). The code is PyTorch.</li>
+      <li><b>In Abliterator</b> the host (<code>units.py</code>) reads each line of the Model layers row, checks it against the manifest, and attaches the unit. It also gives each unit the name it has here, defaults that work on a music model, and the measured ranges and placements. The engine (<code>mrt2_proc.py</code>) wraps each of the model's blocks so that a unit runs where it was placed.</li>
+      <li><b>The bridge.</b> Magenta RT 2 runs on Apple's MLX, and the units are PyTorch. At each step, for the one frame being written, the engine copies the stream at the unit's layer out of MLX, passes it through the unit, and copies the result back. Neuron and Quantise skip the bridge: their arithmetic is written again in MLX, tested against VAU's own units, and stays on the GPU, unless a strip uses a window or a random control. A unit with memory (Lookback, Running Average) keeps the streams of past frames itself; moving one of its knobs attaches it afresh and clears that memory.</li>
+      <li><b>The version</b> is pinned: <code>requirements-mrt2.txt</code> names the VAU commit the engine installs, and every saved sound's recipe records the chain lines it was made with.</li>
+    </ul>
+  </section>
+
+  <!-- 02 -->
+  <section class="section wrap reveal" id="inside">
+    <span class="num">02</span>
+    <h2>Where they act in the model</h2>
+    <p>Magenta RT 2's temporal transformer writes one 40 ms frame per step. Its <b>residual stream</b> carries 1,024 numbers for the frame through 12 blocks; each block's attention and MLP read the stream and add what they compute back onto it. After the last block, a smaller depth transformer writes the frame's codebook tokens, and the SpectroStream codec turns them into audio.</p>
+    <p>Units act in two kinds of place. A <b>stream</b> unit sits <i>at a layer</i>, between two blocks: <code>layer=6</code> is the stream after block 6, and it changes what blocks 7 to 12 read. An <b>output</b> unit sits <i>inside a block</i>, on what its attention or MLP writes (Abliterate) or on the MLP's hidden units, its neurons (Neuron); <code>block=all</code> puts it in every block. The Steer sits at layer 6, before any stream unit there; the scope reads after them.</p>
+    <div class="viz" id="viz-inside" role="group" aria-label="Interactive figure: the twelve blocks of Magenta RT 2 with the places a chosen unit can act, its default placement, and the placements the measurements found broke the sound">
+      <svg viewBox="0 0 960 430" aria-hidden="true"></svg>
+      <img class="pickstrip" alt="" aria-hidden="true">
+      <div class="bar" id="inside-pick"><span class="lab">Unit</span></div>
+      <div class="readout" aria-live="polite"></div>
+    </div>
+    <p class="viz-cap"><b>Placements were measured</b> on the Warm drone and Shimmering pad presets: each unit at its default settings, moved through the layers (or blocks). Green: the sound held at both; red: it broke on at least one; outlined: the unit's default placement here.</p>
+  </section>
+
+  <!-- 03 -->
+  <section class="section wrap reveal" id="units">
+    <span class="num">03</span>
+    <h2>The units</h2>
+    <p>Thirteen units run on this engine, grouped here by what they act on. Each has VAU's name for what it does to the stream, which VAU marks with a small v as a vector effect (vLookback, vRunning Average); Frame Repeat is VAU's Position Repeat. Every card plays the unit's sweep on the Warm drone preset (seed 1): the same three seconds with the unit at each measured setting, against the preset with no unit. The bars are the level; red is what the measures counted as broken.</p>
+    <div class="toc-strip" id="group-strip" aria-label="Groups"></div>
+    <div id="unit-groups"></div>
+    <p class="viz-cap">Clips raised 12 dB for listening, like the renders on the front page; the figures under the bars are the renders' own levels. vMorph, VAU's fourteenth unit, fits itself to texts and is not offered on this engine yet.</p>
+  </section>
+
+  <!-- 04 -->
+  <section class="section wrap reveal" id="scope">
+    <span class="num">04</span>
+    <h2>Seeing what a unit does: the scope</h2>
+    <p>The scope is a meter that sits on the Model layers row beside the units. It reads the stream at its layer once a frame, after the Steer and the units there, and changes nothing. <b>Trace</b> draws the stream as a waveform along its principal directions (measured over the reference prompts on the unchanged model), the largest first; 0 is the ordinary stream and ±1 a typical swing. <b>Bands</b> shows how far it swings in bands of those directions against the ordinary level. <b>Time</b> scrolls the last five seconds: the stream's size against typical, its reading along each Steer direction on the dose's own scale, and how far it turns from one frame to the next.</p>
+    <figure>
+      <a class="shot" href="img/c-scopes.webp" data-cap="Two scopes playing the Warm drone: layer 6 in Trace, layer 9 in Time. A Brightness dose of 0.15 was set partway through; in Time the brightness reading (amber) steps up and stays."><img src="img/c-scopes.webp" width="1300" height="389" loading="lazy" alt="The Model layers row with two Scope strips: on the left, layer 6 in Trace, a cyan waveform; on the right, layer 9 in Time, with white, amber, violet and green traces, the amber one stepping up halfway; readouts under each give size 1.22× and 1.20× and brightness and pulse readings."><span class="zoom">Zoom</span></a>
+      <figcaption><b>Two scopes.</b> Put one before a unit's layer and one after it to see what the unit does to the stream, then listen to what that does to the sound. Scopes are not saved with sounds.</figcaption>
+    </figure>
+  </section>
+
+  <section class="section wrap reveal">
+    <div class="links">
+      <a href="./"><b>Abliterator</b><span>The instrument, its sounds and how it works</span></a>
+      <a href="https://vector-lab-tools.github.io/vector-abliteration-units/"><b>VAU</b><span>The unit standard and its built-in units</span></a>
+      <a href="https://github.com/vector-lab-tools/vector-abliteration-units"><b>VAU on GitHub</b><span>The package <code>vau</code></span></a>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="foot">
+      <img src="img/mark.svg" alt="">
+      <div>
+        <p><b>Abliterator</b>, a <a href="https://vector-lab-tools.github.io">Vector Lab</a> tool. David M. Berry, University of Sussex. GPL-3.0-or-later.</p>
+        <p><a href="./">Home</a> · <a href="https://github.com/vector-lab-tools/abliterator">Repository</a> · <a href="https://vector-lab-tools.github.io/vector-abliteration-units/">Vector Abliteration Units</a></p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Screenshot, enlarged" hidden>
+  <button type="button" aria-label="Close">✕</button>
+  <img alt="">
+  <div class="cap"></div>
+</div>
+
+<audio id="player" preload="none"></audio>
+<script src="units-media.js?v=94794d8a"></script>
+<script src="units.js?v=52d63497"></script>
+<script src="site.js?v=abdc9fe1"></script>
+</body>
+</html>

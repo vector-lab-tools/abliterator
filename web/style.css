@@ -979,3 +979,5 @@ html, body { overscroll-behavior-x: none; }
 .engfoot .widen .speedpair { position: relative; border: 0; padding: 6px 0 0; }
 .engfoot .widen .speedpair::after { content: ""; position: absolute; left: 12px; right: 12px; top: 0; height: 5px; border: 1px solid #4a4f5b; border-bottom: 0; border-radius: 4px 4px 0 0; pointer-events: none; }
 .engfoot .widen { align-items: end; }
+/* the bracket's name, small, in the middle of its line */
+.engfoot .widen .speedpair::before { content: "SPEED CONTROL"; position: absolute; top: -4px; left: 50%; transform: translateX(-50%); z-index: 1; padding: 0 4px; background: #1b1e24; font: 600 6.5px/8px var(--mono); letter-spacing: .12em; color: #7d8290; white-space: nowrap; pointer-events: none; }

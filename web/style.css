@@ -961,3 +961,17 @@ html, body { overscroll-behavior-x: none; }
 .engl #engknobs > :nth-child(2) { grid-column: 3 / span 2; }
 .engl #engknobs > :nth-child(3) { grid-column: 2 / span 2; }
 .engl #engknobs > :nth-child(4) { grid-column: 4 / span 2; }
+/* the channel meters' scale: the end labels inside the bar's ends, so a narrow meter does not run them together */
+.outm .os span:first-child { transform: none; }
+.outm .os span:last-child { transform: translateX(-100%); }
+/* the Engine's right side under the scope: the four knobs in a row, the levels under them, the stereo field beside both */
+.engfoot { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "knobs field" "levels field"; gap: 8px 14px; align-items: start; }
+.engfoot .widen { grid-area: knobs; grid-template-columns: 58px 58px auto; justify-content: start; align-items: center; }
+.engfoot .widen .speedpair { grid-column: auto; margin: 0 0 0 6px; }
+.engfoot .outcol { grid-area: levels; margin-right: 0; min-width: 0; }
+.engfoot .gonio { grid-area: field; align-self: center; }
+/* Mono and Stereo in the scope's lower left corner: they set how the scope draws */
+.scopewrap .scopemode.chmode { position: absolute; left: 6px; bottom: 6px; top: auto; right: auto; }
+/* Mode and Speed first, then Width and Spread */
+.engfoot .widen { grid-template-columns: auto 58px 58px; }
+.engfoot .widen .speedpair { order: -1; margin: 0 6px 0 0; }

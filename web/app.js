@@ -2450,7 +2450,7 @@ drawField(null);
 const OM = (() => {
   const el = $("#outm"), pos = (db) => clamp01((db + 60) / 60) * 100, dbOf = (v) => (v > 0 ? 20 * Math.log10(v) : -Infinity);
   el.innerHTML = `${["L", "R"].map((c) => `<div class="ob"><span>${c}</span><div class="ot"><i></i><b></b></div></div>`).join("")}
-    <div class="os">${[-60, -40, -20, -6, 0].map((d) => `<span style="left:${pos(d)}%">${d}</span>`).join("")}</div>
+    <div class="os">${[-60, -40, -20, 0].map((d) => `<span style="left:${pos(d)}%">${d}</span>`).join("")}</div>
     <div class="ost"><div><b id="om-pk">–</b>Peak</div><div><b id="om-rms">–</b>RMS</div><div><b id="om-cor">–</b>Corr.</div></div>`;
   const bars = [...el.querySelectorAll(".ot")];
   const fmt = (db) => (isFinite(db) ? db.toFixed(1) : "–");

@@ -953,12 +953,10 @@ html, body { overscroll-behavior-x: none; }
 .eng > .engl > .prow:first-child { margin-top: 10px; }
 /* the engine menu in the panel's header at normal weight */
 #engine.psel { font-weight: 400; }
-/* the Engine's knobs in two rows, the lower one offset half a step, as on the effect cards */
-.engl #engknobs { display: grid; grid-template-columns: repeat(5, 1fr); row-gap: 6px; justify-items: center; padding: 0; }
-.engl #engknobs > :nth-child(1) { grid-column: 1 / span 2; }
-.engl #engknobs > :nth-child(2) { grid-column: 3 / span 2; }
-.engl #engknobs > :nth-child(3) { grid-column: 2 / span 2; }
-.engl #engknobs > :nth-child(4) { grid-column: 4 / span 2; }
+/* the Engine's knobs in a plain two-by-two grid, each centred in its column; the die sits at Seed's shoulder and takes no room */
+.engl #engknobs { display: grid; grid-template-columns: 1fr 1fr; row-gap: 0; justify-items: center; padding: 0; }
+.engl #engknobs .seedpair { position: relative; display: block; }
+.engl #engknobs .seeddie { position: absolute; top: 0; left: calc(100% - 4px); margin: 0; width: 18px; height: 18px; font-size: 11px; }
 /* the channel meters' scale: the end labels inside the bar's ends, so a narrow meter does not run them together */
 .outm .os span:first-child { transform: none; }
 .outm .os span:last-child { transform: translateX(-100%); }
@@ -971,8 +969,12 @@ html, body { overscroll-behavior-x: none; }
 .scopewrap .scopemode.chmode { position: absolute; left: 6px; bottom: 6px; top: auto; right: auto; }
 /* a pair of knobs under a thin bracket with its name in the middle: Mode and Speed (SPEED CONTROL), Width and Spread (STEREO) */
 .engfoot .widen { grid-template-columns: auto auto; gap: 0 6px; justify-content: space-evenly; }
-.engfoot .widen .kgroup { position: relative; display: grid; grid-template-columns: 54px 54px; justify-items: center; gap: 0 2px; border: 0; margin: 0; padding: 6px 0 0; order: 0; }
-.engfoot .widen .kgroup::after { content: ""; position: absolute; left: 12px; right: 12px; top: 0; height: 5px; border: 1px solid #4a4f5b; border-bottom: 0; border-radius: 4px 4px 0 0; pointer-events: none; }
-.engfoot .widen .kgroup::before { content: attr(data-label); position: absolute; top: -4px; left: 50%; transform: translateX(-50%); z-index: 1; padding: 0 4px; background: #1b1e24; font: 600 6.5px/8px var(--mono); letter-spacing: .12em; color: #7d8290; white-space: nowrap; pointer-events: none; }
+.kgroup { position: relative; padding-top: 6px; }
+.engfoot .widen .kgroup { display: grid; grid-template-columns: 54px 54px; justify-items: center; gap: 0 2px; border: 0; margin: 0; order: 0; }
+.kgroup::after { content: ""; position: absolute; left: 12px; right: 12px; top: 0; height: 5px; border: 1px solid #4a4f5b; border-bottom: 0; border-radius: 4px 4px 0 0; pointer-events: none; }
+.kgroup::before { content: attr(data-label); position: absolute; top: -4px; left: 50%; transform: translateX(-50%); z-index: 1; padding: 0 4px; background: #1b1e24; font: 600 6.5px/8px var(--mono); letter-spacing: .12em; color: #7d8290; white-space: nowrap; pointer-events: none; }
 /* the model's format and state, centred in the header's space after the engine menu */
 #pn-engine .pinfo { flex: 1; text-align: center; }
+/* a little room either side of the sampler, whatever height the panel has */
+.eng > .engl #pform { margin-bottom: 12px; }
+.eng > .engl .engsave { margin-top: 6px; }

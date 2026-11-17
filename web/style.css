@@ -957,7 +957,7 @@ html, body { overscroll-behavior-x: none; }
 .engl #engknobs { display: grid; grid-template-columns: 1fr 2fr; row-gap: 0; justify-items: center; align-items: end; padding: 0; }
 .engl #engknobs .samppair { display: grid; grid-template-columns: 1fr 1fr; justify-items: center; width: 100%; }
 /* the prompt, quoted and typed, with Guidance beside it */
-.engl .promptrow { display: flex; align-items: center; gap: 8px; }
+.engl .promptrow { display: flex; align-items: flex-end; gap: 8px; }
 .engl .promptrow .pcol { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
 .engl #engknobs .seedpair { position: relative; display: block; }
 .engl #engknobs .seeddie { position: absolute; top: 0; left: calc(100% - 4px); margin: 0; width: 18px; height: 18px; font-size: 11px; }
@@ -980,10 +980,14 @@ html, body { overscroll-behavior-x: none; }
 /* the model's format and state, centred in the header's space after the engine menu */
 #pn-engine .pinfo { flex: 1; text-align: center; }
 /* a little room either side of the sampler, whatever height the panel has */
-.eng > .engl .promptrow { margin-bottom: 12px; }
+.eng > .engl #pform { margin-bottom: 12px; }
+#pform { align-items: center; }
+#pform .knob.kmini { margin-left: 4px; }
 .eng > .engl .engsave { margin-top: 6px; }
 /* a mini knob, as in Dynamics: Strength beside the prompt */
 .knob.kmini { padding: 0; }
 .knob.kmini svg { width: 28px; height: 28px; }
 .knob.kmini .kv { font-size: 8px; margin-top: -3px; }
 .knob.kmini .kl { font-size: 7px; color: #8a8f9b; }
+/* the Prompt box's text a size down, so more of a typed style shows */
+#pform #ptype { font-size: 10px; }

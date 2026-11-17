@@ -610,12 +610,9 @@ dice.addEventListener("click", () => { $("#seed").value = String(Math.floor(Math
 const seedPair = h(`<div class="seedpair"></div>`);
 seedPair.append(seedKnob, dice);
 $("#engknobs").appendChild(seedPair);
-// Strength (the model's guidance) beside the prompt it weighs; under them Seed, then Temperature and Top-k as a pair under SAMPLING
+// Strength (the model's guidance) in the row of the prompt it weighs; under them Seed, then Temperature and Top-k as a pair under SAMPLING
 const [guidKnob, tempKnob, topkKnob] = engKnobs;
-const promptRow = h(`<div class="promptrow"><div class="pcol"></div></div>`);
-$("#prompt").before(promptRow);
-promptRow.querySelector(".pcol").append($("#prompt"), $("#pform"));
-promptRow.appendChild(guidKnob); guidKnob.classList.add("kmini");
+$("#pform").appendChild(guidKnob); guidKnob.classList.add("kmini");     // in the Prompt box's row, after ↵
 const sampPair = h(`<div class="kgroup samppair" data-label="SAMPLING"></div>`);
 sampPair.append(tempKnob, topkKnob);
 $("#engknobs").appendChild(sampPair);

@@ -308,7 +308,7 @@ def sessions():
 # ------------------------------------------------------------------ tracks
 @app.get("/api/desk")
 def desk_state():
-    return {**desk.state(), "freeze": state.get("freeze")}
+    return desk.state()
 
 
 @app.get("/api/units")
@@ -469,42 +469,10 @@ async def desk_snapshot(request: Request):
     return {"snapshot": snap, "desk": desk.state()}
 
 
-@app.post("/api/desk/freeze")
-async def desk_freeze(request: Request):
-    """Render the current chain offline onto a track (Magenta RT 2). The render runs in the engine
-    process; the page follows it in /api/status's `freezing` and /api/desk's `freeze`."""
-    b = await request.json()
-    if state["active"] != "mrt2":
-        return err("Freeze is written for Magenta RT 2.", 409)
-    if (r := ready_or_409()) is not None:
-        return r
-    ti = int(b.get("track", 0))
-    p = next((x for x in presets() if x["id"] == b.get("preset")), None)
-    if p is None or not 0 <= ti < len(desk.tracks):
-        return err("Name a preset and a track.")
-    if mrt2.status().get("playing"):
-        return err("Stop playing first (or take a snapshot instead): freezing renders on the same GPU.", 409)
-    seconds = max(1.0, min(120.0, float(b.get("seconds", 20))))
-    state["freeze"] = {"state": "running", "track": ti, "seconds": seconds}
-    threading.Thread(target=_freeze_job, args=(ti, p, int(b.get("seed", p["seeds"][0])), seconds), daemon=True).start()
-    return {"freeze": state["freeze"]}
-
-
-def _freeze_job(ti, p: Dict[str, Any], seed: int, seconds: float, name: str = ""):
-    try:
-        snap = mrt2.freeze(p, seed, seconds)
-        snap["label"] = library.rename(snap["snapshot"], name or snap.get("label", ""))["name"]
-        if ti is not None:
-            desk.add_clip(ti, snap)
-        state["freeze"] = {"state": "done", "track": ti, "snapshot": snap}
-    except Exception as e:
-        state["freeze"] = {"state": "failed", "track": ti, "error": str(e)}
-
-
 # ------------------------------------------------------------------ the sound library
 @app.get("/api/sounds")
 def sounds():
-    return {"sounds": library.sounds(), "freeze": state.get("freeze")}
+    return {"sounds": library.sounds()}
 
 
 @app.post("/api/sounds/snapshot")
@@ -518,28 +486,6 @@ async def sound_snapshot(request: Request):
         return err(f"Nothing saved: {e}", 409)
     snap["label"] = library.rename(snap["snapshot"], str(b.get("name") or snap.get("label", "")))["name"]
     return {"snapshot": snap, "sounds": library.sounds()}
-
-
-@app.post("/api/sounds/freeze")
-async def sound_freeze(request: Request):
-    """Render the current settings offline as a sound in the library (Magenta RT 2)."""
-    b = await request.json()
-    if state["active"] != "mrt2":
-        return err("Freeze is written for Magenta RT 2.", 409)
-    if (r := ready_or_409()) is not None:
-        return r
-    p = next((x for x in presets() if x["id"] == b.get("preset")), None)
-    if p is None:
-        return err("Name a preset.")
-    if mrt2.status().get("playing"):
-        return err("Stop playing first (or save the last seconds instead): freezing renders on the same GPU.", 409)
-    if (state.get("freeze") or {}).get("state") == "running":
-        return err("A freeze is already running.", 409)
-    seconds = max(1.0, min(120.0, float(b.get("seconds", 20))))
-    state["freeze"] = {"state": "running", "track": None, "seconds": seconds}
-    threading.Thread(target=_freeze_job, args=(None, p, int(b.get("seed", p["seeds"][0])), seconds, str(b.get("name") or "")),
-                     daemon=True).start()
-    return {"freeze": state["freeze"]}
 
 
 @app.get("/api/sounds/{sid}.wav")

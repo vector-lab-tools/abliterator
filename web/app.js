@@ -951,8 +951,6 @@ function transport() {
   }
   $("#snapbtn").disabled = !s.playing;
   $("#snapsave").disabled = !s.playing;
-  $("#freeze").disabled = s.state !== "ready" || !!s.playing || !!s.freezing || S.engine !== "mrt2";
-  $("#freeze").title = S.engine !== "mrt2" ? "Freeze is written for Magenta RT 2" : s.playing ? "Stop playing first: a freeze renders on the same GPU" : "Render the current settings, modulation included, offline from the start";
 }
 
 // saving sounds
@@ -965,13 +963,6 @@ async function saveLast() {
 }
 $("#snapsave").addEventListener("click", (e) => { if (e.target.tagName !== "SELECT") saveLast(); });
 $("#snapbtn").addEventListener("click", saveLast);
-$("#freeze").addEventListener("click", async (e) => {
-  if (e.target.tagName === "SELECT" || !S.preset) return;
-  try {
-    await api("/api/sounds/freeze", { seconds: +$("#frzlen").value, preset: S.preset.id, seed: Math.max(0, +$("#seed").value || 0), name: "" });
-    info("freezing…", "", 1500); SND.watchFreeze = true;
-  } catch (err) { fail(err); }
-});
 
 // the scope: the last three seconds the model made; a click flips between the two channels' mix
 // and left and right, one above the other
@@ -1856,7 +1847,7 @@ function drawEditor() {
     col.appendChild(routesEl(id));
     ed.appendChild(col);
   }
-  if (MOD.tab === "env") ed.appendChild(h(`<div class="ecol"><p class="pnote">Each envelope runs from ▶ (or from the start of a freeze). Its release ends a freeze: the last seconds fall to zero. In live play it holds at its sustain.</p></div>`));
+  if (MOD.tab === "env") ed.appendChild(h(`<div class="ecol"><p class="pnote">Each envelope runs from ▶ and holds at its sustain while it plays.</p></div>`));
   drawGraphs();
 }
 function routesEl(id) {
@@ -1889,7 +1880,7 @@ function drawGraphs() {
     }
     g.stroke();
     g.fillStyle = "#5a606d"; g.font = "20px ui-monospace, Menlo, monospace";
-    g.fillText(s.kind === "lfo" ? "one cycle" : s.kind === "env" ? `${span.toFixed(0)} s (as a freeze)` : `${span.toFixed(1)} s`, 8, 22);
+    g.fillText(s.kind === "lfo" ? "one cycle" : s.kind === "env" ? `${span.toFixed(0)} s` : `${span.toFixed(1)} s`, 8, 22);
   });
 }
 document.querySelectorAll("#modtabs button").forEach((b) => b.addEventListener("click", () => { MOD.tab = b.dataset.k; drawEditor(); }));
@@ -2058,9 +2049,6 @@ async function poll() {
   part("Listen and status line", () => {
       if (s.meters) adoptMeters(s.meters);
       adoptSpec("model", s.spec, s.playing);
-      const fr = s.freezing;
-      $("#frzprog").hidden = !fr;
-      if (fr) $("#frzprog i").style.width = `${(100 * fr[0]) / Math.max(1, fr[1])}%`;
       if (Date.now() > infoUntil) { $("#infotext").textContent = ""; $("#infotext").className = ""; }
       $("#infostatus").textContent = s.playing ? `model: ${s.seconds.toFixed(0)} s, ${s.underruns} dropouts` : `model: ${s.state}`;
       transport();
@@ -2072,13 +2060,13 @@ async function poll() {
 }
 
 // ================================================================ THE BROWSER: saved sounds
-const SND = { list: [], fresh: null, watchFreeze: false, playing: null };
+const SND = { list: [], fresh: null, playing: null };
 function drawSounds() {
   const q = $("#brsearch").value.trim().toLowerCase();
   const list = SND.list.filter((s) => !q || `${s.name} ${s.preset} ${s.strips.join(" ")}`.toLowerCase().includes(q));
   $("#nsounds").textContent = SND.list.length ? SND.list.length : "";
   const box = $("#sounds");
-  box.innerHTML = list.length ? "" : `<div class="br-none">${SND.list.length ? "No sound matches." : "None yet. Play the model and save the last seconds (◉), or freeze (❄)."}</div>`;
+  box.innerHTML = list.length ? "" : `<div class="br-none">${SND.list.length ? "No sound matches." : "None yet. Play the model and save the last seconds (◉)."}</div>`;
   for (const s of list) {
     const strips = s.strips.length ? ` · ${s.strips.length} strip${s.strips.length > 1 ? "s" : ""}` : "";
     const el = h(`<div class="snd ${s.id === SND.fresh ? "fresh" : ""}" draggable="true" data-id="${esc(s.id)}" title="${esc(s.name)}\n${esc(s.preset || "")} · seed ${s.seed} · ${s.seconds} s${s.frozen ? " · frozen" : ""}${s.strips.length ? "\n" + esc(s.strips.join("\n")) : ""}\nDrag onto a track in the Session.">
@@ -2110,14 +2098,8 @@ async function pollSounds() {
     const r = await api("/api/sounds");
     const key = JSON.stringify(r.sounds.map((s) => [s.id, s.name]));
     if (key !== SND.key) { SND.key = key; SND.list = r.sounds; drawSounds(); }
-    const f = r.freeze;
-    if (SND.watchFreeze && f && f.state !== "running") {
-      SND.watchFreeze = false;
-      if (f.state === "done") { SND.fresh = f.snapshot.snapshot; drawSounds(); info(`frozen “${f.snapshot.label}”: ${f.snapshot.seconds} s in ${f.snapshot.seconds_to_render} s`, "ok", 6000); }
-      else info(`Freeze failed: ${f.error}`, "bad", 8000);
-    }
   } catch (e) { /* the status poll reports a dead server */ }
-  setTimeout(pollSounds, SND.watchFreeze ? 500 : 2000);
+  setTimeout(pollSounds, 2000);
 }
 async function listSessions() {
   try {
@@ -2177,7 +2159,7 @@ function drawSession() {
     });
     const add = h(`<button class="slot" title="Put a saved sound on this track">+</button>`);
     add.addEventListener("click", () => menu(add, SND.list.length ? [{ head: `Onto ${t.name}` }, ...SND.list.slice(0, 40).map((s) => ({ label: s.name, sub: `${s.seconds} s · ${s.frozen ? "frozen" : "saved while playing"}`, run: () => putSound(t.i, s.id) }))]
-      : [{ head: "No sounds yet" }, { label: "Make some first", sub: "In ☰ Make, play the model and save the last seconds, or freeze", disabled: true }]));
+      : [{ head: "No sounds yet" }, { label: "Make some first", sub: "In ☰ Make, play the model and save the last seconds", disabled: true }]));
     col.appendChild(add);
     const stop = h(`<button class="slot stop" title="Stop this track">■</button>`);
     stop.disabled = !t.live;

@@ -663,7 +663,7 @@ body.moddrag .knob[data-mod].drophover svg { box-shadow: 0 0 0 3px var(--dragc),
 .engr { border-left: 1px solid #2a2e37; padding-left: 14px; }
 .engl .engsave { margin-top: 8px; display: flex; flex-direction: column; gap: 6px; }
 .engl #engknobs { display: flex; justify-content: space-between; padding: 0 4px; }
-.engl .saverow { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.engl .saverow { display: grid; grid-template-columns: 1fr; gap: 6px; }
 .pb .isave { width: 11px; height: 11px; flex: none; margin-right: 1px; vertical-align: -1px; }
 .engl .saverow .pb { width: 100%; justify-content: center; box-sizing: border-box; }
 .scoperow { display: flex; align-items: center; gap: 8px; min-width: 0; }

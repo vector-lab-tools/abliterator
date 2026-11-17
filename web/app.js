@@ -583,7 +583,7 @@ const speedKnob = knob({ label: "Speed", min: 0.125, max: 1, log: true, step: 0.
 // how Speed slows the sound: Tape lets the pitch fall; Stretch keeps it (a phase vocoder); Smear keeps it and
 // washes it out over long windows (after Paulstretch), for very slow ambient
 const SPEED_MODES = [["tape", "Tape", "pitch falls with speed, as a slowed tape"], ["stretch", "Stretch", "pitch kept: a phase vocoder with locked phases"], ["smear", "Smear", "pitch kept, washed out over 0.34 s windows: for very slow ambient"]];
-const speedModes = h(`<div class="speedmodes" role="group" aria-label="How Speed slows the sound">${SPEED_MODES.map(([k, l, t]) => `<button type="button" data-m="${k}" title="${l}: ${t}">${l}</button>`).join("")}</div>`);
+const speedModes = h(`<div class="fxseg speedmodes" role="group" aria-label="How Speed slows the sound">${SPEED_MODES.map(([k, l, t]) => `<button type="button" data-m="${k}" title="${l}: ${t}">${l}</button>`).join("")}</div>`);
 const paintSpeedModes = () => speedModes.querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.m === (S.master.speed_mode || "tape"))));
 speedModes.querySelectorAll("button").forEach((b) => b.addEventListener("click", () => { sendMaster({ speed_mode: b.dataset.m }); paintSpeedModes(); }));
 const speedPair = h(`<div class="seedpair speedpair"></div>`);

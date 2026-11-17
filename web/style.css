@@ -935,7 +935,11 @@ html, body { overscroll-behavior-x: none; }
 .fxpan .track::before { content: ""; position: absolute; left: 50%; top: -2px; width: 1px; height: 7px; background: #3a3f4a; }
 .fxpan .track i { position: absolute; left: 50%; top: 50%; width: 5px; height: 5px; margin: -2.5px 0 0 -2.5px; border-radius: 50%; background: #a8875a; transition: left .12s linear; }
 /* how Speed slows the sound, beside its knob */
-.engl #engknobs .speedpair { gap: 12px; }
-.engl #engknobs .speedmodes { display: grid; gap: 5px; margin-bottom: 16px; }
-.engl #engknobs .speedmodes button { width: 68px; padding: 3px 0; border: 1px solid #3a3f4a; border-radius: 5px; background: var(--k); color: #8a8f9b; font: 600 9.5px var(--mono); letter-spacing: .02em; cursor: pointer; text-align: center; }
-.engl #engknobs .speedmodes button[aria-pressed="true"] { color: #f3a33b; border-color: rgba(243,163,59,.5); background: rgba(243,163,59,.08); }
+.engl #engknobs { flex-wrap: wrap; }
+.engl #engknobs .speedpair { flex-basis: 100%; gap: 14px; margin-top: 2px; }
+.engl #engknobs .speedmodes { --fxc: #f3a33b; margin-bottom: 14px; }
+.engl #engknobs .speedmodes button { padding: 3px 7px; }
+/* Output: when the row is taller than its controls, they sit together in the middle rather than split top and bottom */
+#pn-out .outcol2 { justify-content: center; }
+#pn-out .outcol2 .outk { flex: none; }
+#pn-out .dyn { margin-top: 10px; }

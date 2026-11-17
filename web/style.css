@@ -657,7 +657,7 @@ body.moddrag .knob[data-mod].drophover svg { box-shadow: 0 0 0 3px var(--dragc),
 .engfoot .gcorr::after { content: ""; position: absolute; left: 50%; top: -1px; bottom: -1px; width: 1px; background: #8f95a1; }
 .engfoot .gcorr b { position: absolute; top: -2px; width: 3px; height: 10px; margin-left: -1.5px; border-radius: 1px; background: #fbfcfe; left: 50%; display: none; }
 
-.engfoot .widen { flex: none; align-self: flex-start; margin-top: 18px; display: flex; gap: 2px; }
+.engfoot .widen { flex: none; align-self: flex-start; display: flex; gap: 2px; }
 
 /* the Engine panel in two halves: what generates, and what comes out */
 .engr { border-left: 1px solid #2a2e37; padding-left: 14px; }

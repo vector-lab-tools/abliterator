@@ -251,3 +251,14 @@ def test_unit_knob_modulated_renders_the_same_twice(p):
     assert np.array_equal(b, c) and not np.array_equal(a, b)
     k = 3                                                   # before the LFO has moved the knob a step, nothing differs
     assert np.array_equal(a[:k * M.HOP], b[:k * M.HOP])
+
+
+def test_speed_off_plays_at_one():
+    """Off plays at 1 whatever the Speed knob says, and the knob keeps its value; the other modes play the knob."""
+    assert M.heard_speed({"speed": 0.25, "speed_mode": "off"}) == (1.0, "tape")
+    assert M.heard_speed({"speed": 0.25, "speed_mode": "smear"}) == (0.25, "smear")
+    assert M.heard_speed({}) == (1.0, "tape")
+    from abliterator.dsp import Master
+    m = Master(48000, 2)
+    m.update({"speed": 0.25, "speed_mode": "off"})
+    assert (m.speed, m.speed_mode) == (0.25, "off")

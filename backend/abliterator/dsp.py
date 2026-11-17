@@ -164,7 +164,7 @@ class Master:
             elif k == "speed":
                 self.speed = float(min(1.0, max(0.125, float(v))))
             elif k == "speed_mode":
-                self.speed_mode = str(v) if str(v) in ("tape", "stretch", "smear") else "tape"
+                self.speed_mode = str(v) if str(v) in ("off", "tape", "stretch", "smear") else "tape"
             elif k in ("dyn_on", "dyn_fast", "dyn_peak", "declick"):
                 setattr(self, k, bool(v))
             elif k in DYN_RANGES:

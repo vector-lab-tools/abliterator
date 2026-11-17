@@ -116,7 +116,7 @@ function knob(p) {
   const assigning = () => p.mod && MOD.assign && MOD.on;
   el.addEventListener("pointerdown", (e) => {
     if (e.button !== 0) return;
-    e.preventDefault(); el.focus(); el.setPointerCapture(e.pointerId);
+    e.preventDefault(); el.focus({ preventScroll: true, focusVisible: false }); el.setPointerCapture(e.pointerId);
     mine = true; holding++;
     let x = e.clientX, y = e.clientY;
     const depthMode = assigning();
@@ -581,13 +581,18 @@ const speedKnob = knob({ label: "Speed", min: 0.125, max: 1, log: true, step: 0.
   fmt: (v) => ({ 1: "1×", 0.5: "½×", 0.25: "¼×", 0.125: "⅛×" }[+v.toFixed(3)] || `${v.toFixed(2)}×`),
   tip: "how fast the model's sound is played, from 1× down to ⅛×. The model writes only as fast as it is used. A saved sound replays its speed exactly" });
 // how Speed slows the sound: Tape lets the pitch fall; Stretch keeps it (a phase vocoder); Smear keeps it and
-// washes it out over long windows (after Paulstretch), for very slow ambient
-const SPEED_MODES = [["tape", "Tape", "pitch falls with speed, as a slowed tape"], ["stretch", "Stretch", "pitch kept: a phase vocoder with locked phases"], ["smear", "Smear", "pitch kept, washed out over 0.34 s windows: for very slow ambient"]];
-const speedModes = h(`<div class="fxseg speedmodes" role="group" aria-label="How Speed slows the sound">${SPEED_MODES.map(([k, l, t]) => `<button type="button" data-m="${k}" title="${l}: ${t}">${l}</button>`).join("")}</div>`);
-const paintSpeedModes = () => speedModes.querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.m === (S.master.speed_mode || "tape"))));
-speedModes.querySelectorAll("button").forEach((b) => b.addEventListener("click", () => { sendMaster({ speed_mode: b.dataset.m }); paintSpeedModes(); }));
+// washes it out over long windows (after Paulstretch), for very slow ambient; Off plays at 1× and keeps the Speed knob's value
+const SPEED_MODES = [["off", "Off", "plays at 1×; Speed keeps its setting"], ["tape", "Tape", "pitch falls with speed, as a slowed tape"],
+  ["stretch", "Stretch", "pitch kept: a phase vocoder with locked phases"], ["smear", "Smear", "pitch kept, washed out over 0.34 s windows: for very slow ambient"]];
+const modeAt = () => Math.max(0, SPEED_MODES.findIndex(([k]) => k === (S.master.speed_mode || "tape")));
+const speedModes = knob({ label: "Mode", min: 0, max: SPEED_MODES.length - 1, step: 1, int: true, reset: 0, get: modeAt,
+  put: (v) => { const k = SPEED_MODES[Math.round(v)][0]; if (k !== S.master.speed_mode) { S.master.speed_mode = k; sendMaster({ speed_mode: k }); } },
+  fmt: (v) => SPEED_MODES[Math.round(v)][1],
+  tip: "how Speed slows the sound. " + SPEED_MODES.map(([, l, t]) => `${l}: ${t}`).join(". ") + ". Double-click: Off" });
+speedModes.classList.add("kspeed"); speedKnob.classList.add("kspeed");
+const paintSpeedModes = () => speedModes.paint?.();
 const speedPair = h(`<div class="seedpair speedpair"></div>`);
-speedPair.append(speedKnob, speedModes);
+speedPair.append(speedModes, speedKnob);
 // the seed as a knob beside them (its value is #seed, read at the next ▶); the die picks one at random
 const seedKnob = knob({ label: "Seed", min: 0, max: 999, int: true, reset: 1, get: () => +$("#seed").value || 0,
   put: (v) => { $("#seed").value = String(Math.round(v)); }, fmt: (v) => String(Math.round(v)),

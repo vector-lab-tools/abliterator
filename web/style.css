@@ -234,7 +234,8 @@ details.more summary { cursor: pointer; color: var(--text-2); font-size: 12.5px;
 .strip details.hostfx > summary i { font-style: normal; color: var(--gold); }
 .strip details.hostfx .krow .knob svg { width: 34px; height: 34px; }
 .knob { display: grid; justify-items: center; cursor: ns-resize; touch-action: none; user-select: none; border-radius: 8px; padding: 2px 4px; }
-.knob:focus-visible { outline: 1px solid color-mix(in srgb, var(--gold) 55%, transparent); outline-offset: 0; }
+.knob:focus, .knob:focus-visible { outline: none; }
+.knob:focus-visible .kv { color: var(--gold); }
 .knob svg { width: 42px; height: 42px; }
 .knob .kbody { fill: var(--k); stroke: #3a3f4a; }
 .knob .ktrack { fill: none; stroke: #2f333d; stroke-width: 3; stroke-linecap: round; }
@@ -936,9 +937,9 @@ html, body { overscroll-behavior-x: none; }
 .fxpan .track i { position: absolute; left: 50%; top: 50%; width: 5px; height: 5px; margin: -2.5px 0 0 -2.5px; border-radius: 50%; background: #a8875a; transition: left .12s linear; }
 /* how Speed slows the sound, beside its knob */
 .engl #engknobs { flex-wrap: wrap; }
-.engl #engknobs .speedpair { flex-basis: 100%; gap: 14px; margin-top: 2px; }
-.engl #engknobs .speedmodes { --fxc: #f3a33b; margin-bottom: 14px; }
-.engl #engknobs .speedmodes button { padding: 3px 7px; }
+.engl #engknobs .speedpair { flex-basis: 100%; justify-content: center; gap: 18px; margin-top: 2px; }
+/* Speed and its Mode in a dark red, a pair apart from the gold of the knobs beside them */
+.knob.kspeed .karc { stroke: #b8443a; }
 /* Output: when the row is taller than its controls, they sit together in the middle rather than split top and bottom */
 #pn-out .outcol2 { justify-content: center; }
 #pn-out .outcol2 .outk { flex: none; }

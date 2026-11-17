@@ -71,6 +71,13 @@ READ_EVERY = 3                            # frames between the strips' readings:
 PROBE_N = 32                              # each strip reports this many of the stream's values in and out (status.probe)
 
 
+def heard_speed(master: Dict[str, Any]):
+    """The speed and mode the Speed stage plays from a master's settings: Off plays at 1, keeping the knob's value."""
+    if master.get("speed_mode") == "off":
+        return 1.0, "tape"
+    return float(master.get("speed", 1.0)), master.get("speed_mode", "tape")
+
+
 def settle_heap():
     """Collect, then freeze what is left (the model, its weights' wrappers, the strips) into Python's permanent
     generation, which the garbage collector does not walk. Without it a full collection walks the whole model:
@@ -614,7 +621,7 @@ class Proc:
             self._use(live)
             mod.set_curves(curves)
         pre = np.concatenate(pre)
-        if float(mbase.get("speed", 1.0)) != 1.0 or any("speed_at" in m for m in spec.get("moves") or []):
+        if heard_speed(mbase)[0] != 1.0 or any("speed_at" in m for m in spec.get("moves") or []):
             post = [self.post_of(pre, {**(st0.get("master") or {})}, spec.get("moves") or [], 0, st0.get("mod"), length=length)]
         return {"pre": pre, "post": np.concatenate(post)}
 
@@ -678,10 +685,11 @@ class Proc:
         self.spectro.reset()
         from abliterator.speed import Speed, clamp
         self.speed = Speed(CHANNELS)                     # playback speed: read the model's sound slower than it is made
-        r0 = clamp(self.master_base.get("speed", 1.0))
-        self.speed.set(r0, self.master_base.get("speed_mode", "tape"))
+        r0, m0 = heard_speed(self.master_base)
+        r0 = clamp(r0)
+        self.speed.set(r0, m0)
         self.speed.target = self.speed.ratio = r0
-        self.speed.mode = self.master_base.get("speed_mode", "tape")
+        self.speed.mode = m0
         self.speed_logged = 0
         fresh = Master(SR, CHANNELS)                     # the output section from silence: no tails, levels or envelopes from the last take,
         fresh.update({**self.master.settings(), **self.master_base})    # as an offline render of the recipe starts
@@ -820,7 +828,7 @@ class Proc:
         """The next block of sound through the Speed stage: straight through at 1, read slower otherwise; each new
         speed is recorded with the output sample it was taken at, so a take replays it exactly (post_of)."""
         sp = self.speed
-        sp.set(self.master_base.get("speed", 1.0), self.master_base.get("speed_mode", "tape"))
+        sp.set(*heard_speed(self.master_base))
         if sp.idle():
             x = self._take(frames)
             if x is not None:
@@ -1051,7 +1059,7 @@ class Proc:
         spec = mod.clean(start_mod, list(self.vectors))
         self.last_where = None
         changes = [(int(mv["speed_at"]), float(mv["speed"]), mv.get("speed_mode", "tape")) for mv in moves if "speed_at" in mv]
-        if float(base.get("speed", 1.0)) != 1.0 or changes:
+        if heard_speed(base)[0] != 1.0 or changes:
             return self._post_slowed(pre, m, base, spec, moves, changes, frame0, unity, length)
         by: Dict[int, List[Dict[str, Any]]] = {}
         for mv in moves:
@@ -1077,7 +1085,7 @@ class Proc:
         if frame0:
             raise ValueError("a slowed take is rendered from its start")
         nfr = len(pre) // HOP
-        y, where = Speed.render(pre, float(base.get("speed", 1.0)), base.get("speed_mode", "tape"), changes,
+        y, where = Speed.render(pre, *heard_speed(base), changes,
                                 marks=[f * HOP for f in range(nfr + 1)])
         self.last_where = where
         at = sorted((where[min(mv["frame"], nfr)], i, mv) for i, mv in enumerate(moves) if ("master" in mv or "mod" in mv))

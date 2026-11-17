@@ -597,7 +597,7 @@ const paintSpeedModes = () => {
   speedKnob.setAttribute("aria-disabled", String(off));
   speedKnob.tabIndex = off ? -1 : 0;
 };
-const speedPair = h(`<div class="seedpair speedpair"></div>`);
+const speedPair = h(`<div class="seedpair speedpair kgroup" data-label="SPEED CONTROL"></div>`);
 speedPair.append(speedModes, speedKnob);
 // the seed as a knob beside them (its value is #seed, read at the next ▶); the die picks one at random
 const seedKnob = knob({ label: "Seed", min: 0, max: 999, int: true, reset: 1, get: () => +$("#seed").value || 0,
@@ -629,8 +629,10 @@ const widenKnobs = [
   knob({ label: "Spread", min: 0, max: 1, step: 0.01, reset: 0, get: () => +(S.master.spread ?? 0), put: (v) => sendMaster({ spread: v }), fmt: (v) => `${Math.round(v * 100)}%`, mod: "spread",
     tip: "width from a mono sound: the mid, delayed 12 ms, added to the left and taken from the right; the mono sum is unchanged" }),
 ];
-widenKnobs.forEach((k) => $("#widen").appendChild(k));
-$("#widen").appendChild(speedPair);                    // Speed and its Mode under them: they too act on the sound the model has written
+// Speed and its Mode, then Width and Spread: each pair under a bracket with its name; all four act on the sound the model has written
+const stereoPair = h(`<div class="stereopair kgroup" data-label="STEREO"></div>`);
+widenKnobs.forEach((k) => stereoPair.appendChild(k));
+$("#widen").append(speedPair, stereoPair);
 $("#outknobs").appendChild(leadKnob);
 $("#outknobs").appendChild((() => { const r = h(`<div class="outtg"></div>`); outToggles.forEach((t) => r.appendChild(t)); return r; })());
 // Dynamics: the master's compressor and gate (dsp.Master._dynamics), after the effects, with their reduction on LEDs

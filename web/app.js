@@ -590,12 +590,14 @@ const speedModes = knob({ label: "Mode", min: 0, max: SPEED_MODES.length - 1, st
   fmt: (v) => SPEED_MODES[Math.round(v)][1],
   tip: "how Speed slows the sound. " + SPEED_MODES.map(([, l, t]) => `${l}: ${t}`).join(". ") + ". Double-click: Off" });
 // while Mode is Off, Speed is dimmed and does not turn: its value is kept for when a mode is chosen again
+// MusicGen's output is one channel and has no Speed stage, so there all four are dimmed too
+const dimKnob = (k, off) => { k.classList.toggle("disabled", off); k.setAttribute("aria-disabled", String(off)); k.tabIndex = off ? -1 : 0; };
 const paintSpeedModes = () => {
   speedModes.paint?.();
-  const off = (S.master.speed_mode || "tape") === "off";
-  speedKnob.classList.toggle("disabled", off);
-  speedKnob.setAttribute("aria-disabled", String(off));
-  speedKnob.tabIndex = off ? -1 : 0;
+  const mg = S.engine === "musicgen";
+  dimKnob(speedModes, mg);
+  dimKnob(speedKnob, mg || (S.master.speed_mode || "tape") === "off");
+  widenKnobs?.forEach((k) => dimKnob(k, mg));
 };
 const speedPair = h(`<div class="seedpair speedpair kgroup" data-label="SPEED CONTROL"></div>`);
 speedPair.append(speedModes, speedKnob);

@@ -303,18 +303,11 @@ def test_without_fades_the_rack_is_as_before():
 
 
 @pytest.fixture(scope="module")
-def postfx_015(tmp_path_factory):
-    """postfx.py as released in 0.1.5 (commit 5d2574b), read from git."""
+def postfx_015():
+    """postfx.py as released in 0.1.5, kept in tests/fixtures."""
     import importlib.util
     import pathlib
-    import subprocess
-    root = pathlib.Path(__file__).resolve().parents[1]
-    try:
-        src = subprocess.run(["git", "-C", str(root), "show", "5d2574b:backend/abliterator/postfx.py"], capture_output=True, check=True).stdout
-    except (OSError, subprocess.CalledProcessError):
-        pytest.skip("commit 5d2574b is not reachable from here")
-    path = tmp_path_factory.mktemp("v015") / "postfx_015.py"
-    path.write_bytes(src)
+    path = pathlib.Path(__file__).resolve().parent / "fixtures" / "postfx_015.py"
     spec = importlib.util.spec_from_file_location("postfx_015", path)
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)

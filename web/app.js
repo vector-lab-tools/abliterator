@@ -603,7 +603,6 @@ const seedPair = h(`<div class="seedpair"></div>`);
 seedPair.append(seedKnob, dice);
 $("#engknobs").appendChild(seedPair);
 engKnobs.forEach((k) => $("#engknobs").appendChild(k));
-$("#engknobs").appendChild(speedPair);
 
 // Output: the master, after the model
 const outKnobs = [
@@ -625,6 +624,7 @@ const widenKnobs = [
     tip: "width from a mono sound: the mid, delayed 12 ms, added to the left and taken from the right; the mono sum is unchanged" }),
 ];
 widenKnobs.forEach((k) => $("#widen").appendChild(k));
+$("#widen").appendChild(speedPair);                    // Speed and its Mode under them: they too act on the sound the model has written
 $("#outknobs").appendChild(leadKnob);
 $("#outknobs").appendChild((() => { const r = h(`<div class="outtg"></div>`); outToggles.forEach((t) => r.appendChild(t)); return r; })());
 // Dynamics: the master's compressor and gate (dsp.Master._dynamics), after the effects, with their reduction on LEDs

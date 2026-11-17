@@ -937,7 +937,8 @@ html, body { overscroll-behavior-x: none; }
 .fxpan .track i { position: absolute; left: 50%; top: 50%; width: 5px; height: 5px; margin: -2.5px 0 0 -2.5px; border-radius: 50%; background: #a8875a; transition: left .12s linear; }
 /* how Speed slows the sound, beside its knob */
 .engl #engknobs { flex-wrap: wrap; }
-.engl #engknobs .speedpair { flex-basis: 100%; justify-content: center; gap: 18px; margin-top: 2px; }
+.engfoot .widen { display: grid; grid-template-columns: auto auto; gap: 6px 2px; }
+.engfoot .widen .speedpair { display: contents; }
 /* Speed and its Mode in a dark red, a pair apart from the gold of the knobs beside them */
 .knob.kspeed .karc { stroke: #b8443a; }
 /* Output: when the row is taller than its controls, they sit together in the middle rather than split top and bottom */

@@ -15,7 +15,7 @@ sampler and the place where strips act are in one file:
 - MusicGen's position table holds 2048 steps (41 s) and it was trained on 30 s excerpts, so the
   context slides: past WINDOW columns, the cache is rebuilt from the last KEEP (a re-prime).
 
-Measured on an Apple M5 (bench/, PLAN.md section 2): bfloat16 with sdpa attention on MPS, 12.9 ms
+Measured on an Apple M5 (bench/): bfloat16 with sdpa attention on MPS, 12.9 ms
 a step without guidance and 17.3 ms with it, against 20 ms of audio a step.
 """
 from __future__ import annotations

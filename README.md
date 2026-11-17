@@ -98,8 +98,6 @@ A Python backend (FastAPI) holds the desk and talks to the engine, which runs in
 | `web/` | The page |
 | `docs/` | The website: the instrument, and the Model layers page on the units |
 
-`PLAN.md` records the design decisions and the measurements behind them.
-
 ## Credits
 
 - **Terence Broad.** The instrument took shape after his Sussex AI seminar, "Expanding the generative space", at the University of Sussex on 14 October 2026. His network bending and active divergence (Broad, Berns, Colton and Grierson 2021, [arXiv:2107.05599](https://arxiv.org/abs/2107.05599); Broad, Leymarie and Grierson 2021, [arXiv:2005.12420](https://arxiv.org/abs/2005.12420)) are what the Model layers do to a music model.

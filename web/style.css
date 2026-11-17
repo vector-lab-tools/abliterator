@@ -938,7 +938,7 @@ html, body { overscroll-behavior-x: none; }
 /* how Speed slows the sound, beside its knob */
 .engl #engknobs { flex-wrap: wrap; }
 .engfoot .widen { display: grid; grid-template-columns: 58px 58px; gap: 6px 2px; justify-items: center; }
-.engfoot .widen .knob { width: 58px; box-sizing: border-box; }
+.engfoot .widen .knob { width: 54px; box-sizing: border-box; }
 /* a knob that does nothing in the current setting (Speed while Mode is Off): dimmed, and it does not turn */
 .knob.disabled { opacity: .35; pointer-events: none; }
 /* Output: when the row is taller than its controls, they sit together in the middle rather than split top and bottom */
@@ -970,7 +970,7 @@ html, body { overscroll-behavior-x: none; }
 /* Mono and Stereo in the scope's lower left corner: they set how the scope draws */
 .scopewrap .scopemode.chmode { position: absolute; left: 6px; bottom: 6px; top: auto; right: auto; }
 /* a pair of knobs under a thin bracket with its name in the middle: Mode and Speed (SPEED CONTROL), Width and Spread (STEREO) */
-.engfoot .widen { grid-template-columns: auto auto; gap: 0 14px; }
-.engfoot .widen .kgroup { position: relative; display: grid; grid-template-columns: 58px 58px; justify-items: center; gap: 0 2px; border: 0; margin: 0; padding: 6px 0 0; order: 0; }
+.engfoot .widen { grid-template-columns: auto auto; gap: 0 6px; justify-content: space-evenly; }
+.engfoot .widen .kgroup { position: relative; display: grid; grid-template-columns: 54px 54px; justify-items: center; gap: 0 2px; border: 0; margin: 0; padding: 6px 0 0; order: 0; }
 .engfoot .widen .kgroup::after { content: ""; position: absolute; left: 12px; right: 12px; top: 0; height: 5px; border: 1px solid #4a4f5b; border-bottom: 0; border-radius: 4px 4px 0 0; pointer-events: none; }
 .engfoot .widen .kgroup::before { content: attr(data-label); position: absolute; top: -4px; left: 50%; transform: translateX(-50%); z-index: 1; padding: 0 4px; background: #1b1e24; font: 600 6.5px/8px var(--mono); letter-spacing: .12em; color: #7d8290; white-space: nowrap; pointer-events: none; }

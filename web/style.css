@@ -953,3 +953,11 @@ html, body { overscroll-behavior-x: none; }
 .eng > .engl .engsave { flex: none; align-self: stretch; margin-top: 0; }
 /* room between the Engine's title row and the preset */
 .eng > .engl > .prow:first-child { margin-top: 10px; }
+/* the engine menu in the panel's header at normal weight */
+#engine.psel { font-weight: 400; }
+/* the Engine's knobs in two rows, the lower one offset half a step, as on the effect cards */
+.engl #engknobs { display: grid; grid-template-columns: repeat(5, 1fr); row-gap: 6px; justify-items: center; padding: 0; }
+.engl #engknobs > :nth-child(1) { grid-column: 1 / span 2; }
+.engl #engknobs > :nth-child(2) { grid-column: 3 / span 2; }
+.engl #engknobs > :nth-child(3) { grid-column: 2 / span 2; }
+.engl #engknobs > :nth-child(4) { grid-column: 4 / span 2; }

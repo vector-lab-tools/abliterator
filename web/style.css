@@ -950,7 +950,7 @@ html, body { overscroll-behavior-x: none; }
 .eng > .engl #engknobs { margin-top: auto; margin-bottom: auto; padding-top: 6px; padding-bottom: 6px; }
 .eng > .engl .engsave { flex: none; align-self: stretch; margin-top: 0; }
 /* room between the Engine's title row and the preset */
-.eng > .engl > .prow:first-child { margin-top: 10px; }
+.eng > .engl > .prow:first-child { margin-top: 18px; }
 /* the engine menu in the panel's header at normal weight */
 #engine.psel { font-weight: 400; }
 /* the Engine's knobs in a plain two-by-two grid, each centred in its column; the die sits at Seed's shoulder and takes no room */

@@ -951,3 +951,5 @@ html, body { overscroll-behavior-x: none; }
 .eng > .engl { display: flex; flex-direction: column; min-height: 0; }
 .eng > .engl #engknobs { margin-top: auto; margin-bottom: auto; padding-top: 6px; padding-bottom: 6px; }
 .eng > .engl .engsave { flex: none; align-self: stretch; margin-top: 0; }
+/* room between the Engine's title row and the preset */
+.eng > .engl > .prow:first-child { margin-top: 10px; }

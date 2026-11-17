@@ -36,6 +36,8 @@ class Spectro:
         self.lo = np.maximum(1, np.floor(edges[:-1] / sr * N)).astype(int)
         self.hi = np.maximum(self.lo + 1, np.ceil(edges[1:] / sr * N)).astype(int)
         self.hi = np.minimum(self.hi, len(f))
+        self.dead = self.lo >= len(f)                      # bands above the Nyquist frequency (MusicGen's 32 kHz stops at 16 kHz): drawn empty
+        self.lo = np.minimum(self.lo, len(f) - 1)
         self.q: "collections.deque" = collections.deque()
         self.lock = threading.Lock()
         self.reset()
@@ -66,6 +68,7 @@ class Spectro:
         X = np.fft.rfft(self.buf[idx] * self.win, axis=1)
         P = (X.real ** 2 + X.imag ** 2) * self.norm
         m = np.maximum.reduceat(P[:, : self.hi[-1]], self.lo, axis=1)       # each band's largest power
+        m[:, self.dead] = 0.0
         db = 10 * np.log10(m + 1e-14)
         for c in np.clip((db - (TOP - RANGE)) / RANGE * 255, 0, 255).astype(np.uint8):
             self.cols.append(c)

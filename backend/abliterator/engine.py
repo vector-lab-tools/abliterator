@@ -30,6 +30,7 @@ import numpy as np
 from . import ROOT, TOOL, VERSION
 from .codec import HOP, LOOKAHEAD_FRAMES, SR, worker
 from .dsp import Master
+from .spectro import Spectro
 
 SESSIONS = ROOT / "data" / "sessions"
 SNAPSHOTS = ROOT / "data" / "snapshots"
@@ -47,6 +48,9 @@ class Engine:
         self.error: Optional[str] = None
         self.playing = False
         self.master = Master(SR, 1)
+        self.spectro = Spectro(SR)                 # the spectrogram of what is heard, for the page (as Magenta RT 2's)
+        self.scope_last = None
+        self.steer_layer: Optional[int] = None
         self.lead = 8
         self.block = 512
         self._ctx = mp.get_context("spawn")
@@ -68,6 +72,7 @@ class Engine:
         if msg[0] != "ready":
             raise RuntimeError(f"the decoder did not start: {msg}")
         self.steer = Steer(self.mg, layer)
+        self.steer_layer = layer
         for name, d in directions.items():
             self.steer.set_direction(name, d.unit(layer))
         threading.Thread(target=self._reader, daemon=True).start()
@@ -87,6 +92,8 @@ class Engine:
         self.recorded: List[np.ndarray] = []
         self.expect = 0                              # the next frame index the ring expects
         self.t_play = None
+        if hasattr(self, "spectro"):
+            self.spectro.reset()
 
     def play(self, preset: Dict[str, Any], seed: int, cfg: Optional[float] = None):
         import sounddevice as sd
@@ -177,10 +184,12 @@ class Engine:
             self.buf = self.buf[frames:]
             y = self.master.process(x)
             out[:, 0] = y
+            self.spectro.feed(y)
             start = self.played
             self.played += frames
             dac = t.outputBufferDacTime
-            self.dac.append((start, dac, float(np.sqrt((y ** 2).mean()))))
+            rms, pk = float(np.sqrt((y ** 2).mean())), float(np.abs(y).max())
+            self.dac.append((start, dac, rms, [rms, rms], [pk, pk]))   # mono: the same on both of the OUT meter's bars
             for p in list(self.pending):
                 if p["frame"] is not None and p["t"] is not None:
                     s = p["frame"] * HOP
@@ -195,6 +204,19 @@ class Engine:
                 self.underruns += 1
 
     # ------------------------------------------------------------------ readings
+    def scope(self, seconds: float = 3.0, points: int = 300) -> Optional[List[List[float]]]:
+        """The last seconds the model made, as (min, max) pairs, for the Engine panel's scope (mono)."""
+        rec = self.recorded[-int(seconds * SR / HOP):]
+        if not rec:
+            return self.scope_last
+        y = np.concatenate(rec).reshape(-1)
+        n = len(y) // points
+        if n < 1:
+            return self.scope_last
+        y = y[-n * points:].reshape(points, n)
+        self.scope_last = np.round(np.stack([y.min(1), y.max(1)], 1), 4).tolist()
+        return self.scope_last
+
     def latency(self) -> Dict[str, Any]:
         dev_ms = (self.stream.latency * 1000) if self.playing else 41.0
         parts = {"generation lead": self.lead * 20, "delay pattern (all four codebooks)": DELAY_PATTERN_FRAMES * 20,
@@ -211,7 +233,10 @@ class Engine:
         s = {"tool": TOOL, "version": VERSION, "state": self.status_text, "error": self.error, "playing": self.playing,
              "model": self.mg.info() if self.mg else None, "lead": self.lead, "lead_range": [4, 25], "frame_ms": 20,
              "block": self.block,
-             "doses": dict(self.steer.doses) if self.steer else {}, "master": self.master.settings()}
+             "doses": dict(self.steer.doses) if self.steer else {}, "master": self.master.settings(),
+             "chain": [], "chain_report": [], "scopes": [], "spec": self.spectro.payload()}
+        if s["model"] is not None:
+            s["model"] = {**s["model"], "steer_layer": self.steer_layer, "codec": "EnCodec"}
         if self.playing:
             st = self.stepper
             sm = np.array(self.step_ms) if self.step_ms else np.zeros(1)
@@ -221,6 +246,8 @@ class Engine:
                       "seconds": round(self.played / SR, 2), "frames_generated": st.n_frames, "reprimes": st.reprimes,
                       "step_ms_p50": round(float(np.median(sm)), 2), "step_ms_p95": round(float(np.percentile(sm, 95)), 2),
                       "underruns": self.underruns, "level": heard[-1][2] if heard else 0.0,
+                      "level_lr": heard[-1][3] if heard else [0.0, 0.0], "peak_lr": [round(max(d[4][c] for d in heard[-12:]), 4) for c in range(2)] if heard else [0.0, 0.0],
+                      "scope": self.scope(), "stages": self.master.readings(),
                       "latency": self.latency()})
         else:
             s["latency"] = self.latency()

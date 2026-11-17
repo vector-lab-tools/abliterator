@@ -61,10 +61,13 @@ class Master:
         # Fades in the effect chain (postfx.Rack): off in a new Master for the same reason, on for live play.
         self.fx_fade = False
         self.fx_on = True                    # the Effects panel's switch; a sound saved before it has none, and played its effects
+        self.speed = 1.0                     # playback speed of the model's sound (speed.py; the engine runs it, not this class)
+        self.speed_mode = "tape"
 
     def settings(self) -> Dict[str, Any]:
         return {"on": self.on, "level": self.level, "lowpass_hz": self.lowpass_hz, "limit": self.limit, "volume": self.volume,
                 "width": self.width, "spread": self.spread, "dyn_on": self.dyn_on, "dyn_fast": self.dyn_fast, "dyn_peak": self.dyn_peak, "declick": self.declick, "fx_fade": self.fx_fade, "fx_on": self.fx_on,
+                "speed": self.speed, "speed_mode": self.speed_mode,
                 "dyn_ratio": self.dyn_ratio, "dyn_thresh": self.dyn_thresh, "dyn_release": self.dyn_release, "gate_thresh": self.gate_thresh,
                 "fx": self.rack.wanted()}
 
@@ -158,6 +161,10 @@ class Master:
                 self.width = float(min(2.0, max(0.0, float(v))))
             elif k == "spread":
                 self.spread = float(min(1.0, max(0.0, float(v))))
+            elif k == "speed":
+                self.speed = float(min(1.0, max(0.125, float(v))))
+            elif k == "speed_mode":
+                self.speed_mode = str(v) if str(v) in ("tape", "stretch", "smear") else "tape"
             elif k in ("dyn_on", "dyn_fast", "dyn_peak", "declick"):
                 setattr(self, k, bool(v))
             elif k in DYN_RANGES:

@@ -71,6 +71,29 @@ READ_EVERY = 3                            # frames between the strips' readings:
 PROBE_N = 32                              # each strip reports this many of the stream's values in and out (status.probe)
 
 
+def settle_heap():
+    """Collect, then freeze what is left (the model, its weights' wrappers, the strips) into Python's permanent
+    generation, which the garbage collector does not walk. Without it a full collection walks the whole model:
+    measured live, they grew from 17 to 99 ms over a few minutes and, run in the status thread, held up the step
+    (a 125 ms step, a dropout at a two-frame buffer)."""
+    import gc
+    gc.collect()
+    gc.freeze()
+
+
+def interactive():
+    """Ask macOS to run this thread as user-interactive work, so it is kept on the performance cores and woken on
+    time when other programs load the machine. Measured over 1,500 steps of a busy chain: steps over 55 ms (the
+    two-frame buffer's headroom) fell from 5 to 3, the worst from 85 to 63 ms. Does nothing elsewhere."""
+    if sys.platform != "darwin":
+        return
+    try:
+        import ctypes
+        ctypes.CDLL("/usr/lib/libSystem.B.dylib").pthread_set_qos_class_self_np(ctypes.c_uint(0x21), ctypes.c_int(0))   # QOS_CLASS_USER_INTERACTIVE
+    except Exception:
+        pass
+
+
 class Hooks:
     """Wraps every block of the temporal transformer. One block carries the Steer sum; while `tap` is
     set, the stream at every layer (layer 0 the input to block 1, layer l the output of block l) is
@@ -262,6 +285,22 @@ class Proc:
         self.layers_on = True                             # the Model layers panel's switch: off plays the model unbent, keeping the strips
         self.steer_on = True                              # the Steer panel's switch: off sets every dose to 0, keeping the knobs
         self.chain_report: List[Dict[str, Any]] = []
+        self.in_status = False                                # a status reply is being built (reader thread)
+        self.status_ms: "collections.deque" = collections.deque(maxlen=200)
+        self.slow: "collections.deque" = collections.deque(maxlen=40)
+        self.gcs: "collections.deque" = collections.deque(maxlen=40)    # garbage collections over 2 ms: (generation, ms, thread)
+        import gc
+        self._gc0 = {}
+        def _gc(phase, info):
+            import threading as th
+            k = th.get_ident()
+            if phase == "start":
+                self._gc0[k] = time.perf_counter()
+            elif k in self._gc0:
+                ms = (time.perf_counter() - self._gc0.pop(k)) * 1000
+                if ms > 2:
+                    self.gcs.append({"gen": info["generation"], "ms": round(ms, 1), "thread": "main" if th.current_thread() is th.main_thread() else th.current_thread().name, "playing": self.playing})
+        gc.callbacks.append(_gc)
         self.activity: Dict[int, float] = {}                 # each strip's change to the stream, by line (_read_activity)
         self.activity_now: Dict[int, float] = {}
         self.probe: Dict[int, List[List[float]]] = {}       # Quantise strips' values in and out, the last frame
@@ -307,6 +346,7 @@ class Proc:
             refs = list(dict.fromkeys(prompts + [q for c in dr.contrasts() for q in c["positive"] + c["negative"]]))
             self.measure_stream(refs)
         self.status_text = "ready"
+        settle_heap()
 
     def load_calibration(self):
         """The knobs' musical curves (calibrate.py), for modulation to move along."""
@@ -573,12 +613,15 @@ class Proc:
             self.hooks.read_at, self.hooks.read = read_at, {}
             self._use(live)
             mod.set_curves(curves)
-        return {"pre": np.concatenate(pre), "post": np.concatenate(post)}
+        pre = np.concatenate(pre)
+        if float(mbase.get("speed", 1.0)) != 1.0 or any("speed_at" in m for m in spec.get("moves") or []):
+            post = [self.post_of(pre, {**(st0.get("master") or {})}, spec.get("moves") or [], 0, st0.get("mod"), length=length)]
+        return {"pre": pre, "post": np.concatenate(post)}
 
     def info(self) -> Dict[str, Any]:
         return {"model_id": f"Magenta RT 2 small ({SIZE})", "package": "magenta-rt 2.0.3", "dtype": f"{BITS}-bit",
                 "device": "MLX (Metal)", "sample_rate": SR, "channels": CHANNELS, "frame_ms": FRAME_MS,
-                "licence": LICENCE, "steer_layer": LAYER, "n_layers": getattr(self, "n_layers", None)}
+                "licence": LICENCE, "steer_layer": LAYER, "n_layers": getattr(self, "n_layers", None), "codec": "SpectroStream"}
 
     # ------------------------------------------------------------------ play and stop (main thread)
     def _field(self, y: np.ndarray):
@@ -633,12 +676,20 @@ class Proc:
         self.memo = {}
         self.meters.reset()
         self.spectro.reset()
+        from abliterator.speed import Speed, clamp
+        self.speed = Speed(CHANNELS)                     # playback speed: read the model's sound slower than it is made
+        r0 = clamp(self.master_base.get("speed", 1.0))
+        self.speed.set(r0, self.master_base.get("speed_mode", "tape"))
+        self.speed.target = self.speed.ratio = r0
+        self.speed.mode = self.master_base.get("speed_mode", "tape")
+        self.speed_logged = 0
         fresh = Master(SR, CHANNELS)                     # the output section from silence: no tails, levels or envelopes from the last take,
         fresh.update({**self.master.settings(), **self.master_base})    # as an offline render of the recipe starts
         self.master = fresh
         self.master_modded = False
         if self.heard_chain():
             self.chain_pending, _ = self.attach_chain(self.heard_chain())      # fresh memory for the strips
+        settle_heap()                                    # the strips just attached join the model in the frozen generation
         self.stream = sd.OutputStream(samplerate=SR, channels=CHANNELS, blocksize=self.block, latency="low",
                                       callback=self._callback)
         self.playing = True
@@ -654,6 +705,7 @@ class Proc:
 
     def run(self):
         """The main loop: tasks between steps, and one step whenever the lead allows."""
+        interactive()
         while True:
             try:
                 while True:
@@ -668,7 +720,7 @@ class Proc:
                 except queue.Empty:
                     pass
                 continue
-            if self.gen - self.played // HOP > self.lead:
+            if self.gen - self.speed.consumed // HOP > self.lead:     # ahead of the model sound used (slower speed: fewer steps)
                 time.sleep(0.0005)
                 continue
             try:
@@ -691,6 +743,7 @@ class Proc:
             send({"id": rid, "ok": False, "error": f"{type(e).__name__}: {e}"})
 
     def _generate_one(self):
+        ta = time.perf_counter(); st_seen = self.in_status
         with self.lock:                                        # MLX arrays are made here, on the main thread
             if self.chain_pending is not None:
                 self._use(self.chain_pending)
@@ -720,8 +773,14 @@ class Proc:
             self.hooks.measuring = False
         self.step_ms.append((time.perf_counter() - t0) * 1000)
         self._read_scopes(self.gen)
+        tc = time.perf_counter()
         if reading:
             self._read_activity()
+        td = time.perf_counter(); st_seen = st_seen or self.in_status
+        if (td - ta) * 1000 > 45:                                   # a slow step and where its time went (status.slow_steps)
+            self.slow.append({"frame": self.gen, "total": round((td - ta) * 1000, 1), "prep": round((t0 - ta) * 1000, 1),
+                              "step": round(self.step_ms[-1], 1), "after": round((td - tc) * 1000 + (tc - t0) * 1000 - self.step_ms[-1], 1),
+                              "status_overlap": st_seen, "ahead_ms": round((len(self.ring) * HOP + len(self.buf)) / SR * 1000)})
         self.recorded.append(a)
         self.ring.append(a)
         self.gen += 1
@@ -748,12 +807,34 @@ class Proc:
         self.clicks.append({"t": round(self.played / SR, 2), "kind": kind, "jump": round(jump, 3),
                             "cb_ms_max": round(max(self.cb_ms), 2) if self.cb_ms else None})
 
-    def _fill(self, out, frames, t) -> str:
-        while len(self.buf) < frames and self.ring:
+    def _take(self, k: int) -> Optional[np.ndarray]:
+        """k samples of the model's sound, or None (and nothing taken) if it has not written them yet."""
+        while len(self.buf) < k and self.ring:
             self.buf = np.concatenate([self.buf, self.ring.popleft()])
-        if len(self.buf) >= frames:
-            x = self.buf[:frames]
-            self.buf = self.buf[frames:]
+        if len(self.buf) < k:
+            return None
+        x, self.buf = self.buf[:k], self.buf[k:]
+        return x
+
+    def _speed_read(self, frames: int) -> Optional[np.ndarray]:
+        """The next block of sound through the Speed stage: straight through at 1, read slower otherwise; each new
+        speed is recorded with the output sample it was taken at, so a take replays it exactly (post_of)."""
+        sp = self.speed
+        sp.set(self.master_base.get("speed", 1.0), self.master_base.get("speed_mode", "tape"))
+        if sp.idle():
+            x = self._take(frames)
+            if x is not None:
+                sp.skip(x)
+            return x
+        x = sp.pull(frames, self._take)
+        for at, r, m in sp.changes[self.speed_logged:]:
+            self.moves.append({"frame": self.gen, "speed_at": at, "speed": r, "speed_mode": m})
+        self.speed_logged = len(sp.changes)
+        return None if x is None else x.astype(np.float32)
+
+    def _fill(self, out, frames, t) -> str:
+        x = self._speed_read(frames)
+        if x is not None:
             spec = self.mod_spec
             if mod.active(spec, model=False):                   # the master's controls, moved at the frame being heard
                 self.master.update(mod.apply_master(spec, self.master_base, (self.played // HOP) * mod.FRAME_S))
@@ -891,6 +972,8 @@ class Proc:
              "directions": self.summaries, "latency": self.latency(), "chain": self.chain, "chain_report": self.chain_report,
              "activity": {str(k): round(v, 5) for k, v in self.activity.items()} if self.playing else {},
              "probe": {str(k): v for k, v in self.probe.items()} if self.playing else {},
+             "diag": {"status_ms_p50": round(float(np.median(self.status_ms)), 1) if self.status_ms else None, "status_ms_max": round(max(self.status_ms), 1) if self.status_ms else None,
+                      "slow_steps": list(self.slow)[-12:], "gc": list(self.gcs)[-20:]},
              "mlp_width": int(self.components[(0, "mlp")].weight.shape[1]) if getattr(self, "components", None) else None,
              "freezing": self.freezing, "cpu_s": time.process_time()}   # this process's CPU seconds, all threads
         if self.playing:
@@ -966,6 +1049,10 @@ class Proc:
         base = {**m.settings(), "level": False, **start_master}
         m.update(base)
         spec = mod.clean(start_mod, list(self.vectors))
+        self.last_where = None
+        changes = [(int(mv["speed_at"]), float(mv["speed"]), mv.get("speed_mode", "tape")) for mv in moves if "speed_at" in mv]
+        if float(base.get("speed", 1.0)) != 1.0 or changes:
+            return self._post_slowed(pre, m, base, spec, moves, changes, frame0, unity, length)
         by: Dict[int, List[Dict[str, Any]]] = {}
         for mv in moves:
             if "master" in mv or "mod" in mv:
@@ -981,6 +1068,32 @@ class Proc:
             y = m.process(pre[f * HOP:(f + 1) * HOP])
             out.append(y / max(float(base["volume"]), 1e-6) if unity else y)
         return np.concatenate(out) if out else pre
+
+    def _post_slowed(self, pre, m, base, spec, moves, changes, frame0, unity, length) -> np.ndarray:
+        """post_of with the Speed stage: the model's sound read slower, each change at the output sample it was
+        taken at live, then the output section in output time (as live: its modulation at the frame being heard,
+        its moves where their model frame came out). Keeps, for each model frame, where it came out (last_where)."""
+        from abliterator.speed import Speed
+        if frame0:
+            raise ValueError("a slowed take is rendered from its start")
+        nfr = len(pre) // HOP
+        y, where = Speed.render(pre, float(base.get("speed", 1.0)), base.get("speed_mode", "tape"), changes,
+                                marks=[f * HOP for f in range(nfr + 1)])
+        self.last_where = where
+        at = sorted((where[min(mv["frame"], nfr)], i, mv) for i, mv in enumerate(moves) if ("master" in mv or "mod" in mv))
+        out, j = [], 0
+        for b in range(0, len(y), HOP):
+            while j < len(at) and at[j][0] <= b:
+                mv = at[j][2]
+                if "master" in mv:
+                    base.update({k: v for k, v in mv["master"].items() if k not in ("speed", "speed_mode")})
+                if "mod" in mv:
+                    spec = mod.clean(mv["mod"], list(self.vectors))
+                j += 1
+            m.update(mod.apply_master(spec, base, (b // HOP) * mod.FRAME_S, length) if mod.active(spec, model=False) else base)
+            z = m.process(y[b:b + HOP].astype(np.float32))
+            out.append(z / max(float(base["volume"]), 1e-6) if unity else z)
+        return np.concatenate(out) if out else y
 
     def snapshot(self, seconds: float) -> Dict[str, Any]:
         """The last `seconds` of what the engine generated (not what the sound card played, so
@@ -999,7 +1112,9 @@ class Proc:
         SNAPSHOTS.mkdir(parents=True, exist_ok=True)
         sid = time.strftime("%Y%m%d-%H%M%S") + "-" + secrets.token_hex(2)
         sf.write(SNAPSHOTS / f"{sid}.wav", pre, SR, subtype="FLOAT")
-        heard = self.post_of(np.concatenate(rec[:to]), self.start["master"], moves, 0, self.start.get("mod"), unity=True)[fr * HOP:to * HOP]
+        heard = self.post_of(np.concatenate(rec[:to]), self.start["master"], moves, 0, self.start.get("mod"), unity=True)
+        w = self.last_where                              # slowed: where the snapshot's frames came out
+        heard = heard[w[fr]:w[to]] if w else heard[fr * HOP:to * HOP]
         sf.write(SNAPSHOTS / f"{sid}.heard.wav", heard, SR, subtype="FLOAT")
         recipe = {
             "format": "abliterator.snapshot.v1", "tool": {"name": TOOL, "version": VERSION},
@@ -1104,7 +1219,11 @@ def reader(p: Proc):
         rid, cmd = m.get("id"), m.get("cmd")
         try:
             if cmd == "status":
-                send({"id": rid, "ok": True, **p.status()})
+                t0 = time.perf_counter(); p.in_status = True
+                try:
+                    send({"id": rid, "ok": True, **p.status()})
+                finally:
+                    p.in_status = False; p.status_ms.append((time.perf_counter() - t0) * 1000)
             elif cmd == "control":
                 if p.status_text != "ready":
                     raise RuntimeError("not ready")

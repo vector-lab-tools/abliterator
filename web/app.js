@@ -577,6 +577,17 @@ const engKnobs = [
   knob({ label: "Temperature", min: 0.5, max: 2, step: 0.05, reset: 1.3, get: () => +(S.sampling.temperature ?? 1.3), put: (v) => sendSampling({ temperature: v }), fmt: (v) => v.toFixed(2), mod: "temperature", curve: "temperature", tip: "the sampler's temperature" }),
   knob({ label: "Top-k", min: 1, max: 250, int: true, reset: 40, curve: "top_k", get: () => +(S.sampling.top_k ?? 40), put: (v) => sendSampling({ top_k: v }), tip: "how many of the likeliest tokens the sampler chooses among" }),
 ];
+const speedKnob = knob({ label: "Speed", min: 0.125, max: 1, log: true, step: 0.005, reset: 1, get: () => +(S.master.speed ?? 1), put: (v) => sendMaster({ speed: +v.toFixed(3) }),
+  fmt: (v) => ({ 1: "1×", 0.5: "½×", 0.25: "¼×", 0.125: "⅛×" }[+v.toFixed(3)] || `${v.toFixed(2)}×`),
+  tip: "how fast the model's sound is played, from 1× down to ⅛×. The model writes only as fast as it is used. A saved sound replays its speed exactly" });
+// how Speed slows the sound: Tape lets the pitch fall; Stretch keeps it (a phase vocoder); Smear keeps it and
+// washes it out over long windows (after Paulstretch), for very slow ambient
+const SPEED_MODES = [["tape", "Tape", "pitch falls with speed, as a slowed tape"], ["stretch", "Stretch", "pitch kept: a phase vocoder with locked phases"], ["smear", "Smear", "pitch kept, washed out over 0.34 s windows: for very slow ambient"]];
+const speedModes = h(`<div class="speedmodes" role="group" aria-label="How Speed slows the sound">${SPEED_MODES.map(([k, l, t]) => `<button type="button" data-m="${k}" title="${l}: ${t}">${l}</button>`).join("")}</div>`);
+const paintSpeedModes = () => speedModes.querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.m === (S.master.speed_mode || "tape"))));
+speedModes.querySelectorAll("button").forEach((b) => b.addEventListener("click", () => { sendMaster({ speed_mode: b.dataset.m }); paintSpeedModes(); }));
+const speedPair = h(`<div class="seedpair speedpair"></div>`);
+speedPair.append(speedKnob, speedModes);
 // the seed as a knob beside them (its value is #seed, read at the next ▶); the die picks one at random
 const seedKnob = knob({ label: "Seed", min: 0, max: 999, int: true, reset: 1, get: () => +$("#seed").value || 0,
   put: (v) => { $("#seed").value = String(Math.round(v)); }, fmt: (v) => String(Math.round(v)),
@@ -587,6 +598,7 @@ const seedPair = h(`<div class="seedpair"></div>`);
 seedPair.append(seedKnob, dice);
 $("#engknobs").appendChild(seedPair);
 engKnobs.forEach((k) => $("#engknobs").appendChild(k));
+$("#engknobs").appendChild(speedPair);
 
 // Output: the master, after the model
 const outKnobs = [
@@ -691,7 +703,10 @@ const fxId = (x) => (x.id ??= ++PFX.uid);
 const flushFx = throttle(() => { followFx(); sendMaster({ fx: PFX.slots.map((x) => ({ id: fxId(x), type: x.type, on: x.on, params: { ...x.params } })) }); }, 60);
 function fxSet(i, patch) { Object.assign(PFX.slots[i], patch); PFX.touched = Date.now(); flushFx(); }
 async function loadFx() {
-  try { const j = await api("/api/fxtypes"); PFX.types = j.types; PFX.order = Object.keys(j.types); PFX.max = j.max || 8; } catch (e) { return; }
+  try { const j = await api("/api/fxtypes"); PFX.types = j.types || {}; PFX.order = Object.keys(PFX.types); PFX.max = j.max || 8; }
+  catch (e) { PFX.loading = false; return; }                     // tried again at the next status
+  PFX.loading = false;
+  if (!PFX.order.length) return;
   if (!PFX.slots.length) PFX.slots = (S.master.fx || []).map((x) => ({ ...x, params: { ...x.params } }));
   PFX.slots.forEach((x) => { if (typeof x.id === "number") PFX.uid = Math.max(PFX.uid, x.id); });
   PFX.sent = PFX.slots.map(fxId);
@@ -715,9 +730,9 @@ function followFx() {
   }
   if (changed) { MOD.spec.routes = routes; sendMod(); drawTiles(); }
 }
-const FX_GROUPS = [["Space", ["reverb", "plate", "hall", "delay"]], ["Movement and colour", ["chorus", "drive", "eq", "eq8", "filter", "crush"]], ["Repair", ["declick"]]];
+const FX_GROUPS = [["Space", ["reverb", "plate", "hall", "delay"]], ["Movement and colour", ["chorus", "drive", "tape", "pan", "eq", "eq8", "filter", "crush"]], ["Repair", ["declick"]]];
 const FX_WHAT = { reverb: "an eight-line feedback delay network", plate: "Dattorro's plate: a dense, bright tail", hall: "a larger network whose delays drift slowly at random",
-  delay: "repeats, with feedback and ping-pong", chorus: "a modulated short delay", drive: "saturation with a tone control", eq: "three bands", eq8: "a low cut, six bands and a high cut", filter: "low-, high- or band-pass with resonance", crush: "fewer bits and a lower rate", declick: "redraws the few-sample bursts a unit can make the model write" };
+  delay: "repeats, with feedback and ping-pong", chorus: "a modulated short delay", drive: "saturation with a tone control", pan: "places the sound left or right, or swings it with an auto-pan", tape: "a tape machine's colour: saturation, wow and flutter, head bump and roll-off by speed (inches a second), hiss", eq: "three bands", eq8: "a low cut, six bands and a high cut", filter: "low-, high- or band-pass with resonance", crush: "fewer bits and a lower rate", declick: "redraws the few-sample bursts a unit can make the model write" };
 function addFx(type, slot = PFX.slots.length) {
   if (PFX.slots.length >= PFX.max) return;
   PFX.slots.splice(slot, 0, { id: ++PFX.uid, type, on: true, params: fxDefaults(type) });
@@ -733,6 +748,8 @@ const FX_ROWS = {
   delay: [["time", "feedback", "damp", "mix"]],
   chorus: [["rate", "depth", "mix"]],
   drive: [["amount"], ["tone"], ["mix"]],
+  pan: [["pos"], ["rate"], ["depth"]],
+  tape: [["drive", "wow", "flutter"], ["noise", "mix"]],
   eq: [["low", "mid", "freq", "high"]],
   eq8: [["lowcut", "b60", "b150", "b400"], ["b1k", "b2k5", "b6k", "highcut"]],
   filter: [["cutoff", "res"]],
@@ -740,8 +757,8 @@ const FX_ROWS = {
   declick: [["sens"], ["longest"]],
 };
 const FX_SPACE = new Set(["reverb", "plate", "hall", "delay"]);
-const FX_NARROW = new Set(["drive", "declick"]);     // a knob a row, on a narrow card
-const FX_ZIG = new Set(["drive"]);                    // its rows offset left and right
+const FX_NARROW = new Set(["drive", "pan", "declick"]);     // a knob a row, on a narrow card
+const FX_ZIG = new Set(["drive", "pan"]);                    // its rows offset left and right
 const FX_GRAPH = new Set(["filter", "eq", "eq8"]);          // a display only where a curve says more than the knobs
 // RBJ biquads as postfx._biquad designs them, for drawing: the magnitude in dB at frequency f
 function biquadDb(kind, f0, q, g, f) {
@@ -802,9 +819,13 @@ function drawFx() {
     const params = () => { const o = {}; for (const q of T.params) o[q.key] = +(PFX.slots[i].params[q.key] ?? q.default); return o; };
     const paintG = () => { if (svg) svg.innerHTML = fxGraph(sl.type, params()); };
     paintG(); if (svg) PFX.ctl.push({ paint: paintG });
-    if (sl.type === "drive") {                                      // how hard the input drives the curve, in cells, as Output's meters
+    if (sl.type === "drive" || sl.type === "tape") {                // how hard the input drives the curve, in cells, as Output's meters
       const m = h(`<div class="fxmeter" title="How hard the input drives the curve: green bends it, amber flattens it, red holds it flat at the top (CLIP)"><span>drive</span><div class="cells">${"<i></i>".repeat(10)}</div><b>clip</b></div>`);
       el.querySelector(".fxk").before(m); PFX.leds[fxId(sl)] = { cells: [...m.querySelectorAll("i")], clip: m.querySelector("b"), hold: 0 };
+    }
+    if (sl.type === "pan") {                                        // where the sound sits now, L to R
+      const m = h(`<div class="fxpan" title="Where the sound sits now, left to right, the auto-pan included"><span>L</span><div class="track"><i></i></div><span>R</span></div>`);
+      el.querySelector(".fxk").before(m); PFX.leds[fxId(sl)] = { pan: m.querySelector(".track i") };
     }
     if (sl.type === "declick") {                                    // how many bursts it has redrawn
       const c = h(`<div class="fxcount" title="Bursts redrawn since this De-click was added"><span>fixed</span><b>0</b></div>`);
@@ -813,7 +834,7 @@ function drawFx() {
     const byKey = Object.fromEntries(T.params.map((q) => [q.key, q]));
     const get = (q) => +(PFX.slots[i].params[q.key] ?? q.default);
     const put = (q, v) => { PFX.slots[i].params[q.key] = v; PFX.touched = Date.now(); flushFx(); paintG(); };
-    const fmt = (q) => (v) => (q.unit === "Hz" ? (v >= 1000 ? `${(v / 1000).toFixed(1)}k` : v < 10 ? `${v.toFixed(2)}` : `${Math.round(v)}`) : q.unit === "ms" ? `${Math.round(v)} ms` : q.unit === "s" ? `${v.toFixed(1)} s` : q.unit === "dB" ? `${v > 0 ? "+" : ""}${v.toFixed(1)}` : q.unit === "×" ? `${v.toFixed(1)}×` : q.scale === "int" ? `${Math.round(v)}` : v.toFixed(2));
+    const fmt = (q) => (v) => q.key === "pos" && sl.type === "pan" ? (Math.abs(v) < 0.005 ? "C" : `${v < 0 ? "L" : "R"}${Math.round(Math.abs(v) * 100)}`) : (q.unit === "Hz" ? (v >= 1000 ? `${(v / 1000).toFixed(1)}k` : v < 10 ? `${v.toFixed(2)}` : `${Math.round(v)}`) : q.unit === "ms" ? `${Math.round(v)} ms` : q.unit === "s" ? `${v.toFixed(1)} s` : q.unit === "dB" ? `${v > 0 ? "+" : ""}${v.toFixed(1)}` : q.unit === "×" ? `${v.toFixed(1)}×` : q.scale === "int" ? `${Math.round(v)}` : v.toFixed(2));
     const kbox = el.querySelector(".fxk");
     const rows = FX_ROWS[sl.type] || [T.params.filter((q) => !q.scale.startsWith("choice") && q.scale !== "toggle").map((q) => q.key)];
     for (const keys of rows) {
@@ -860,6 +881,7 @@ function paintFxLeds(s) {
   const now = Date.now();
   for (const [id, m] of Object.entries(PFX.leds || {})) {
     if (m.count) { if (by[id]?.fixed != null) m.count.textContent = by[id].fixed; continue; }
+    if (m.pan) { m.pan.style.left = `${(((by[id]?.pos ?? 0) + 1) / 2 * 100).toFixed(1)}%`; continue; }
     const d = by[id]?.drive ?? 0;
     m.cells.forEach((c, j) => c.classList.toggle("on", d >= DRIVE_CELLS[j]));
     if (d > 4) m.hold = now + 1000;
@@ -1085,7 +1107,7 @@ function dropKnobs() { for (const k of MODKNOBS) if (!k.isConnected) MODKNOBS.de
 function drawStrips() {
   const desk = $("#stripdesk");
   desk.innerHTML = ""; dropKnobs();
-  if (!U.chain.length && !SC.layers.length) desk.appendChild(h(`<div class="empty">No VAU units</div>`));
+  if (!U.chain.length && !SC.layers.length) desk.appendChild(h(`<div class="empty">${S.engine === "musicgen" ? "Units run on Magenta RT 2; MusicGen plays with Steer only" : "No VAU units"}</div>`));
   const unitMenu = (btn, slot) => menu(btn, [{ where: whereIn(slot, U.chain.length, "unit") },
     ...unitGroups().flatMap(([title, us]) => [{ head: title }, ...us.map((u) => ({ label: u.title, sub: u.what, run: () => addStrip(u, slot) }))])]);
   U.chain.forEach((c, k) => { if (U.units.length) desk.appendChild(gapAdd(k, k === 0 ? "Add a unit before unit 1" : `Add a unit between units ${k} and ${k + 1}`, unitMenu)); desk.appendChild(stripEl(c, k)); });
@@ -1271,21 +1293,22 @@ const numQ = (v) => (v < 0 ? "−" : "+") + Math.abs(v).toFixed(3);
 // marked where it acts, lit by its reading), the codec, the model's sound and the effects, on to the Output panel
 // beside it. Dots run along both paths while it plays. A stage scrolls to its panel when clicked.
 const FLOW = { el: null, key: null };
-function flowInit() {
+function flowInit(N = 12, codec = "SpectroStream") {
   const host = $("#flow");
   if (!host) return;
   const dots = (path, n, dur, cls) => Array.from({ length: n }, (_, j) => `<circle class="${cls}" r="2"><animateMotion dur="${dur}s" repeatCount="indefinite" begin="${(-j * dur / n).toFixed(2)}s"><mpath href="#${path}"/></animateMotion></circle>`).join("");
   const X0 = 24, MW = 352;                                       // the model's box: twelve columns, a block each
-  const cols = Array.from({ length: 13 }, (_, L) => `<line class="fcol" x1="${X0 + L * MW / 12}" y1="24" x2="${X0 + L * MW / 12}" y2="132"/>`).join("");
+  const cols = Array.from({ length: N + 1 }, (_, L) => `<line class="fcol" x1="${X0 + L * MW / N}" y1="24" x2="${X0 + L * MW / N}" y2="132"/>`).join("");
+  FLOW.n = N; FLOW.codec = codec; FLOW.key = null;
   host.innerHTML = `<svg viewBox="0 0 400 258" aria-label="The signal path, live">
     <path id="fp1" class="fpath v" d="M2 78 H392 V160 H44 V188"/><path id="fp2" class="fpath a" d="M80 210 H396"/>
     <g class="fdots">${dots("fp1", 9, 6, "dv")}${dots("fp2", 7, 2.2, "da")}</g>
-    <text class="fcap" x="200" y="149">Model stream: 1,024 numbers/frame, 25 fps</text>
-    <text class="fcap" x="200" y="250">its sound: 48 kHz stereo</text>
+    <text class="fcap" id="fl-cap1" x="200" y="149">Model stream</text>
+    <text class="fcap" id="fl-cap2" x="200" y="250">its sound</text>
     <g class="fnode fgo" data-go="#pn-engine"><title>From the Engine, beside this panel</title><path class="farr" d="M12 74 L18 78 L12 82Z"/></g><path class="farr" d="M40 174 L44 180 L48 174Z"/>
     <path class="farr" d="M96 206 L102 210 L96 214Z"/><path class="farr" d="M244 206 L250 210 L244 214Z"/>
-    <g class="fnode" data-go="#pn-bend"><rect x="${X0}" y="24" width="${MW}" height="108" rx="5"/>${cols}<text class="fh" x="200" y="19">MODEL 12 LAYERS - STEER + MODEL UNITS</text><rect id="fl-sweep" class="fsweep" x="${X0}" y="25" width="10" height="106"/><g id="fl-units"></g></g>
-    <g class="fnode"><rect x="8" y="188" width="72" height="44" rx="5"/><text class="fh" x="44" y="205">CODEC</text><text class="fv" x="44" y="218">SpectroStream</text></g>
+    <g class="fnode" data-go="#pn-bend"><rect x="${X0}" y="24" width="${MW}" height="108" rx="5"/>${cols}<text class="fh" x="200" y="19">MODEL ${N} LAYERS - STEER${codec === "SpectroStream" ? " + MODEL UNITS" : ""}</text><rect id="fl-sweep" class="fsweep" x="${X0}" y="25" width="10" height="106"/><g id="fl-units"></g></g>
+    <g class="fnode"><rect x="8" y="188" width="72" height="44" rx="5"/><text class="fh" x="44" y="205">CODEC</text><text class="fv" x="44" y="218">${codec}</text></g>
     <g class="fnode" data-go="#pn-engine"><rect x="108" y="188" width="128" height="44" rx="5"/><text class="fh" x="172" y="200">THE MODEL'S SOUND</text><polyline id="fl-wave" class="fwave"/></g>
     <g class="fnode" data-go="#pn-fx"><rect x="256" y="188" width="96" height="44" rx="5"/><text class="fh" x="304" y="200">EFFECTS</text><g id="fl-fx"></g><text class="fv" id="fl-fxn" x="304" y="226">·</text></g>
     <g class="fnode fgo" data-go="#pn-out"><title>On to the Output section, beside this panel</title><path class="farr" d="M390 206 L396 210 L390 214Z"/></g>
@@ -1329,20 +1352,25 @@ function flowLink(el, k) {
   });
 }
 function drawFlow(s) {
-  if (!FLOW.el) flowInit();
+  const N = s.model?.n_layers || 12, codec = s.model?.codec || "SpectroStream";
+  if (!FLOW.el || FLOW.n !== N || FLOW.codec !== codec) flowInit(N, codec);   // the engine's own shape
+  const md = s.model || {}, fps = s.frame_ms ? Math.round(1000 / s.frame_ms) : 25;
+  FLOW.el.querySelector("#fl-cap1").textContent = `Model stream: ${(md.d_model || 1024).toLocaleString("en-GB")} numbers/frame, ${fps} fps`;
+  FLOW.el.querySelector("#fl-cap2").textContent = `its sound: ${Math.round((md.sample_rate || 48000) / 1000)} kHz ${(md.channels || 2) > 1 ? "stereo" : "mono"}`;
   const host = FLOW.el;
   if (!host || !s) return;
   const svg = host.querySelector("svg"), playing = !!s.playing;
   if (playing && !STILL) svg.unpauseAnimations(); else svg.pauseAnimations();
   host.classList.toggle("live", playing);
   // where Steer and the units act: a lane each, Steer's diamond at layer 6
-  const rep = (s.chain_report || []).filter((r) => !r.error), key = JSON.stringify(rep.map((r) => [r.title, r.at])) + s.steer_on + s.layers_on;
-  const W = 352 / 12, xL = (L) => 24 + L * W, xB = (b) => 24 + (b + 0.5) * W;
+  const W = 352 / N, xL = (L) => 24 + L * W, xB = (b) => 24 + (b + 0.5) * W, SL = s.model?.steer_layer ?? 6;
+  const rep = (s.chain_report || []).filter((r) => !r.error), key = JSON.stringify(rep.map((r) => [r.title, r.at])) + s.steer_on + s.layers_on + SL + N;
+
   if (key !== FLOW.key) {
     FLOW.key = key;
     const n = rep.length + 1, lane = (k) => 28 + (k + 0.5) * 100 / n;   // Steer on the top lane, then a lane a unit
-    host.querySelector("#fl-units").innerHTML = `<g class="fu fs ${s.steer_on === false ? "off" : ""}" data-k="steer"><title>Steer: layer 6</title><circle cx="${xL(6).toFixed(1)}" cy="${lane(0).toFixed(1)}" r="3.2"/>${laneTag(xL(12) - 2, lane(0), "Steer")}</g>`
-      + rep.map((r, k) => `<g class="fu ${s.layers_on === false ? "off" : ""}" data-k="${k + 1}"><title>${esc(r.title)}: ${esc((r.at || []).join(", "))}</title>${(r.at || []).map((a) => { const b = /^block (\d+)$/.exec(String(a)); return `<circle cx="${(b ? xB(+b[1]) : xL(+a)).toFixed(1)}" cy="${lane(k + 1).toFixed(1)}" r="3.2"/>`; }).join("")}${laneTag(xL(12) - 2, lane(k + 1), r.short || r.title)}</g>`).join("");
+    host.querySelector("#fl-units").innerHTML = `<g class="fu fs ${s.steer_on === false ? "off" : ""}" data-k="steer"><title>Steer: layer ${SL}</title><circle cx="${xL(SL).toFixed(1)}" cy="${lane(0).toFixed(1)}" r="3.2"/>${laneTag(xL(N) - 2, lane(0), "Steer")}</g>`
+      + rep.map((r, k) => `<g class="fu ${s.layers_on === false ? "off" : ""}" data-k="${k + 1}"><title>${esc(r.title)}: ${esc((r.at || []).join(", "))}</title>${(r.at || []).map((a) => { const b = /^block (\d+)$/.exec(String(a)); return `<circle cx="${(b ? xB(+b[1]) : xL(+a)).toFixed(1)}" cy="${lane(k + 1).toFixed(1)}" r="3.2"/>`; }).join("")}${laneTag(xL(N) - 2, lane(k + 1), r.short || r.title)}</g>`).join("");
   }
   flowHi();                                                       // the lanes were redrawn: keep the highlight
   const act = playing ? s.activity || {} : {};
@@ -1933,74 +1961,99 @@ $("#pw-layers").addEventListener("click", async () => {
 const ms = (v) => (v === null || v === undefined ? "–" : `${Math.round(v)} ms`);
 let dirsKnown = 0;
 async function poll() {
-  try {
-    const s = await api("/api/status");
-    S.status = s;
-    $("#ver").textContent = s.version || "";
-    if (s.engines && document.activeElement !== $("#engine")) {
-      $("#engine").innerHTML = s.engines.map((e) => `<option value="${esc(e.id)}">${esc(e.label)}${e.state === "ready" ? "" : ` (${esc(e.state)})`}</option>`).join("");
-      $("#engine").value = s.engine;
-    }
-    if (s.engine !== S.engine) {
-      S.engine = s.engine; dirsKnown = -1;
-      $("#mg-only").hidden = s.engine !== "musicgen";
-      engKnobs.forEach((k) => (k.hidden = s.engine !== "mrt2"));
-    }
-    MOD.on = s.engine === "mrt2" && s.state === "ready";
-    S.playing = !!s.playing;
-    MOD.playing = !!s.playing;
-    if (s.playing) { MOD.t0 = s.seconds; MOD.tAt = performance.now(); }
-    if (s.mod) adoptMod(s.mod);
-    if (Date.now() - SW.touched > 800 && "steer_on" in s) { SW.steer = s.steer_on !== false; SW.layers = s.layers_on !== false; paintSwitches(); }
-    if (s.doses && !dragging && !pendingDoses && !holding && Date.now() - dosesTouched > 400) {
-      const changed = Object.keys(s.doses).some((k) => (S.doses[k] || 0) !== s.doses[k]);
-      if (changed) { Object.assign(S.doses, s.doses); drawXY(); paintDoses(); }
-    }
-    if (s.sampling && Date.now() - samplingTouched > 400) { S.sampling = { ...s.sampling }; if (!holding) engKnobs.forEach((k) => k.paint()); }
-    if (s.master && Date.now() - masterTouched > 400) { S.master = { ...s.master }; if (!holding) { outKnobs.forEach((k) => k.paint()); widenKnobs.forEach((k) => k.paint()); outToggles.forEach((k) => k.paint()); dynKnobs.forEach((k) => k.paint()); dynToggles.forEach((k) => k.paint()); } }
-    if (s.master?.fx) { if (!Object.keys(PFX.types).length && !PFX.loading) { PFX.loading = true; loadFx(); } else adoptFx(s.master.fx); }
-    if (!holding) leadKnob.paint();
-    if (s.frame_ms) S.frameMs = s.frame_ms;
-    const name = s.model?.model_id || (s.engines || []).find((e) => e.id === s.engine)?.label || "";
-    $("#modelchip").innerHTML = `<b>${esc(name)}</b> · ` + (s.error ? `<span class="busy">${esc(s.error)}</span>` : s.freezing ? `<span class="busy">freezing ${s.freezing[0]} / ${s.freezing[1]} frames</span>` : s.playing ? `playing ${esc(s.preset)} · seed ${s.seed}` : `<span class="${s.state === "ready" ? "" : "busy"}">${esc(s.state)}</span>`);
-    if (s.model) $("#modelinfo").textContent = `${s.model.dtype} · ${s.model.sample_rate / 1000} kHz ${s.model.channels === 2 ? "stereo" : "mono"}`;
-    const L = s.latency || { measured_ms: [] };
-    // the line under the waveform says one or two words; the figures are in its tip and in Settings
-    const ro = $("#readout");
-    if (s.playing) {
-      const dropped = s.underruns > (S.lastUnderruns ?? s.underruns);
-      S.lastUnderruns = s.underruns;
-      if (dropped) S.dropAt = Date.now();
-      const recent = Date.now() - (S.dropAt || 0) < 3000;
-      ro.innerHTML = recent ? `<span class="bad">Dropouts</span>` : "Playing";
-      ro.title = `A step takes ${s.step_ms_p50.toFixed(1)} ms (${s.step_ms_p95.toFixed(1)} at worst) of its ${S.frameMs}; ${s.underruns} dropouts in ${s.seconds.toFixed(0)} s; a move heard after ${L.measured_ms.length ? L.measured_ms.map(Math.round).join(", ") + " ms" : "–"}`;
-      engMeter.set(s.level || 0, s.level_lr, s.peak_lr);
-    } else {
-      S.lastUnderruns = undefined;
-      const st = String(s.state || "");
-      if (s.error) { ro.innerHTML = `<span class="bad">Error</span>`; ro.title = s.error; engMeter.set(0); }
-      else ro.textContent = st === "ready" ? "Ready" : /^loading/.test(st) ? "Loading" : /^measuring/.test(st) ? "Measuring" : /^(embedding|making)/.test(st) ? "Preparing" : st === "stopped" ? "Stopped" : st;
-      if (!s.error) ro.title = st === "ready" ? `A move is heard about ${ms(L.declared_first_ms)} after it is made` : st;
-      engMeter.set(0);
-    }
-    if (SPC.scope !== "spec") { newScope(s.scope, s.scope_lr); if (!s.playing) drawScope(s.scope, s.scope_lr); }
-    drawField(s.field);
-    OM.set(s);
-    drawDoseHist(s); ST.set(s); DYN.set(s); paintFxLeds(s);
+  let s;
+  try { s = await api("/api/status"); }
+  catch (e) {
+    $("#modelchip").innerHTML = `<span class="busy">the server is not answering</span>`;
+    setTimeout(poll, S.playing ? 120 : 250);
+    return;
+  }
+  // each part on its own: a fault in one is reported (pageError) and the others still run, so one bad part
+  // cannot leave the panels unpainted
+  const part = (name, fn) => { try { fn(); } catch (e) { console.error(name, e); pageError(`${name}: ${e.message}`); } };
+  part("engine", () => {
+      S.status = s;
+      $("#ver").textContent = s.version || "";
+      if (s.engines && document.activeElement !== $("#engine")) {
+        $("#engine").innerHTML = s.engines.map((e) => `<option value="${esc(e.id)}">${esc(e.label)}${e.state === "ready" ? "" : ` (${esc(e.state)})`}</option>`).join("");
+        $("#engine").value = s.engine;
+      }
+      const sl = s.model?.steer_layer;
+      if (sl != null && $("#steercard .sat").textContent !== `layer ${sl} · fixed`) {
+        $("#steercard .sat").textContent = `layer ${sl} · fixed`;
+        $("#steercard .st").title = `Steer adds a direction to the model's stream at layer ${sl}, scaled by the stream's size and the dose: h + |h| · dose · d. Its place is fixed: its directions and the doses' musical ranges were measured there.`;
+      }
+      if (s.engine !== S.engine) {
+        S.engine = s.engine; dirsKnown = -1;
+        $("#mg-only").hidden = s.engine !== "musicgen";
+        engKnobs.forEach((k) => (k.hidden = s.engine !== "mrt2"));
+        speedPair.hidden = s.engine !== "mrt2";
+      }
+      MOD.on = s.engine === "mrt2" && s.state === "ready";
+      S.playing = !!s.playing;
+      MOD.playing = !!s.playing;
+      if (s.playing) { MOD.t0 = s.seconds; MOD.tAt = performance.now(); }
+      if (s.mod) adoptMod(s.mod);
+      if (Date.now() - SW.touched > 800 && "steer_on" in s) { SW.steer = s.steer_on !== false; SW.layers = s.layers_on !== false; paintSwitches(); }
+  });
+  part("knobs", () => {
+      if (s.doses && !dragging && !pendingDoses && !holding && Date.now() - dosesTouched > 400) {
+        const changed = Object.keys(s.doses).some((k) => (S.doses[k] || 0) !== s.doses[k]);
+        if (changed) { Object.assign(S.doses, s.doses); drawXY(); paintDoses(); }
+      }
+      if (s.sampling && Date.now() - samplingTouched > 400) { S.sampling = { ...s.sampling }; if (!holding) engKnobs.forEach((k) => k.paint?.()); }
+      if (s.master && Date.now() - masterTouched > 400) { S.master = { ...s.master }; if (!holding) { for (const k of [...outKnobs, ...widenKnobs, ...outToggles, ...dynKnobs, ...dynToggles, speedKnob]) k.paint?.(); } }
+  });
+  part("effects", () => {
+      if (s.master?.fx) { if (!Object.keys(PFX.types).length && !PFX.loading) { PFX.loading = true; loadFx(); } else adoptFx(s.master.fx); }
+  });
+  part("readout", () => {
+      if (!holding) leadKnob.paint();
+      if (s.frame_ms) S.frameMs = s.frame_ms;
+      const name = s.model?.model_id || (s.engines || []).find((e) => e.id === s.engine)?.label || "";
+      $("#modelchip").innerHTML = `<b>${esc(name)}</b> · ` + (s.error ? `<span class="busy">${esc(s.error)}</span>` : s.freezing ? `<span class="busy">freezing ${s.freezing[0]} / ${s.freezing[1]} frames</span>` : s.playing ? `playing ${esc(s.preset)} · seed ${s.seed}` : `<span class="${s.state === "ready" ? "" : "busy"}">${esc(s.state)}</span>`);
+      if (s.model) $("#modelinfo").textContent = `${s.model.dtype} · ${s.model.sample_rate / 1000} kHz ${s.model.channels === 2 ? "stereo" : "mono"}`;
+      const L = s.latency || { measured_ms: [] };
+      // the line under the waveform says one or two words; the figures are in its tip and in Settings
+      const ro = $("#readout");
+      if (s.playing) {
+        const dropped = s.underruns > (S.lastUnderruns ?? s.underruns);
+        S.lastUnderruns = s.underruns;
+        if (dropped) S.dropAt = Date.now();
+        const recent = Date.now() - (S.dropAt || 0) < 3000;
+        ro.innerHTML = recent ? `<span class="bad">Dropouts</span>` : "Playing";
+        ro.title = `A step takes ${s.step_ms_p50.toFixed(1)} ms (${s.step_ms_p95.toFixed(1)} at worst) of its ${S.frameMs}; ${s.underruns} dropouts in ${s.seconds.toFixed(0)} s; a move heard after ${L.measured_ms.length ? L.measured_ms.map(Math.round).join(", ") + " ms" : "–"}`;
+        engMeter.set(s.level || 0, s.level_lr, s.peak_lr);
+      } else {
+        S.lastUnderruns = undefined;
+        const st = String(s.state || "");
+        if (s.error) { ro.innerHTML = `<span class="bad">Error</span>`; ro.title = s.error; engMeter.set(0); }
+        else ro.textContent = st === "ready" ? "Ready" : /^loading/.test(st) ? "Loading" : /^measuring/.test(st) ? "Measuring" : /^(embedding|making)/.test(st) ? "Preparing" : st === "stopped" ? "Stopped" : st;
+        if (!s.error) ro.title = st === "ready" ? `A move is heard about ${ms(L.declared_first_ms)} after it is made` : st;
+        engMeter.set(0);
+      }
+  });
+  part("scope and meters", () => {
+      if (SPC.scope !== "spec") { newScope(s.scope, s.scope_lr); if (!s.playing) drawScope(s.scope, s.scope_lr); }
+      drawField(s.field);
+      OM.set(s);
+      drawDoseHist(s); ST.set(s); DYN.set(s); paintFxLeds(s); paintSpeedModes();
+  });
     try { paintActivity(s); } catch (e) { console.error("unit displays", e); pageError(`unit displays: ${e.message}`); }   // a fault here leaves the rest of the panel updating
     try { drawFlow(s); } catch (e) { console.error("Signal path", e); pageError(`Signal path: ${e.message}`); }   // a fault here leaves the rest of the panel updating
-    if (s.meters) adoptMeters(s.meters);
-    adoptSpec("model", s.spec, s.playing);
-    const fr = s.freezing;
-    $("#frzprog").hidden = !fr;
-    if (fr) $("#frzprog i").style.width = `${(100 * fr[0]) / Math.max(1, fr[1])}%`;
-    if (Date.now() > infoUntil) { $("#infotext").textContent = ""; $("#infotext").className = ""; }
-    $("#infostatus").textContent = s.playing ? `model: ${s.seconds.toFixed(0)} s, ${s.underruns} dropouts` : `model: ${s.state}`;
-    transport();
+  part("Listen and status line", () => {
+      if (s.meters) adoptMeters(s.meters);
+      adoptSpec("model", s.spec, s.playing);
+      const fr = s.freezing;
+      $("#frzprog").hidden = !fr;
+      if (fr) $("#frzprog i").style.width = `${(100 * fr[0]) / Math.max(1, fr[1])}%`;
+      if (Date.now() > infoUntil) { $("#infotext").textContent = ""; $("#infotext").className = ""; }
+      $("#infostatus").textContent = s.playing ? `model: ${s.seconds.toFixed(0)} s, ${s.underruns} dropouts` : `model: ${s.state}`;
+      transport();
+  });
+  try {
     if (s.state === "ready" && dirsKnown <= 0) { await loadPresets(); dirsKnown = S.dirs.length; listSessions(); }
-  } catch (e) {
-    $("#modelchip").innerHTML = `<span class="busy">the server is not answering</span>`;
-  }
+  } catch (e) { pageError(`presets: ${e.message}`); }
   setTimeout(poll, S.playing ? 120 : 250);            // quicker while playing, so the waveform, meters and stereo field keep up
 }
 

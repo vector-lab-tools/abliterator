@@ -81,6 +81,11 @@ TYPES: Dict[str, Dict[str, Any]] = {
                                              ("res", "Resonance", 0.5, 12.0, 0.9, "log", "Q")]},
     "crush": {"label": "Crush", "params": [("bits", "Bits", 2.0, 16.0, 8.0, "int", ""), ("hold", "Rate ÷", 1.0, 32.0, 4.0, "int", ""),
                                            ("mix", "Mix", 0.0, 1.0, 1.0, "lin", "")]},
+    "tape": {"label": "Tape", "params": [("drive", "Drive", 0.0, 1.0, 0.5, "lin", ""), ("wow", "Wow", 0.0, 1.0, 0.3, "lin", ""),
+                                         ("flutter", "Flutter", 0.0, 1.0, 0.1, "lin", ""), ("noise", "Hiss", 0.0, 1.0, 0.0, "lin", ""),
+                                         ("mix", "Mix", 0.0, 1.0, 1.0, "lin", ""), ("speed", "Speed", 0.0, 3.0, 1.0, "choice:3.75,7.5,15,30", "")]},
+    "pan": {"label": "Pan", "params": [("pos", "Pan", -1.0, 1.0, 0.0, "lin", ""), ("rate", "Auto rate", 0.02, 8.0, 0.25, "log", "Hz"),
+                                       ("depth", "Auto depth", 0.0, 1.0, 0.0, "lin", "")]},
     "declick": {"label": "De-click", "params": [("sens", "Sensitivity", 0.0, 1.0, 0.5, "lin", ""), ("longest", "Longest", 0.2, 4.0, 1.0, "log", "ms")]}
 }
 DEFAULT_SLOTS = [{"type": t, "on": False, "params": {}} for t in ("drive", "chorus", "delay", "reverb")]
@@ -671,6 +676,91 @@ class Chorus(Effect):
         return x * (1 - 0.5 * m) + out * m
 
 
+class Tape(Effect):
+    """A tape machine's colour, written for this instrument: wow and flutter from a delay line whose length wobbles
+    (two slow sines at unrelated rates, and one near 7 Hz), a slightly lopsided tanh for saturation (the lopsidedness
+    adds the even harmonics), gain-matched at -26 dBFS so Drive changes colour more than level (louder material is compressed, as on tape), and a DC blocker after it; then
+    the speed's EQ, a head bump in the lows and a roll-off in the highs; then hiss, read from a fixed table by sample
+    position. Every part depends on the absolute sample position, so the output is the same at any block size. The
+    dry signal is delayed by the same base delay, so Mix does not comb-filter."""
+    BASE = 240                                                     # 5 ms: room for the wobble either side
+    WOW_MS, FLUTTER_MS = 4.0, 0.3                                  # at 1: about ±2% and ±1.3% pitch
+    BUMP = (35.0, 50.0, 70.0, 100.0)                               # head bump, Hz, at 3.75, 7.5, 15, 30 ips
+    BUMP_DB = (4.0, 3.5, 2.5, 1.5)
+    ROLL = (4000.0, 7000.0, 12000.0, 18000.0)                      # treble roll-off, Hz (two poles, then two more)
+    HISS = np.random.default_rng(7).standard_normal(1 << 16)
+
+    def __init__(self, ch):
+        super().__init__(ch)
+        self.line = Line(4096, ch)
+        self.sos, self.zi, self.key = None, None, None
+        self.peak = 0.0                                            # the largest drive into the curve since last read
+
+    def _design(self, speed: int) -> np.ndarray:
+        return np.stack([_biquad("hp", 12.0, 0.707), _biquad("peak", self.BUMP[speed], 0.9, self.BUMP_DB[speed]),
+                         _biquad("lp", self.ROLL[speed], 0.6), _biquad("lp", self.ROLL[speed] * 1.4, 0.7),
+                         _biquad("highshelf", 3000.0, 0.707, -2.5 + 0.7 * speed)])
+
+    def chunk(self, x):
+        n = len(x)
+        self.line.write(x)
+        t = (self.n + np.arange(n)) / SR
+        wob = (self.p["wow"] * self.WOW_MS * (0.6 * np.sin(2 * math.pi * 0.53 * t) + 0.4 * np.sin(2 * math.pi * 0.89 * t + 1.3))
+               + self.p["flutter"] * self.FLUTTER_MS * np.sin(2 * math.pi * 7.1 * t)) / 1000 * SR
+        d = self.BASE + wob
+        w = np.stack([self.line.read_frac(d, c) for c in range(x.shape[1])], axis=1)
+        dry = self.line.read(self.BASE + n, n)
+        g = 1.0 + 15.0 * self.p["drive"] ** 1.5                      # into the curve: 1 to 16
+        c = 0.12 * self.p["drive"]                                    # the lopsidedness
+        self.peak = max(self.peak, float(np.abs(w).max()) * g)
+        ref = 0.05                                                    # gain-matched at -26 dBFS, about the model's usual level
+        y = (np.tanh(g * w + c) - math.tanh(c)) * (ref / (math.tanh(g * ref + c) - math.tanh(c)))
+        speed = int(round(self.p.get("speed", 2)))
+        if speed != self.key:
+            self.sos, self.key = self._design(speed), speed
+            if self.zi is None:
+                self.zi = np.zeros((len(self.sos), 2, x.shape[1]))
+        y, self.zi = sosfilt(self.sos, y, axis=0, zi=self.zi)
+        if self.p["noise"] > 0:
+            amp = 10 ** ((-84 + 34 * self.p["noise"]) / 20)          # -84 to -50 dBFS
+            idx = (self.n + np.arange(n)) % len(self.HISS)
+            y = y + amp * np.stack([self.HISS[(idx + 9973 * c) % len(self.HISS)] for c in range(x.shape[1])], axis=1)
+        m = self.p["mix"]
+        return dry * (1 - m) + y * m
+
+
+class Pan(Effect):
+    """Equal-power balance of a stereo signal: at Pan 0 both sides pass at unity, at ±1 one side is silent and the
+    other 3 dB up. Auto rate and depth swing the position on a sine whose phase is carried from sample to sample, so
+    the swing is the same at any block size. Moves are smoothed over 10 ms. A mono signal passes as it is."""
+    SMOOTH = math.exp(-1.0 / (0.010 * SR))
+
+    def __init__(self, ch):
+        super().__init__(ch)
+        self.ph = 0.0
+        self.z = None
+        self.where = 0.0                                            # the position last played, for the page
+
+    def chunk(self, x):
+        if x.shape[1] < 2:
+            return x
+        n = len(x)
+        w = 2 * math.pi * self.p["rate"] / SR
+        ph = self.ph + w * np.arange(n)
+        self.ph = float((self.ph + w * n) % (2 * math.pi))
+        target = np.clip(self.p["pos"] + self.p["depth"] * np.sin(ph), -1.0, 1.0)
+        a = self.SMOOTH
+        if self.z is None:
+            self.z = np.array([target[0] * a])
+        pos, self.z = lfilter([1 - a], [1, -a], target, zi=self.z)
+        self.where = float(pos[-1])
+        ang = (pos + 1) * (math.pi / 4)
+        out = x.copy()
+        out[:, 0] *= np.cos(ang) * math.sqrt(2)
+        out[:, 1] *= np.sin(ang) * math.sqrt(2)
+        return out
+
+
 class Drive(Effect):
     def __init__(self, ch):
         super().__init__(ch)
@@ -774,7 +864,7 @@ class Crush(Effect):
         return x * (1 - m) + out * m
 
 
-CLASSES = {"reverb": Reverb, "plate": Plate, "hall": Hall, "delay": Delay, "chorus": Chorus, "drive": Drive, "eq": EQ, "eq8": EQ8, "filter": Filter, "crush": Crush}
+CLASSES = {"reverb": Reverb, "plate": Plate, "hall": Hall, "delay": Delay, "chorus": Chorus, "drive": Drive, "eq": EQ, "eq8": EQ8, "pan": Pan, "tape": Tape, "filter": Filter, "crush": Crush}
 
 
 # Params whose change jumps a delay line's read point. With fades on, the effect's wet signal is
@@ -904,9 +994,11 @@ class Rack:
         out = []
         for s, f in zip(self.slots, self.fx):
             r: Dict[str, Any] = {"id": s.get("id"), "type": s["type"]}
-            if isinstance(f, Drive):
-                r["drive"] = round(f.peak, 2)
+            if isinstance(f, (Drive, Tape)):
+                r["drive"] = round(f.peak, 2)                           # Tape's too: how hard the curve is driven
                 f.peak = 0.0
+            elif isinstance(f, Pan):
+                r["pos"] = round(f.where, 3)                            # where the sound sits now, -1 left to 1 right
             elif isinstance(f, Declicker):
                 r["fixed"] = f.dc.repaired                              # bursts redrawn since it was added
             out.append(r)

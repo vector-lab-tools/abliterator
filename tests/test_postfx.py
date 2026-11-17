@@ -15,7 +15,7 @@ def noise(s=2.0):
 @pytest.mark.parametrize("kind", list(fx.TYPES))
 def test_blocks_equal_whole(kind):
     x = noise()
-    on = [{"type": kind, "on": True, "params": {"mix": 0.7, "feedback": 0.6, "size": 3.0, "amount": 6, "low": 6, "high": -6, "mode": 1, "res": 4, "bits": 5, "hold": 7}}]
+    on = [{"type": kind, "on": True, "params": {"mix": 0.7, "feedback": 0.6, "size": 3.0, "amount": 6, "low": 6, "high": -6, "mode": 1, "res": 4, "bits": 5, "hold": 7, "pos": 0.4, "depth": 0.5, "rate": 1.3}}]
     outs = []
     for block in (len(x), 512, 1920, 333):
         r = fx.Rack(2)
@@ -409,3 +409,53 @@ def test_eq8_cuts_and_bands():
     e.p["slope"] = 0
     _, h = sosfreqz(e.design(), [100.0], fs=fx.SR)
     assert abs(20 * np.log10(abs(h[0])) + 12) < 0.5 and len(e.design()) == n
+
+
+def test_pan_balance_and_auto():
+    """Pan is equal-power: unity at the centre, one side silent and the other 3 dB up at the ends; the auto-pan's
+    swing is the same at any block size."""
+    x = np.ones((24000, 2)) * 0.5
+    for pos, want in ((0.0, (0.5, 0.5)), (-1.0, (0.5 * 2 ** 0.5, 0.0)), (1.0, (0.0, 0.5 * 2 ** 0.5))):
+        e = fx.Pan(2)
+        e.set({"pos": pos, "rate": 0.25, "depth": 0.0})
+        assert np.allclose(e.process(x)[-1], want, atol=1e-6)
+    outs = []
+    for block in (len(x), 512, 333):
+        e = fx.Pan(2)
+        e.set({"pos": 0.2, "rate": 2.0, "depth": 0.8})
+        outs.append(np.concatenate([e.process(x[i:i + block]) for i in range(0, len(x), block)]))
+    assert all(np.allclose(outs[0], o, atol=1e-9) for o in outs[1:])
+
+
+def _tape(x, **p):
+    e = fx.Tape(2)
+    e.set({**{q[0]: q[4] for q in fx.TYPES["tape"]["params"]}, **p})
+    return e.process(x)
+
+
+def test_tape_level_colour_and_hiss():
+    """Tape keeps a -26 dBFS sine's level within about 1.5 dB at any Drive, adds even and odd harmonics as Drive
+    rises, and its Hiss at full is about -50 dBFS on silence."""
+    t = np.arange(fx.SR * 2) / fx.SR
+    x = np.stack([0.05 * np.sin(2 * np.pi * 440 * t)] * 2, 1)
+    rms = lambda a: 20 * np.log10(np.sqrt((a[fx.SR:] ** 2).mean()))  # noqa: E731
+    h2 = []
+    for dr in (0.0, 0.4, 1.0):
+        y = _tape(x, drive=dr, wow=0.0, flutter=0.0, speed=3)
+        assert abs(rms(y) - rms(x)) < 1.5, dr
+        seg = y[fx.SR:, 0] * np.hanning(fx.SR)
+        S, f = np.abs(np.fft.rfft(seg)), np.fft.rfftfreq(fx.SR, 1 / fx.SR)
+        h2.append(S[np.argmin(abs(f - 880))] / S[np.argmin(abs(f - 440))])
+    assert h2[0] < h2[1] < h2[2]
+    s = _tape(np.zeros((2 * fx.SR, 2)), drive=0.0, noise=1.0)
+    assert abs(rms(s) + 50) < 2
+
+
+def test_tape_same_at_any_block_size():
+    x = noise()
+    outs = []
+    for block in (len(x), 512, 333):
+        e = fx.Tape(2)
+        e.set({**{q[0]: q[4] for q in fx.TYPES["tape"]["params"]}, "noise": 0.5, "wow": 0.8, "flutter": 0.6})
+        outs.append(np.concatenate([e.process(x[i:i + block]) for i in range(0, len(x), block)]))
+    assert all(np.allclose(outs[0], o, atol=1e-9) for o in outs[1:])

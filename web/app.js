@@ -586,11 +586,17 @@ const SPEED_MODES = [["off", "Off", "plays at 1×; Speed keeps its setting"], ["
   ["stretch", "Stretch", "pitch kept: a phase vocoder with locked phases"], ["smear", "Smear", "pitch kept, washed out over 0.34 s windows: for very slow ambient"]];
 const modeAt = () => Math.max(0, SPEED_MODES.findIndex(([k]) => k === (S.master.speed_mode || "tape")));
 const speedModes = knob({ label: "Mode", min: 0, max: SPEED_MODES.length - 1, step: 1, int: true, reset: 0, get: modeAt,
-  put: (v) => { const k = SPEED_MODES[Math.round(v)][0]; if (k !== S.master.speed_mode) { S.master.speed_mode = k; sendMaster({ speed_mode: k }); } },
+  put: (v) => { const k = SPEED_MODES[Math.round(v)][0]; if (k !== S.master.speed_mode) { S.master.speed_mode = k; sendMaster({ speed_mode: k }); paintSpeedModes(); } },
   fmt: (v) => SPEED_MODES[Math.round(v)][1],
   tip: "how Speed slows the sound. " + SPEED_MODES.map(([, l, t]) => `${l}: ${t}`).join(". ") + ". Double-click: Off" });
-speedModes.classList.add("kspeed"); speedKnob.classList.add("kspeed");
-const paintSpeedModes = () => speedModes.paint?.();
+// while Mode is Off, Speed is dimmed and does not turn: its value is kept for when a mode is chosen again
+const paintSpeedModes = () => {
+  speedModes.paint?.();
+  const off = (S.master.speed_mode || "tape") === "off";
+  speedKnob.classList.toggle("disabled", off);
+  speedKnob.setAttribute("aria-disabled", String(off));
+  speedKnob.tabIndex = off ? -1 : 0;
+};
 const speedPair = h(`<div class="seedpair speedpair"></div>`);
 speedPair.append(speedModes, speedKnob);
 // the seed as a knob beside them (its value is #seed, read at the next ▶); the die picks one at random

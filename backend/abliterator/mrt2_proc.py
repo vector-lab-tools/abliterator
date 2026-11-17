@@ -71,6 +71,9 @@ READ_EVERY = 3                            # frames between the strips' readings:
 PROBE_N = 32                              # each strip reports this many of the stream's values in and out (status.probe)
 
 
+SCOPE_S = 3.2                 # the scope's history of the sound as played, in seconds
+
+
 def heard_speed(master: Dict[str, Any]):
     """The speed and mode the Speed stage plays from a master's settings: Off plays at 1, keeping the knob's value."""
     if master.get("speed_mode") == "off":
@@ -665,6 +668,8 @@ class Proc:
         self.measured: "collections.deque" = collections.deque(maxlen=20)
         self.moves: List[Dict[str, Any]] = []
         self.recorded: List[np.ndarray] = []
+        self.scope_hist: collections.deque = collections.deque()   # the sound as played, after Speed and before the output section: the scope's
+        self.scope_n = 0                                             # last seconds, which scroll at the speed heard
         self.field_blocks: "collections.deque" = collections.deque(maxlen=2)
         self.field_sums: "collections.deque" = collections.deque(maxlen=24)
 
@@ -843,6 +848,10 @@ class Proc:
     def _fill(self, out, frames, t) -> str:
         x = self._speed_read(frames)
         if x is not None:
+            self.scope_hist.append(x)
+            self.scope_n += len(x)
+            while self.scope_hist and self.scope_n - len(self.scope_hist[0]) >= SCOPE_S * SR:
+                self.scope_n -= len(self.scope_hist.popleft())
             spec = self.mod_spec
             if mod.active(spec, model=False):                   # the master's controls, moved at the frame being heard
                 self.master.update(mod.apply_master(spec, self.master_base, (self.played // HOP) * mod.FRAME_S))
@@ -947,8 +956,13 @@ class Proc:
         return {"mod": s}
 
     def scope(self, seconds: float = 3.0, points: int = 300) -> Optional[List[List[float]]]:
-        """The last seconds the model made, as (min, max) pairs of the two channels' mean."""
-        rec = self.recorded[-int(seconds * 1000 / FRAME_MS):]
+        """The last seconds of the model's sound as played (after Speed, before the output section), as (min, max)
+        pairs of the two channels' mean. Read from what reached the sound card, so at a slower speed it scrolls at the
+        speed heard rather than jumping with the frames the model writes."""
+        rec = list(self.scope_hist) or self.recorded[-int(seconds * 1000 / FRAME_MS):]
+        if rec and self.scope_hist:
+            y0 = np.concatenate(rec)
+            rec = [y0[-int(seconds * SR):]]
         if not rec:
             return self.scope_last
         y = np.concatenate(rec)

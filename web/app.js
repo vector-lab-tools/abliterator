@@ -2309,7 +2309,7 @@ function drawTune() {
   const fixed = c.kind === "placement" || !c.safe;
   ["#tunelo", "#tunehi", "#tunesave", "#tuneclear"].forEach((q) => ($(q).hidden = fixed));
   $("#tunenote").textContent = T.ctl.startsWith("unit:")
-    ? `Each cell is three seconds of a preset with ${unitTitle(T.ctl.split(":")[1])} at that setting (its other settings at their defaults here). The figures are the level, and how far the spectrum moved with the level taken out, both against the same preset with no unit. Red: the measures found it broken.${c.kind === "placement" ? " The strip marks the placements that break with ⚠." : ""}${c.moved_default ? ` VAU's default (${fmtV(c.vau_default)}) breaks the sound here; the default is now ${fmtV(c.default)}.` : ""}`
+    ? `Each cell is three seconds of a preset with ${unitTitle(T.ctl.split(":")[1])} at that setting (its other settings at their defaults here). The figures are the level, and how far the spectrum moved with the level taken out, both against the same preset with no unit. Red: the measures found it broken.${c.kind === "placement" ? " The unit's card marks the placements that break with ⚠." : ""}${c.moved_default ? ` VAU's default (${fmtV(c.vau_default)}) breaks the sound here; the default is now ${fmtV(c.default)}.` : ""}`
     : "Each cell is three seconds of a preset with this control at that setting, and everything else at its default. Click to listen. Red: the measures found it broken. Dim: outside the knob's range now. The figures are the level, and how far the spectrum moved with the level taken out, both against the default.";
   if (fixed) { $("#tunefloor").textContent = ""; return; }
   const below = vals.filter((v) => v <= c.default && v >= c.safe[0]), above = vals.filter((v) => v >= c.default && v <= c.safe[1]);
@@ -2369,7 +2369,7 @@ function drawSettings() {
         <a href="${sw.site}faq.html" target="_blank" rel="noopener"><b>FAQ</b><span>Questions people ask about it</span></a>
         <a href="${sw.repository}" target="_blank" rel="noopener"><b>GitHub</b><span>The code, the bench scripts and the tests</span></a>
         <a href="https://vector-lab-tools.github.io/vector-abliteration-units/" target="_blank" rel="noopener"><b>VAU</b><span>The unit standard this instrument hosts</span></a></div>
-      <h4>Credits</h4><p>Magenta RealTime 2 by Google DeepMind's Magenta team (weights CC-BY 4.0, code Apache-2.0). MusicGen small by Meta (weights CC-BY-NC 4.0). Terence Broad's network bending and active divergence. Signalsmith Audio's “Let's write a reverb”.</p>`;
+      <h4>Credits</h4><p>Magenta RealTime 2 by Google DeepMind's Magenta team (weights CC-BY 4.0, code Apache-2.0). MusicGen small by Meta (weights CC-BY-NC 4.0). Terence Broad's network bending and active divergence. Paul Nasca's Paulstretch, for Smear. Signalsmith Audio's “Let's write a reverb”.</p>`;
     box.querySelectorAll(".cite button").forEach((b) => b.addEventListener("click", async () => {
       const t = $("#" + b.dataset.c).firstChild.textContent;
       try { await navigator.clipboard.writeText(t); b.textContent = "Copied"; setTimeout(() => { b.textContent = "Copy"; }, 1200); } catch (e) { fail(e); }

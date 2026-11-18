@@ -8,7 +8,7 @@ authors:
     given-names: "David M."
     affiliation: "University of Sussex"
     orcid: "https://orcid.org/0000-0002-7737-5586"
-version: "0.2.1"
+version: "0.2.2"
 date-released: "2026-11-17"
 license: GPL-3.0-or-later
 repository-code: "https://github.com/vector-lab-tools/abliterator"

@@ -1427,7 +1427,7 @@ function stripEl(c, k) {
   const u = U.units.find((x) => x.id === c.id);
   const nonKnob = u.params.filter((p) => p.kind === "toggle").length, knobs = 1 + u.params.filter((p) => p.kind !== "toggle" && p.kind !== "text").length;
   const wide = nonKnob >= 3 || knobs > 6 || WIDE_UNITS.has(c.id);           // menus and switches in two columns, or room for a display
-  const st = h(`<div class="strip ${c.on ? "" : "off"} ${c.fresh ? "fresh" : ""} ${wide ? "wide" : ""}"><div class="sh">
+  const st = h(`<div class="strip ${c.on ? "" : "off"} ${wide ? "wide" : ""}"><div class="sh">
     <button class="led" aria-pressed="${c.on}" title="On or bypassed"></button><span class="st" title="${esc((u.short !== u.title ? `${u.title}. ` : "") + u.what + (u.note ? "\n" + u.note : ""))}">${esc(u.short || u.title)}</span><button class="x" title="Remove">✕</button></div></div>`);
   c.fresh = false;
   if (u.presets?.length) {                                    // starting points: a small menu by the name

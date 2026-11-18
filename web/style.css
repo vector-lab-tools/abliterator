@@ -484,8 +484,11 @@ details.more summary { cursor: pointer; color: var(--text-2); font-size: 12.5px;
 .knob.target { cursor: ns-resize; }
 .knob.sending .kdot { opacity: 0; }
 .knob.sending .kv { color: var(--assign, #d9aa3f); }
-.knob.target svg { filter: drop-shadow(0 0 4px color-mix(in srgb, var(--assign, #d9aa3f) 70%, transparent)); }
-.knob.target .kbody { stroke: var(--assign, #d9aa3f); }
+/* the selected source's knobs: those it moves already lit, those it could move dimmer */
+.knob.target svg { filter: drop-shadow(0 0 3px color-mix(in srgb, var(--assign, #d9aa3f) 30%, transparent)); }
+.knob.target .kbody { stroke: color-mix(in srgb, var(--assign, #d9aa3f) 40%, #3a3f4a); }
+.knob.target.linked svg { filter: drop-shadow(0 0 6px color-mix(in srgb, var(--assign, #d9aa3f) 90%, transparent)); }
+.knob.target.linked .kbody { stroke: var(--assign, #d9aa3f); stroke-width: 2; }
 .strip .st small { display: block; margin-top: 2px; font: 500 9px var(--mono); color: #7d8290; letter-spacing: .02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* ---------------- compact: more of the panel on one screen (your request, 2026-11-16) */

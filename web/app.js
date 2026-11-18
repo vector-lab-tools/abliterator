@@ -167,6 +167,7 @@ function knob(p) {
     if (!p.mod) return;
     const routes = MOD.spec.routes.filter((r) => r.tgt === p.mod);
     el.classList.toggle("target", !!assigning());
+    el.classList.toggle("linked", !!assigning() && Math.abs(routeDepth(MOD.assign, p.mod)) >= 0.001);   // the source already moves it
     if (assigning()) el.style.setProperty("--assign", SRC[MOD.assign].color);
     const ring = el.querySelector(".kmod"), dot = el.querySelector(".kdot");
     if (assigning()) {                         // the knob is the selected source's send: its arc from 12 o'clock, its readout

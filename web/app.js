@@ -468,7 +468,7 @@ function pickPreset(keepSeed) {
   S.preset = S.presets.find((p) => p.id === $("#preset").value) || S.presets[0];
   if (!S.preset) return;
   if (!keepSeed) { $("#seed").value = S.preset.seeds[0]; seedKnob.paint?.(); }
-  $("#prompt").textContent = `“${S.preset.prompt}”`;
+  $("#prompt").textContent = `“${S.preset.prompt}”`; $("#prompt").title = S.preset.prompt;   // two lines at most; the whole prompt on hover
   $("#pdel").hidden = !S.preset.user;
   $("#cfg").checked = (S.preset.cfg || 1) > 1;
   buildDoses();

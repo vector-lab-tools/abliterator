@@ -993,3 +993,6 @@ html, body { overscroll-behavior-x: none; }
 #pform #ptype { font-size: 10px; }
 /* the quoted prompt the width of the preset box above it, inside the two arrows */
 .eng > .engl .pnote#prompt { margin-left: 28px; margin-right: 28px; }
+/* the quoted prompt keeps two lines' height whatever its length: a long one ends in an ellipsis (the whole of it on hover) and moves nothing below it */
+.eng > .engl .pnote#prompt { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; line-height: 1.35; height: 2.7em; min-height: 0; flex: none; }
+.eng > .engl .pnote#prompt { font-style: italic; }

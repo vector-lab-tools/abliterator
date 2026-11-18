@@ -44,6 +44,15 @@ def test_envelope_with_release_at_the_end():
     assert mod.env(p, 9, 10.0) == 0.25 and mod.env(p, 10, 10.0) == 0
 
 
+def test_envelope_loop_holds_releases_and_repeats():
+    p = {"attack_s": 2.0, "decay_s": 2.0, "sustain": 0.5, "release_s": 2.0, "loop": 1, "hold_s": 4.0}   # a 10 s cycle
+    assert mod.env(p, 0, None) == 0 and mod.env(p, 2, None) == 1 and mod.env(p, 7, None) == 0.5
+    assert mod.env(p, 9, None) == 0.25 and mod.env(p, 12, None) == 1          # half released, then round again
+    assert mod.env({**p, "release_s": 0.0}, 7.9, None) == 0.5                  # no release: straight back to Attack
+    assert mod.env({**p, "loop": 0}, 30, None) == 0.5                          # off: holds at Sustain
+    assert spec(sources={"env": {"loop": 1, "hold_s": 99}})["sources"]["env"]["hold_s"] == 60
+
+
 def test_routes_move_controls_and_clamp():
     s = spec(sources={"m1": {"value": 1.0}}, routes=[{"src": "m1", "tgt": "dose:brightness", "depth": 0.5}, {"src": "m1", "tgt": "guidance", "depth": -1},
                                                       {"src": "m1", "tgt": "lowpass_hz", "depth": -0.25}])

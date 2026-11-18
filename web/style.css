@@ -447,10 +447,16 @@ details.more summary { cursor: pointer; color: var(--text-2); font-size: 12.5px;
 .editor { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 0; }
 .ecol { padding: 0 12px; border-left: 1px solid #2a2e37; min-width: 0; }
 .ecol:first-child { border-left: 0; padding-left: 0; }
+.ecol .krow:has(> .knob:nth-child(5)) { flex-wrap: nowrap; gap: 0; justify-content: space-between; }
+.ecol .krow:has(> .knob:nth-child(5)) .knob { flex: 1 1 0; min-width: 0; padding: 2px 0; }
+.ecol .krow:has(> .knob:nth-child(5)) .knob svg { width: 30px; height: 30px; }
+.ecol .krow:has(> .knob:nth-child(5)) .kv { font-size: 9px; letter-spacing: -.03em; }
+.ecol .krow:has(> .knob:nth-child(5)) .kl { font-size: 8.5px; letter-spacing: -.02em; }
 .ecol h4 { margin: 0 0 6px; font: 700 11px -apple-system, BlinkMacSystemFont, sans-serif; letter-spacing: .12em; color: var(--c); }
 .shapes { display: flex; gap: 3px; margin-bottom: 6px; flex-wrap: wrap; }
 .shapes button { width: 30px; height: 22px; padding: 0; border-radius: 5px; border: 1px solid #2c303a; background: #14161b; color: #8a8f9b; cursor: pointer; display: grid; place-items: center; }
 .shapes button svg { width: 20px; height: 12px; }
+.shapes button.loopbtn { width: auto; padding: 0 8px; font: 600 10px/1 ui-monospace, Menlo, monospace; letter-spacing: .06em; }
 .shapes button[aria-pressed="true"] { border-color: var(--c); color: var(--c); }
 .ecol canvas.graph { width: 100%; height: 70px; display: block; border-radius: 6px; background: #121418; margin-bottom: 6px; }
 .routes { display: grid; gap: 3px; margin-top: 6px; font-size: 11px; }

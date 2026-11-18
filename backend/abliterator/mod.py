@@ -47,7 +47,8 @@ BIPOLAR = set(LFOS + RANDS)
 PARAMS: Dict[str, Dict[str, Tuple]] = {
     "lfo": {"shape": ("sine", SHAPES), "rate_hz": (0.1, 0.01, 4.0), "amount": (1.0, 0.0, 1.0), "phase": (0.0, 0.0, 1.0),
             "symmetry": (0.5, 0.05, 0.95), "smooth": (0.0, 0.0, 1.0)},
-    "env": {"attack_s": (4.0, 0.0, 60.0), "decay_s": (4.0, 0.0, 60.0), "sustain": (0.6, 0.0, 1.0), "release_s": (4.0, 0.0, 60.0)},
+    "env": {"attack_s": (4.0, 0.0, 60.0), "decay_s": (4.0, 0.0, 60.0), "sustain": (0.6, 0.0, 1.0), "release_s": (4.0, 0.0, 60.0),
+            "loop": (0, 0, 1), "hold_s": (4.0, 0.0, 60.0)},
     "rand": {"rate_hz": (0.25, 0.01, 4.0), "amount": (1.0, 0.0, 1.0), "smooth": (0.5, 0.0, 1.0), "seed": (1, 0, 9999)},
     "macro": {"value": (0.0, 0.0, 1.0), "name": ("", None)},
 }
@@ -186,7 +187,17 @@ def rand(p: Dict[str, Any], t: float) -> float:
 
 
 def env(p: Dict[str, Any], t: float, length: Optional[float]) -> float:
+    """Attack, Decay, then Sustain from ▶. With Loop on: Sustain for Hold, Release to zero, and round again."""
     a, d, s, r = p["attack_s"], p["decay_s"], p["sustain"], p["release_s"]
+    if p.get("loop"):
+        hold = p.get("hold_s", 4.0)
+        cycle = a + d + hold + r
+        if cycle <= 0:
+            return s
+        t = t % cycle
+        if t >= a + d + hold:
+            return s * (1 - (t - a - d - hold) / r)
+        length = None
     if t < a:
         v = t / a if a > 0 else 1.0
     elif t < a + d:

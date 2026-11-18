@@ -316,8 +316,14 @@ function randV(p, t) {
   const a = hash01(seed, k) * 2 - 1, b = hash01(seed, k + 1) * 2 - 1, f = x - k, e = 0.5 - 0.5 * Math.cos(Math.PI * f);
   return ((1 - p.smooth) * a + p.smooth * (a + (b - a) * e)) * (p.amount ?? 1);
 }
-function envV(p, t, len) {
+function envV(p, t, len) {                 // as mod.env: with Loop on, Sustain for Hold, Release to zero, and round again
   const { attack_s: a, decay_s: d, sustain: s, release_s: r } = p;
+  if (p.loop) {
+    const hold = p.hold_s ?? 4, cyc = a + d + hold + r;
+    if (cyc <= 0) return s;
+    t = ((t % cyc) + cyc) % cyc; len = null;
+    if (t >= a + d + hold) return s * (1 - (t - a - d - hold) / r);
+  }
   let v = t < a ? (a > 0 ? t / a : 1) : t < a + d ? 1 - (1 - s) * (d > 0 ? (t - a) / d : 1) : s;
   if (len != null && r > 0 && t > len - r) v *= Math.max(0, (len - t) / r);
   return v;
@@ -1816,10 +1822,10 @@ function traceTiles() {
 const SHAPE_ICON = { sine: "M1 6 C4 -2 7 -2 10 6 S16 14 19 6", triangle: "M1 10 L6 2 L14 10 L19 2", square: "M1 10 V2 H10 V10 H19 V2", saw: "M1 10 L10 2 V10 L19 2", ramp: "M1 2 L10 10 V2 L19 10" };
 const PARAM = {
   lfo: [["rate_hz", "Rate", 0.01, 4, { log: true, step: 0.01, fmt: (v) => (v < 0.1 ? v.toFixed(3) : v.toFixed(2)) + " Hz" }], ["amount", "Amount", 0, 1, { step: 0.01, fmt: (v) => `${Math.round(v * 100)}%`, tip: "the LFO's amplitude: scales every knob it moves" }], ["phase", "Phase", 0, 1, { step: 0.01 }], ["symmetry", "Symmetry", 0.05, 0.95, { step: 0.01 }], ["smooth", "Smooth", 0, 1, { step: 0.01 }]],
-  env: [["attack_s", "Attack", 0, 60, { step: 0.1, fmt: (v) => `${v.toFixed(1)} s` }], ["decay_s", "Decay", 0, 60, { step: 0.1, fmt: (v) => `${v.toFixed(1)} s` }], ["sustain", "Sustain", 0, 1, { step: 0.01 }], ["release_s", "Release", 0, 60, { step: 0.1, fmt: (v) => `${v.toFixed(1)} s` }]],
+  env: [["attack_s", "Attack", 0, 60, { step: 0.1, fmt: (v) => `${v.toFixed(1)} s` }], ["decay_s", "Decay", 0, 60, { step: 0.1, fmt: (v) => `${v.toFixed(1)} s` }], ["sustain", "Sustain", 0, 1, { step: 0.01 }], ["hold_s", "Hold", 0, 60, { step: 0.1, fmt: (v) => `${v.toFixed(1)} s`, tip: "with Loop on: how long the envelope holds at Sustain before its release" }], ["release_s", "Release", 0, 60, { step: 0.1, fmt: (v) => `${v.toFixed(1)} s`, tip: "with Loop on: the fall from Sustain to zero before the envelope starts again" }]],
   rand: [["rate_hz", "Rate", 0.01, 4, { log: true, step: 0.01, fmt: (v) => (v < 0.1 ? v.toFixed(3) : v.toFixed(2)) + " Hz" }], ["amount", "Amount", 0, 1, { step: 0.01, fmt: (v) => `${Math.round(v * 100)}%`, tip: "the source's amplitude: scales every knob it moves" }], ["smooth", "Smooth", 0, 1, { step: 0.01 }], ["seed", "Seed", 0, 999, { int: true }]],
 };
-const DEF = { rate_hz: 0.1, amount: 1, phase: 0, symmetry: 0.5, smooth: 0, attack_s: 4, decay_s: 4, sustain: 0.6, release_s: 4, seed: 1 };
+const DEF = { rate_hz: 0.1, amount: 1, phase: 0, symmetry: 0.5, smooth: 0, attack_s: 4, decay_s: 4, sustain: 0.6, release_s: 4, hold_s: 4, loop: 0, seed: 1 };
 function setSrc(id, k, v) { MOD.spec.sources[id][k] = v; sendMod(); }
 let editorKnobs = [];
 function drawEditor() {
@@ -1841,18 +1847,25 @@ function drawEditor() {
       }
       col.appendChild(sh);
     }
+    if (s.kind === "env") {                                  // Loop: Hold and Release only act with it on
+      const sh = h(`<div class="shapes"></div>`);
+      const b = h(`<button class="loopbtn" aria-pressed="${!!p.loop}" title="Loop: hold at Sustain for Hold, fall over Release, and start again">Loop</button>`);
+      b.addEventListener("click", () => { setSrc(id, "loop", p.loop ? 0 : 1); drawEditor(); });
+      sh.appendChild(b); col.appendChild(sh);
+    }
     const g = h(`<canvas class="graph" width="600" height="92" data-g="${id}"></canvas>`);
     col.appendChild(g);
     const kr = h(`<div class="krow"></div>`);
     for (const [k, label, min, max, o] of PARAM[s.kind]) {
       const kn = knob({ label, min, max, reset: DEF[k], get: () => +MOD.spec.sources[id][k], put: (v) => { setSrc(id, k, v); drawGraphs(); }, ...o });
       kr.appendChild(kn); editorKnobs.push(kn);
+      if (s.kind === "env" && (k === "hold_s" || k === "release_s")) dimKnob(kn, !p.loop);
     }
     col.appendChild(kr);
     col.appendChild(routesEl(id));
     ed.appendChild(col);
   }
-  if (MOD.tab === "env") ed.appendChild(h(`<div class="ecol"><p class="pnote">Each envelope runs from ▶ and holds at its sustain while it plays.</p></div>`));
+  if (MOD.tab === "env") ed.appendChild(h(`<div class="ecol"><p class="pnote">Each envelope runs from ▶ and holds at its sustain while it plays. With Loop on, it holds for Hold, falls to zero over Release, and starts again.</p></div>`));
   drawGraphs();
 }
 function routesEl(id) {
@@ -1875,8 +1888,9 @@ function drawGraphs() {
     g.clearRect(0, 0, w, hh);
     g.strokeStyle = "#23272f"; g.lineWidth = 1; g.beginPath(); g.moveTo(0, hh / 2); g.lineTo(w, hh / 2); g.stroke();
     const p = MOD.spec.sources[id];
-    const span = s.kind === "lfo" ? 1 / p.rate_hz : s.kind === "rand" ? 8 / p.rate_hz / 2 : Math.max(8, p.attack_s + p.decay_s + p.release_s + 4);
-    const len = s.kind === "env" ? span : null, N = 200;
+    const cyc = p.attack_s + p.decay_s + (p.hold_s ?? 4) + p.release_s;
+    const span = s.kind === "lfo" ? 1 / p.rate_hz : s.kind === "rand" ? 8 / p.rate_hz / 2 : p.loop ? Math.max(4, 2 * cyc) : Math.max(8, p.attack_s + p.decay_s + 4);
+    const len = null, N = 400;
     const y = (v) => (s.bipolar ? hh / 2 - v * hh * 0.42 : hh * 0.92 - v * hh * 0.84);
     g.strokeStyle = col; g.lineWidth = 3; g.beginPath();
     for (let i = 0; i <= N; i++) {

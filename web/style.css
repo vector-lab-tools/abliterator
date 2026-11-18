@@ -43,6 +43,10 @@ header.bar { position: relative; z-index: 20; display: flex; align-items: center
 .tp:hover:not(:disabled) { background: rgba(255,255,255,.1); color: var(--s-text); }
 .tp:disabled { opacity: .35; cursor: default; }
 .tp.play.on, .tp.play.on:disabled { opacity: 1; color: var(--live); text-shadow: 0 0 8px rgba(61,220,132,.6); }
+/* the transport, idle: each button in a dull version of its colour when on, so it is seen before it is used */
+.transport:not(.viewswap) .tp.play:not(.on) { opacity: 1; color: color-mix(in srgb, var(--live) 55%, transparent); }
+.transport:not(.viewswap) .tp.stop:disabled { opacity: 1; color: color-mix(in srgb, var(--s-text) 40%, transparent); }
+.transport:not(.viewswap) .tp.rec:disabled { opacity: 1; color: color-mix(in srgb, #ff6b5a 45%, transparent); }
 .tp.stop:not(:disabled) { color: var(--s-text); }
 .tp.rec:not(:disabled) { color: #ff6b5a; }
 .tp:focus-visible { outline: 2px solid #9fb4ff; outline-offset: 1px; }

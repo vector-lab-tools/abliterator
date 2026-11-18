@@ -147,13 +147,12 @@ function knob(p) {
     if (assigning()) { const dd = Math.max(-1, Math.min(1, routeDepth(MOD.assign, p.mod) - e.deltaY / (e.shiftKey ? 2400 : 600))); setRoute(MOD.assign, p.mod, Math.abs(dd) < 0.005 ? 0 : +dd.toFixed(3)); el.paintMod(); clearTimeout(idle); idle = setTimeout(drawEditor, 300); return; }
     mine = true; nudge(-e.deltaY / (e.shiftKey ? 3000 : 600)); clearTimeout(idle); idle = setTimeout(() => { acc = null; mine = false; }, 500);
   }, { passive: false });
-  el.querySelector("svg").addEventListener("dblclick", () => {
+  // on the knob itself: pointerdown captures the pointer, so the clicks go to the knob, not to its drawing
+  el.addEventListener("dblclick", () => {
     acc = null;
-    if (assigning() && routeDepth(MOD.assign, p.mod)) { setRoute(MOD.assign, p.mod, 0); drawEditor(); el.paintMod(); }
-    else if (p.mod && MOD.spec.routes.some((r) => r.tgt === p.mod)) {          // modulated, no source picked: its links go first
-      MOD.spec.routes.filter((r) => r.tgt === p.mod).forEach((r) => setRoute(r.src, p.mod, 0, false));
-      sendMod(); drawEditor(); MODKNOBS.forEach((x) => x.paintMod());
-      info(`${tgtOf(p.mod)?.label || p.mod}: modulation removed. Double-click again to reset the knob.`, "ok", 4000);
+    if (assigning()) {                         // a source chosen: its link to this knob goes
+      setRoute(MOD.assign, p.mod, 0); drawEditor(); el.paintMod();
+      info(`${SRC[MOD.assign].label} → ${p.label}: link removed`, "ok", 2500);
     } else put(p.reset);
   });
   el.addEventListener("keydown", (e) => {

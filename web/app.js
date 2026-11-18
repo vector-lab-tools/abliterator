@@ -444,11 +444,11 @@ function hintOn(el) {
   el.addEventListener("pointerenter", () => $("#assignnote").classList.add("hover"));
   el.addEventListener("pointerleave", () => $("#assignnote").classList.remove("hover"));
 }
+// while a source is chosen, the info bar at the foot says what the knobs now do (and comes back to it after other messages)
+const assignText = () => `${SRC[MOD.assign].label}: each knob it can move is now its send. Click links it at ${START_SEND}; drag up for more, down for less; double-click removes. Esc to finish.`;
 function assign(src) {
   MOD.assign = MOD.assign === src ? null : src;
-  const n = $("#assignnote");
-  n.classList.toggle("on", !!MOD.assign);
-  n.textContent = MOD.assign ? `${SRC[MOD.assign].label}: each knob it can move is now its send. Drag up for more, down for less; double-click removes. Esc to finish.` : "Drag a source above onto a knob to link it.";
+  if (MOD.assign) info(assignText(), "", 0); else if (Date.now() > infoUntil) { $("#infotext").textContent = ""; $("#infotext").className = ""; }
   if (MOD.assign) { MOD.tab = tabOf(SRC[MOD.assign].kind); drawEditor(); }
   drawTiles(); MODKNOBS.forEach((k) => k.paint());          // every knob it can move turns into its send, or back
 }
@@ -2212,7 +2212,7 @@ async function poll() {
   part("Listen and status line", () => {
       if (s.meters) adoptMeters(s.meters);
       adoptSpec("model", s.spec, s.playing);
-      if (Date.now() > infoUntil) { $("#infotext").textContent = ""; $("#infotext").className = ""; }
+      if (Date.now() > infoUntil) { $("#infotext").textContent = MOD.assign ? assignText() : ""; $("#infotext").className = ""; }
       $("#infostatus").textContent = s.playing ? `model: ${s.seconds.toFixed(0)} s, ${s.underruns} dropouts` : `model: ${s.state}`;
       transport();
   });

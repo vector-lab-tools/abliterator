@@ -2365,6 +2365,7 @@ function drawSettings() {
       <h4>How to cite it</h4><div class="cite" id="cite-h">${esc(harvard)}<button data-c="cite-h">Copy</button></div><div class="cite" id="cite-b">${esc(bib.replace(/\\n/g, "\n"))}<button data-c="cite-b">Copy</button></div>
       <h4>More on the site</h4><div class="links">
         <a href="${sw.site}" target="_blank" rel="noopener"><b>Abliterator</b><span>The instrument, its sounds and how it works</span></a>
+        <a href="${sw.site}#chain" target="_blank" rel="noopener"><b>Signal chain</b><span>Engine, Model layers, Speed, Effects and Output, each with a page of its own</span></a>
         <a href="${sw.site}units.html" target="_blank" rel="noopener"><b>Model layers</b><span>Where the VAU units live and act, unit by unit</span></a>
         <a href="${sw.site}abliteration.html" target="_blank" rel="noopener"><b>What is Abliteration?</b><span>The word, and what it means for sound design</span></a>
         <a href="${sw.site}faq.html" target="_blank" rel="noopener"><b>FAQ</b><span>Questions people ask about it</span></a>

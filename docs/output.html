@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Output · Abliterator</title>
+  <meta name="description" content="The output section of Abliterator: De-click, auto level, Dynamics, width, low-pass, limiter and volume, the OUT meter, and how a dropout is covered.">
+  <meta property="og:title" content="Output · Abliterator">
+  <meta property="og:description" content="The output section of Abliterator: De-click, auto level, Dynamics, width, low-pass, limiter and volume, the OUT meter, and how a dropout is covered.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://vector-lab-tools.github.io/abliterator/img/share.png">
+  <meta property="og:image:width" content="1280">
+  <meta property="og:image:height" content="640">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="img/mark.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#f3f2ee" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0e1015" media="(prefers-color-scheme: dark)">
+  <script>(function(){try{var t=localStorage.getItem('abl-theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+  <link rel="stylesheet" href="style.css?v=c40f464e">
+  <link rel="stylesheet" href="audio.css?v=75a41c3f">
+</head>
+<body>
+<!-- Written by hand. Copyright (C) 2026 David M. Berry. SPDX-License-Identifier: GPL-3.0-or-later -->
+<a class="skip" href="#main">Skip to the content</a>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="./" aria-label="Abliterator, home">
+      <img src="img/mark.svg" alt="">
+      <span class="brand-block">
+        <span class="brand-name">Abliterator</span>
+        <span class="brand-tagline">Output</span>
+      </span>
+    </a>
+    <div class="head-tools">
+      <nav class="site-nav" aria-label="Sections">
+        <a href="./">Home</a>
+        <a href="./#chain">Signal chain</a>
+        <a href="#declick">De-click</a>
+        <a href="#level">Level</a>
+        <a href="#dynamics">Dynamics</a>
+        <a href="#width">Width</a>
+        <a href="#cover">Dropouts</a>
+        <a href="faq.html">FAQ</a>
+        <span class="nav-sep" aria-hidden="true"></span>
+        <a class="ext" href="https://github.com/vector-lab-tools/abliterator">GitHub</a>
+        <a class="ext vau" href="https://vector-lab-tools.github.io/vector-abliteration-units/">VAU ↗</a>
+      </nav>
+      <button class="theme-toggle" type="button" aria-label="Switch between light and dark" title="Switch between light and dark">
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<section class="hero hero-short">
+  <canvas class="hero-scope" id="hero-scope" aria-hidden="true"></canvas>
+  <div class="wrap hero-inner">
+    <span class="kicker">Abliterator · signal chain · output</span>
+    <h1><span class="glitch" id="title" data-text="Output">Output</span></h1>
+    <p class="tagline">The output section takes the model's sound, slowed by Speed if Speed is set, and readies it for the sound card: De-click and auto level before the effects, then Dynamics, width, a low-pass, a limiter and the volume after them.</p>
+  </div>
+</section>
+
+<main class="content" id="main">
+  <!-- 01 -->
+  <section class="section wrap reveal" id="order">
+    <span class="num">01</span>
+    <h2>The order</h2>
+    <div class="split">
+      <div>
+        <p class="lede">After the model, and after Speed if Speed is set, the sound goes through these stages in this order:</p>
+        <ol class="steps">
+          <li><a href="#declick"><b>De-click</b></a> redraws the few-sample bursts a unit pushed hard can make the model write.</li>
+          <li><a href="#level"><b>Auto level</b></a> keeps the loudness steady while the controls move.</li>
+          <li>The <a href="effects.html"><b>effect chain</b></a>, up to eight.</li>
+          <li><a href="#dynamics"><b>Dynamics</b></a>: a compressor and a gate.</li>
+          <li><a href="#width"><b>Width and Spread</b></a> on the stereo field.</li>
+          <li><a href="#last"><b>Low-pass</b>, <b>limiter</b> and <b>volume</b></a>.</li>
+        </ol>
+        <p><b>Bypass</b> skips everything after De-click except the volume, so you hear the model as it wrote the sound. Every stage works in fixed steps counted from the start of the sound, so it gives the same output whatever block size the sound card asks for, and a saved sound rendered offline matches what was heard. Each play starts the output section from silence, its settings kept: no reverb tail or level carries over from the last take.</p>
+      </div>
+      <div>
+        <figure class="clip green" style="--w:230px;--mw:260px">
+          <a class="shot" href="img/chain/out-panel.webp" data-cap="The Output panel while it plays: Low-pass, Volume and Buffer; Bypass, Level, Limiter and De-click; Dynamics with Fast and Peak, Ratio, Threshold, Release and Gate; the rows of reduction for the compressor, gate, auto level and limiter; and the OUT meter."><img src="img/chain/out-panel.webp" width="230" height="341" loading="lazy" alt="The Output panel: three knobs, four switches, the Dynamics switches and four knobs, four rows of reduction LEDs, and a tall OUT meter of green cells."></a>
+          <figcaption><span class="tag">Output</span>The whole section on one panel, with the OUT meter.</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- 02 -->
+  <section class="section wrap reveal" id="declick">
+    <span class="num">02</span>
+    <h2>De-click</h2>
+    <p>Some settings make the model itself write clicks: bursts a few samples long that swing up and down, sometimes to full scale, and sound like a bad splice. Neuron pushed hard at one block does it, and so does Quantise at 6 bits (85 a minute on the Warm drone, none at 8). The engine logs the sound card's underflows and any jump between the blocks it sends, and neither appears when these happen, so they are in the model's output, not the playback.</p>
+    <p>De-click finds samples that jump more than six times the sound's mean step above the line through their neighbours and reverse from one sample to the next, and redraws each burst as a straight line between the good samples either side. It looks 64 samples (1.3 ms) ahead, so the output is that much late. With Neuron at ×14.45 on block 3, the steps heard above half the peak fell from 27 to 2; on clean techno, jazz and gamelan it touched 3 to 12 places in 45 seconds. It is on by default, with a switch on the Output panel, and the same stage can be placed anywhere in the effect chain.</p>
+    <div class="viz" id="viz-declick" role="group" aria-label="Figure: a waveform with a five-sample burst, before and after De-click">
+      <svg viewBox="0 0 960 260" aria-hidden="true"></svg>
+      <div class="bar"><span class="lab">De-click</span>
+        <button type="button" data-dc="off" aria-pressed="false">Off</button>
+        <button type="button" data-dc="on" aria-pressed="true">On</button></div>
+      <div class="readout" aria-live="polite"></div>
+    </div>
+    <p class="viz-cap"><b>A burst, drawn.</b> The waveform is drawn, not recorded; the burst's shape is the kind the engine logs.</p>
+  </section>
+
+  <!-- 03 -->
+  <section class="section wrap reveal" id="level">
+    <span class="num">03</span>
+    <h2>Auto level</h2>
+    <p>Auto level keeps the loudness steady while the controls move, so that a move is heard as a change of sound more than a change of level. It follows the sound's power with a 1.5 s time constant (0.3 s to a rise) and sets a gain toward −20 dBFS RMS, from −12 to +18 dB, ramped in 10 ms steps. Below −60 dBFS it holds its gain, so silence is not raised. It also evens out the music's own slow swells; switch <b>Level</b> off to keep them. The AUTO row on the Output panel shows its gain.</p>
+  </section>
+
+  <!-- 04 -->
+  <section class="section wrap reveal" id="dynamics">
+    <span class="num">04</span>
+    <h2>Dynamics</h2>
+    <div class="split">
+      <div>
+        <p>Dynamics is a compressor and a gate, as on a console's channel strip, after the effects and off by default. The compressor turns down what goes over the <b>Threshold</b> (−40 to 0 dBFS) by the <b>Ratio</b> (1:1 to 20:1); its attack is 30 ms, or 3 ms with <b>Fast</b>, and its <b>Release</b> runs from 0.05 to 4 s. It reads the RMS level, or the peak with <b>Peak</b>. The <b>Gate</b> closes by 40 dB when the level falls below its threshold (−80 to −20 dBFS; at the bottom it is off). Both work in 1 ms steps counted from the start.</p>
+        <p>The COMP and GATE rows light their reduction on LEDs; the AUTO and LIMIT rows show auto level's gain and the limiter's pull on the peak.</p>
+      </div>
+      <div>
+        <figure class="clip" style="--w:180px;--mw:220px">
+          <a class="shot" href="img/chain/out-dyn.webp" data-cap="Dynamics on the Output panel: Dyn, Fast and Peak, then Ratio, Threshold, Release and Gate."><img src="img/chain/out-dyn.webp" width="178" height="68" loading="lazy" alt="Three switches, Dyn, Fast and Peak, above four small knobs: Ratio 3.1:1, Threshold, Release 300 ms and Gate off."></a>
+          <figcaption><span class="tag">Dynamics</span>Compressor and gate.</figcaption>
+        </figure>
+      </div>
+    </div>
+    <div class="viz" id="viz-dyn" role="group" aria-label="Animated figure: the compressor and gate's curve of level out against level in, with a level moving along it and the reduction on LEDs">
+      <svg viewBox="0 0 960 300" aria-hidden="true"></svg>
+      <div class="bar"><span class="lab">Dynamics</span>
+        <label>ratio <input type="range" min="1" max="20" step="0.1" value="3" data-k="ratio"><output>3.0:1</output></label>
+        <label>threshold <input type="range" min="-40" max="0" step="1" value="-24" data-k="thresh"><output>-24 dB</output></label>
+        <label>gate <input type="range" min="-80" max="-20" step="1" value="-60" data-k="gate"><output>-60 dB</output></label></div>
+      <div class="readout" aria-live="polite"></div>
+    </div>
+    <p class="viz-cap"><b>The curve is the stage's own</b>; the level moving along it is drawn. The dashed line is no change.</p>
+  </section>
+
+  <!-- 05 -->
+  <section class="section wrap reveal" id="width">
+    <span class="num">05</span>
+    <h2>Width and Spread</h2>
+    <p>Width and Spread are on the Engine panel, beside the stereo field that shows what they do, and act here, after Dynamics. The sound is split into mid (left plus right) and side (left minus right). <b>Width</b> scales the side: 0% is mono, 100% the stereo the model wrote, 200% twice as wide. <b>Spread</b> makes width from a mono sound: it adds the mid, delayed 12 ms, to the left and takes it from the right. Twelve milliseconds is inside the window where the ear hears one sound rather than an echo, and the mono sum stays the mid, so nothing is lost when the sound is played in mono.</p>
+  </section>
+
+  <!-- 06 -->
+  <section class="section wrap reveal" id="last">
+    <span class="num">06</span>
+    <h2>Low-pass, limiter and volume</h2>
+    <p>The <b>Low-pass</b> is a one-pole filter from 500 Hz to 16 kHz, gentle enough to darken a sound without a resonance. The <b>Limiter</b> is a soft curve, tanh(1.5x) scaled back to unity at full scale, which rounds peaks rather than cutting them; the LIMIT row shows how far it pulls the peak down. <b>Volume</b> comes last. The <b>OUT</b> meter lights in cells, green, amber from −6 dB and red from −1 dB, with a hold line at each channel's peak, and shows the level as it goes to the sound card.</p>
+    <figure class="clip green" style="--w:70px;--mw:90px">
+      <a class="shot" href="img/chain/out-meter.webp" data-cap="The OUT meter: a column of cells for each channel, green, amber from −6 dB and red from −1 dB, with the hold line at the peak."><img src="img/chain/out-meter.webp" width="50" height="314" loading="lazy" alt="A tall meter of small green cells with amber and red cells at the top, and a figure below."></a>
+      <figcaption><span class="tag">OUT</span>Cells and a hold line.</figcaption>
+    </figure>
+  </section>
+
+  <!-- 07 -->
+  <section class="section wrap reveal" id="cover">
+    <span class="num">07</span>
+    <h2>Dropouts</h2>
+    <p>The model writes ahead of the sound card by the Buffer's number of frames (see <a href="engine.html#frames">Frame by frame</a>). If a step runs long and the card asks for sound that is not there, the output section covers the gap. The last block the card played goes on, mirrored so that it starts where the sound stopped (played backwards, then forwards), and fades out over 30 ms; when sound arrives it crossfades back in over 5 ms. A dropout is heard as a short dip, without a click. Only what is heard is covered: a saved sound is taken from the frames the model wrote, so a dropout heard live is not in it.</p>
+    <div class="viz" id="viz-cover" role="group" aria-label="Animated figure: a dropout covered by the mirrored last block, fading, then a crossfade back">
+      <svg viewBox="0 0 960 260" aria-hidden="true"></svg>
+      <div class="bar"><span class="lab">Dropout</span>
+        <button type="button" data-cover="off" aria-pressed="false">Without the cover</button>
+        <button type="button" data-cover="on" aria-pressed="true">With the cover</button></div>
+      <div class="readout" aria-live="polite"></div>
+    </div>
+    <p class="viz-cap"><b>A dropout, drawn</b> with the cover's own times: the 30 ms fade and the 5 ms crossfade.</p>
+  </section>
+
+  <section class="section wrap reveal">
+    <div class="links">
+      <a href="./#chain"><b>Signal chain</b><span>The whole path, stage by stage</span></a>
+      <a href="engine.html"><b>Engine</b><span>The model, the sampler, frames and Speed</span></a>
+      <a href="units.html"><b>Model layers</b><span>Steer and the units inside the model</span></a>
+      <a href="effects.html"><b>Effects</b><span>The chain of up to eight after the model</span></a>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="foot">
+      <img src="img/mark.svg" alt="">
+      <div>
+        <p><b>Abliterator</b>, a <a href="https://vector-lab-tools.github.io">Vector Lab</a> tool. David M. Berry, University of Sussex. GPL-3.0-or-later.</p>
+        <p><a href="./">Home</a> · <a href="https://github.com/vector-lab-tools/abliterator">Repository</a> · <a href="https://vector-lab-tools.github.io/vector-abliteration-units/">Vector Abliteration Units</a></p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Screenshot, enlarged" hidden>
+  <button type="button" aria-label="Close">✕</button>
+  <img alt="">
+  <div class="cap"></div>
+</div>
+
+<audio id="player" preload="none"></audio>
+<script src="site.js?v=f8f63539"></script>
+<script src="chain.js?v=43fbe03f"></script>
+</body>
+</html>

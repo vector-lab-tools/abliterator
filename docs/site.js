@@ -699,6 +699,8 @@
   });
 
   // for the units page's own script
+  // and for the chain pages' figures (chain.js): the figure frame and the SVG helpers
+  window.AAFIG = { add: addFig, pressGroup: pressGroup, pressToggle: pressToggle, sliders: sliders, T: T, R: R, L: L, C: C, P: P, clamp: clamp, fmtS: fmtS, reduced: reduced };
   window.AA = { play: play, isPlaying: playing, isLoading: isLoading, stop: stop, player: player, onChange: function (f) { listeners.push(f); }, current: function () { return current; }, css: css };
 
   /* ---------- the frame loop ---------- */

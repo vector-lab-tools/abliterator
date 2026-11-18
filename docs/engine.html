@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Engine · Abliterator</title>
+  <meta name="description" content="The Engine of Abliterator: the model, the seed and the sampler, the frames it writes, Speed, and the meters.">
+  <meta property="og:title" content="Engine · Abliterator">
+  <meta property="og:description" content="The Engine of Abliterator: the model, the seed and the sampler, the frames it writes, Speed, and the meters.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://vector-lab-tools.github.io/abliterator/img/share.png">
+  <meta property="og:image:width" content="1280">
+  <meta property="og:image:height" content="640">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="img/mark.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#f3f2ee" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0e1015" media="(prefers-color-scheme: dark)">
+  <script>(function(){try{var t=localStorage.getItem('abl-theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+  <link rel="stylesheet" href="style.css?v=c40f464e">
+  <link rel="stylesheet" href="audio.css?v=75a41c3f">
+</head>
+<body>
+<!-- Written by hand. Copyright (C) 2026 David M. Berry. SPDX-License-Identifier: GPL-3.0-or-later -->
+<a class="skip" href="#main">Skip to the content</a>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="./" aria-label="Abliterator, home">
+      <img src="img/mark.svg" alt="">
+      <span class="brand-block">
+        <span class="brand-name">Abliterator</span>
+        <span class="brand-tagline">Engine</span>
+      </span>
+    </a>
+    <div class="head-tools">
+      <nav class="site-nav" aria-label="Sections">
+        <a href="./">Home</a>
+        <a href="./#chain">Signal chain</a>
+        <a href="#model">The model</a>
+        <a href="#sampler">Seed and sampler</a>
+        <a href="#frames">Frames</a>
+        <a href="#speed">Speed</a>
+        <a href="#meters">Meters</a>
+        <a href="faq.html">FAQ</a>
+        <span class="nav-sep" aria-hidden="true"></span>
+        <a class="ext" href="https://github.com/vector-lab-tools/abliterator">GitHub</a>
+        <a class="ext vau" href="https://vector-lab-tools.github.io/vector-abliteration-units/">VAU ↗</a>
+      </nav>
+      <button class="theme-toggle" type="button" aria-label="Switch between light and dark" title="Switch between light and dark">
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<section class="hero hero-short">
+  <canvas class="hero-scope" id="hero-scope" aria-hidden="true"></canvas>
+  <div class="wrap hero-inner">
+    <span class="kicker">Abliterator · signal chain · the engine</span>
+    <h1><span class="glitch" id="title" data-text="Engine">Engine</span></h1>
+    <p class="tagline">The Engine is where the sound starts: the model, the style it is asked for, the seed and the sampler, the frames it writes ahead of the sound card, and Speed, which can play what it writes slower.</p>
+  </div>
+</section>
+
+<main class="content" id="main">
+  <!-- 01 -->
+  <section class="section wrap reveal" id="model">
+    <span class="num">01</span>
+    <h2>The model</h2>
+    <p class="lede">The default engine is <a href="https://github.com/magenta/magenta-realtime">Magenta RealTime 2</a> small, in 8-bit on Apple's MLX. It is an autoregressive transformer over audio tokens: each step it writes the tokens of one 40 ms frame, reading the frames it has written and a style embedding of the prompt, and its codec, SpectroStream, turns the tokens into 1,920 samples of 48 kHz stereo. The transformer has twelve layers, and the stream of numbers that runs through them is 1,024 wide; that stream is where <a href="units.html#steer">Steer</a> and the <a href="units.html">Model layers</a> act.</p>
+    <figure>
+      <a class="shot" href="img/c-engine.webp" data-cap="The Engine panel. On the left, what generates: the engine, the preset and its prompt, the Prompt box for a style of your own with Strength beside it, Seed with its die, Temperature and Top-k under SAMPLING, and Save last. On the right, what is heard: the scope of the last three seconds; Mode and Speed under SPEED CONTROL and Width and Spread under STEREO; the channel meters with peak, RMS and correlation; and the stereo field."><img src="img/c-engine.webp" width="750" height="341" loading="lazy" alt="The Engine panel: on the left the engine menu reading Magenta RT 2 small, the Warm drone preset and its prompt, a Prompt box with a small Strength knob, and knobs for Seed, Temperature and Top-k above a Save last button; on the right a blue waveform scope, knobs for Mode, Speed, Width and Spread under two small brackets, left and right meters, and a round stereo field."><span class="zoom">Zoom</span></a>
+      <figcaption><b>The Engine panel.</b> What generates on the left, what is heard on the right.</figcaption>
+    </figure>
+    <p>A preset is a prompt with a name: twenty-five of them in six groups (ambient, electronic, beats, acoustic, orchestral, experimental). A style typed in the Prompt box is made into the model's style tokens in about 90 ms and played, or switched to while playing, and kept under Your prompts. On an Apple M5 a step takes about 25 ms against the 40 ms the frame lasts.</p>
+    <p>MusicGen small (Meta) is a second engine, chosen from the menu in the panel's header: 32 kHz mono through its EnCodec codec, with Steer and without the model-layer units, answering a move in about 285 ms. Everything else on this page is Magenta RT 2.</p>
+  </section>
+
+  <!-- 02 -->
+  <section class="section wrap reveal" id="sampler">
+    <span class="num">02</span>
+    <h2>Strength, seed and sampler</h2>
+    <div class="split">
+      <div>
+        <p>At each step the model gives a likelihood to every token it could write next, and the sampler draws one. Three knobs shape the draw, and their defaults are Magenta's own.</p>
+        <p><b>Strength</b> (3.0), the small knob beside the Prompt box, sets how strongly the prompt steers the choice: it is the model's guidance, its weight on the style conditioning, and it acts on a preset's prompt as on a typed one. <b>Temperature</b> (1.30) flattens the likelihoods above 1 and sharpens them below, so the music wanders more or settles. <b>Top-k</b> (40) lets only the k likeliest tokens be drawn; the two sit together under the SAMPLING bracket. Strength and Temperature act from the next frame and take modulation; Magenta RT 2 passes guidance as conditioning tokens, so a move costs nothing.</p>
+        <p><b>Seed</b> fixes the draws. The same seed with the same settings and moves gives the same sound, sample for sample, which is how a saved sound's recipe replays it exactly. The seed takes effect at the next ▶; the die picks one at random.</p>
+      </div>
+      <div>
+        <figure class="clip blue" style="--w:260px;--mw:340px">
+          <a class="shot" href="img/chain/eng-prompt.webp" data-cap="The Prompt box, its return key, and Strength as a small knob beside them."><img src="img/chain/eng-prompt.webp" width="264" height="60" loading="lazy" alt="A text box reading Prompt: dusty jazz trio, a return key, and a small knob labelled Strength reading 3.8."></a>
+          <figcaption><span class="tag">Prompt</span>A style of your own, and how strongly it pulls.</figcaption>
+        </figure>
+        <figure class="clip" style="--w:260px;--mw:340px">
+          <a class="shot" href="img/chain/eng-knobs.webp" data-cap="Seed with its die, and Temperature and Top-k under the SAMPLING bracket."><img src="img/chain/eng-knobs.webp" width="268" height="96" loading="lazy" alt="Three knobs: Seed 1 with a die button at its shoulder, then Temperature 1.30 and Top-k 40 under a bracket labelled SAMPLING."></a>
+          <figcaption><span class="tag">Sampler</span>Seed, then Temperature and Top-k.</figcaption>
+        </figure>
+      </div>
+    </div>
+    <div class="viz" id="viz-sampler" role="group" aria-label="Interactive figure: twenty candidate tokens and the share of the choice each gets, with sliders for strength, temperature and top-k">
+      <svg viewBox="0 0 960 280" aria-hidden="true"></svg>
+      <div class="bar"><span class="lab">The draw</span>
+        <label>strength <input type="range" min="0" max="6" step="0.1" value="3" data-k="guidance"><output>3.0</output></label>
+        <label>temperature <input type="range" min="0.3" max="2" step="0.01" value="1.3" data-k="temperature"><output>1.30</output></label>
+        <label>top-k <input type="range" min="1" max="20" step="1" value="8" data-k="topk"><output>8</output></label></div>
+      <div class="readout" aria-live="polite"></div>
+    </div>
+    <p class="viz-cap"><b>The draw, sketched.</b> Twenty made-up tokens stand for the model's thousands; the likelihoods are drawn, not the model's numbers. Strength pulls the shares toward what the style favours, Temperature flattens or sharpens them, and Top-k leaves the rest out of the draw.</p>
+  </section>
+
+  <!-- 03 -->
+  <section class="section wrap reveal" id="frames">
+    <span class="num">03</span>
+    <h2>Frame by frame</h2>
+    <div class="split">
+      <div>
+        <p>The engine runs in its own process and keeps a few frames ahead of the sound card: the <b>Buffer</b> on the Output panel, two frames (80 ms) by default. A move is applied to the next frame the model writes, and heard when that frame reaches the card. With two frames ahead and the card's own 22 ms, that is about 102 ms; a measured move took 107 ms.</p>
+        <p>A shorter buffer answers sooner and drops out when a step runs long. The top bar shows <b>GPU load</b>, the time the slowest steps take as a share of the 40 ms frame (over 100% the model is falling behind), and <b>CPU load</b>, the share of the processor the instrument uses. The step loop runs as user-interactive work on macOS, and Python's garbage collector is kept off the loaded model, whose full collections had grown to 99 ms. What a dropout sounds like, and how it is covered, is on the <a href="output.html#cover">Output page</a>.</p>
+      </div>
+      <div>
+        <div class="viz" id="viz-frames" role="group" aria-label="Animated figure: frames written by the model ahead of the sound card, with a move travelling through the buffer">
+          <svg viewBox="0 0 520 330" aria-hidden="true"></svg>
+          <div class="bar"><span class="lab">Buffer</span>
+            <label>frames <input type="range" min="1" max="6" value="2" data-k="lead"><output>2</output></label>
+            <button type="button" data-act="move">Turn a knob</button></div>
+          <div class="readout" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 04 -->
+  <section class="section wrap reveal" id="speed">
+    <span class="num">04</span>
+    <h2>Speed</h2>
+    <p class="lede">Speed plays the model's sound slower, down to an eighth. It sits between the model and the output section, and <b>Mode</b> sets how it slows the sound. The two knobs sit under the Engine's scope, beside Width and Spread, the other controls that act on what the model has already written. While Mode is Off, Speed is dimmed and keeps its value.</p>
+    <div class="split">
+      <div>
+        <ul>
+          <li><b>Off</b> plays at 1× and leaves the Speed knob where it is, so a setting can be switched in and out.</li>
+          <li><b>Tape</b> reads the sound slower, as a slowed tape: every cycle lasts longer, so the pitch falls with the speed, an octave at ½×. It reads between samples by a cubic (Catmull-Rom) curve.</li>
+          <li><b>Stretch</b> keeps the pitch: a phase vocoder of 2,048-sample Hann windows at a quarter overlap, with the phases locked around each spectral peak (after Laroche and Dolson), so a note lasts longer without falling.</li>
+          <li><b>Smear</b> keeps the pitch and washes the detail out, after Paul Nasca's Paulstretch: 16,384-sample (0.34 s) windows whose magnitudes are kept and whose phases are drawn afresh, from a generator seeded by the window's number. It suits very slow ambient.</li>
+        </ul>
+      </div>
+      <div>
+        <figure class="clip" style="--w:400px;--mw:480px">
+          <a class="shot" href="img/chain/eng-post.webp" data-cap="Mode and Speed under the SPEED CONTROL bracket, then Width and Spread under STEREO, in a row under the Engine's scope: here Stretch at half speed."><img src="img/chain/eng-post.webp" width="373" height="84" loading="lazy" alt="Four knobs in a row: Mode reading Stretch and Speed reading one half under a small bracket labelled SPEED CONTROL, then Width and Spread under a bracket labelled STEREO."></a>
+          <figcaption><span class="tag">Speed</span>Mode and Speed beside Width and Spread.</figcaption>
+        </figure>
+      </div>
+    </div>
+    <div class="viz" id="viz-speed" role="group" aria-label="Animated figure: a second of the model's sound above a second of what is heard, slowed by Tape, Stretch or Smear">
+      <svg viewBox="0 0 960 320" aria-hidden="true"></svg>
+      <div class="bar"><span class="lab">Speed</span>
+        <button type="button" data-mode="tape" aria-pressed="true">Tape</button>
+        <button type="button" data-mode="stretch" aria-pressed="false">Stretch</button>
+        <button type="button" data-mode="smear" aria-pressed="false">Smear</button>
+        <label>speed <input type="range" min="-3" max="0" step="0.05" value="-1" data-k="speed"><output>0.50×</output></label></div>
+      <div class="readout" aria-live="polite"></div>
+    </div>
+    <p class="viz-cap"><b>Three ways to slow a sound, sketched.</b> The waveforms are drawn from the rules each mode follows, not recorded. The shaded part of the upper lane is what one second of output reads.</p>
+    <p>The model writes only as fast as its sound is used: at ½× it writes 12.5 frames a second instead of 25, so a slow setting also lightens the load. A change of speed glides over a few hundredths of a second, and a change of mode is taken once the new mode has the sound it needs ahead. The stage works in fixed chunks of 256 samples whatever block the sound card asks for, and each change is recorded with the sample it was taken at, so a saved sound replays its speed exactly, to the bit.</p>
+  </section>
+
+  <!-- 05 -->
+  <section class="section wrap reveal" id="meters">
+    <span class="num">05</span>
+    <h2>Meters</h2>
+    <p>The right side of the Engine panel shows what is heard. The <b>scope</b> draws the last three seconds: as a waveform (Wave), the model's sound as played, after Speed and before the output section; as a spectrogram (Spectrum), what reaches the sound card, in the colours of the Listen view. The <b>channel meters</b>, like the stereo field, read what reaches the sound card: left and right with a tick at each one's peak, and below them the peak, the RMS level and the correlation between the channels. <b>Mono</b> and <b>Stereo</b> choose whether the scope draws one trace or two. The round <b>stereo field</b> plots left against right: a vertical line is mono, a cloud is wide, and the bar under it is the correlation, green toward +1, red toward −1, where the channels cancel in mono.</p>
+    <div class="clips">
+      <figure class="clip blue" style="--w:420px;--mw:520px">
+        <a class="shot" href="img/chain/eng-scope.webp" data-cap="The scope: the last three seconds as a waveform, the newest on the right."><img src="img/chain/eng-scope.webp" width="459" height="126" loading="lazy" alt="A wide blue waveform with time marks from −3.0 s to now, and Wave and Spectrum switches."></a>
+        <figcaption><span class="tag">Scope</span>Three seconds, waveform or spectrogram.</figcaption>
+      </figure>
+      <figure class="clip green" style="--w:260px;--mw:300px">
+        <a class="shot" href="img/chain/eng-meters.webp" data-cap="The channel meters while it plays: left and right with their peak ticks, and the peak, RMS and correlation."><img src="img/chain/eng-meters.webp" width="369" height="81" loading="lazy" alt="Two horizontal green meters labelled L and R on a scale from −60 to 0 dB, with peak, RMS and correlation figures below."></a>
+        <figcaption><span class="tag">Meters</span>Left, right, peak, RMS, correlation.</figcaption>
+      </figure>
+      <figure class="clip red" style="--w:110px;--mw:130px">
+        <a class="shot" href="img/chain/eng-gonio.webp" data-cap="The stereo field: left against right, with the correlation bar below."><img src="img/chain/eng-gonio.webp" width="96" height="105" loading="lazy" alt="A round plot with L and R marks and a narrow vertical trace, above a bar running from red to green."></a>
+        <figcaption><span class="tag">Field</span>Left against right.</figcaption>
+      </figure>
+    </div>
+    <p>Width and Spread act in the output section, after the effects; they are described on the <a href="output.html#width">Output page</a>.</p>
+  </section>
+
+  <section class="section wrap reveal">
+    <div class="links">
+      <a href="./#chain"><b>Signal chain</b><span>The whole path, stage by stage</span></a>
+      <a href="units.html"><b>Model layers</b><span>Steer and the units inside the model</span></a>
+      <a href="effects.html"><b>Effects</b><span>The chain of up to eight after the model</span></a>
+      <a href="output.html"><b>Output</b><span>De-click to volume, and the dropout cover</span></a>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="foot">
+      <img src="img/mark.svg" alt="">
+      <div>
+        <p><b>Abliterator</b>, a <a href="https://vector-lab-tools.github.io">Vector Lab</a> tool. David M. Berry, University of Sussex. GPL-3.0-or-later.</p>
+        <p><a href="./">Home</a> · <a href="https://github.com/vector-lab-tools/abliterator">Repository</a> · <a href="https://vector-lab-tools.github.io/vector-abliteration-units/">Vector Abliteration Units</a></p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Screenshot, enlarged" hidden>
+  <button type="button" aria-label="Close">✕</button>
+  <img alt="">
+  <div class="cap"></div>
+</div>
+
+<audio id="player" preload="none"></audio>
+<script src="site.js?v=f8f63539"></script>
+<script src="chain.js?v=43fbe03f"></script>
+</body>
+</html>

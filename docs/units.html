@@ -16,7 +16,7 @@
   <meta name="theme-color" content="#f3f2ee" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#0e1015" media="(prefers-color-scheme: dark)">
   <script>(function(){try{var t=localStorage.getItem('abl-theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
-  <link rel="stylesheet" href="style.css?v=a7fbc234">
+  <link rel="stylesheet" href="style.css?v=c40f464e">
   <link rel="stylesheet" href="audio.css?v=75a41c3f">
 </head>
 <body>
@@ -40,6 +40,7 @@
         <a href="#inside">Inside the model</a>
         <a href="#units">The units</a>
         <a href="#scope">Scope</a>
+        <a href="#steer">Steer</a>
         <a href="faq.html">FAQ</a>
         <span class="nav-sep" aria-hidden="true"></span>
         <a class="ext" href="https://github.com/vector-lab-tools/abliterator">GitHub</a>
@@ -117,6 +118,24 @@
     </figure>
   </section>
 
+  <!-- 05 -->
+  <section class="section wrap reveal" id="steer">
+    <span class="num">05</span>
+    <h2>Steer: a dose along a direction</h2>
+    <div class="split">
+      <div>
+        <p>Steer is the first card on the Model layers row and is not a VAU unit: it is Abliterator's own, fixed at layer 6. A direction is made from pairs of prompts that differ in one quality, “bright airy ambient pad, high shimmering tones, no drums” against the same piece asked for dark, low and muffled. The engine has the model write a run of frames for each prompt from a fixed seed, averages the stream at every layer over those frames, and takes the difference between the two lists' means. The same difference-of-means method has been used to steer language models and, offline, MusicGen (Facchiano et al. 2025); here it is played live.</p>
+        <p>Steer adds the direction to the stream after block 6, scaled by the dose and by the stream's own size at that moment: h + ‖h‖ · dose · d. A dose of 0.1 adds a tenth of the stream's size, whatever the music is doing. The doses are read at every step, so a move is heard from the next frame. The two shipped directions, Brightness and Pulse, are kept in <code>backend/config/contrasts/</code> as editable Markdown, and a new pair list makes a new direction.</p>
+      </div>
+      <div>
+        <figure class="clip blue tilt2" style="--w:300px;--mw:400px">
+          <a class="shot" href="img/c-steer.webp" data-cap="Steer, fixed at layer 6: an XY pad with Brightness across and Pulse up, the dose knobs, Centre and Full range, and the doses heard over the last ten seconds, modulation included."><img src="img/c-steer.webp" width="397" height="260" loading="lazy" alt="The Steer card: an XY pad with a gold dot, Brightness and Pulse knobs, a Centre button, a Full range checkbox, and a small plot of the doses over time."></a>
+          <figcaption><span class="tag">Steer</span>Two directions on a pad, at layer 6.</figcaption>
+        </figure>
+      </div>
+    </div>
+    <p>On the Warm drone the brightness dose takes the spectral centroid from about 140 Hz at 0 to 1.8 kHz at 0.2 and 2 kHz at 0.4. Below 0 the centroid hardly moves and the level rises instead, by 15 dB at −0.2. Pulse's measured range is narrower, 0 to 0.05. The knobs keep to the ranges where the sound held when they were measured; <b>Full range</b> lets a dose go where it breaks. The plot under the knobs shows the doses heard over the last ten seconds, modulation included, and a scope in Time reads the stream along each direction on the dose's own scale. The ‹ folds the card to a narrow strip, and switched off it folds the same way.</p>
+
   <section class="section wrap reveal">
     <div class="links">
       <a href="./"><b>Abliterator</b><span>The instrument, its sounds and how it works</span></a>
@@ -146,8 +165,8 @@
 </div>
 
 <audio id="player" preload="none"></audio>
-<script src="units-media.js?v=94794d8a"></script>
-<script src="units.js?v=52d63497"></script>
-<script src="site.js?v=abdc9fe1"></script>
+<script src="units-media.js?v=f9351d93"></script>
+<script src="units.js?v=ffc7900a"></script>
+<script src="site.js?v=f8f63539"></script>
 </body>
 </html>

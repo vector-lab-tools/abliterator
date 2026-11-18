@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Effects · Abliterator</title>
+  <meta name="description" content="The effect chain in Abliterator: up to eight effects on the sound the model has written, what each does, and how the chain changes without a click.">
+  <meta property="og:title" content="Effects · Abliterator">
+  <meta property="og:description" content="The effect chain in Abliterator: up to eight effects on the sound the model has written, what each does, and how the chain changes without a click.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://vector-lab-tools.github.io/abliterator/img/share.png">
+  <meta property="og:image:width" content="1280">
+  <meta property="og:image:height" content="640">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="img/mark.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#f3f2ee" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0e1015" media="(prefers-color-scheme: dark)">
+  <script>(function(){try{var t=localStorage.getItem('abl-theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+  <link rel="stylesheet" href="style.css?v=c40f464e">
+  <link rel="stylesheet" href="audio.css?v=75a41c3f">
+</head>
+<body>
+<!-- Written by hand. Copyright (C) 2026 David M. Berry. SPDX-License-Identifier: GPL-3.0-or-later -->
+<a class="skip" href="#main">Skip to the content</a>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="./" aria-label="Abliterator, home">
+      <img src="img/mark.svg" alt="">
+      <span class="brand-block">
+        <span class="brand-name">Abliterator</span>
+        <span class="brand-tagline">Effects</span>
+      </span>
+    </a>
+    <div class="head-tools">
+      <nav class="site-nav" aria-label="Sections">
+        <a href="./">Home</a>
+        <a href="./#chain">Signal chain</a>
+        <a href="#chain">The chain</a>
+        <a href="#each">Each effect</a>
+        <a href="#eq8">EQ 8</a>
+        <a href="#tape">Tape</a>
+        <a href="#pan">Pan</a>
+        <a href="faq.html">FAQ</a>
+        <span class="nav-sep" aria-hidden="true"></span>
+        <a class="ext" href="https://github.com/vector-lab-tools/abliterator">GitHub</a>
+        <a class="ext vau" href="https://vector-lab-tools.github.io/vector-abliteration-units/">VAU ↗</a>
+      </nav>
+      <button class="theme-toggle" type="button" aria-label="Switch between light and dark" title="Switch between light and dark">
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<section class="hero hero-short">
+  <canvas class="hero-scope" id="hero-scope" aria-hidden="true"></canvas>
+  <div class="wrap hero-inner">
+    <span class="kicker">Abliterator · signal chain · effects</span>
+    <h1><span class="glitch" id="title" data-text="Effects">Effects</span></h1>
+    <p class="tagline">The effect chain is audio processing on the sound the model has already written, up to eight effects in any order, each written for this instrument so that it gives the same output whatever block size it is fed.</p>
+  </div>
+</section>
+
+<main class="content" id="main">
+  <!-- 01 -->
+  <section class="section wrap reveal" id="chain">
+    <span class="num">01</span>
+    <h2>The chain</h2>
+    <p class="lede">The effects act on audio the model has already written; the Model layers act inside the model. The chain sits in the output section: the model's sound, slowed first if Speed is set, goes through De-click and auto level, then the chain, then Dynamics, Width, the low-pass, the limiter and the volume. <b>Bypass</b> on the Output panel skips the output section, the chain included. Session's tracks have effects of their own on each channel strip (gain, high-pass, low-pass, delay and reverb), apart from this chain.</p>
+    <figure>
+      <a class="shot" href="img/chain/fx-row-b.webp" data-cap="A chain of five between IN and OUT while it plays: Tape at 7.5 inches a second with its drive meter, EQ 8 with a low cut at 80 Hz and its curve, Crush, Pan with its dot left of centre, and De-click with its count; the dashed + adds a sixth."><img src="img/chain/fx-row-b.webp" width="1428" height="266" loading="lazy" alt="The Effects panel between IN and OUT: cards for Tape, EQ 8, Crush, Pan and De-click, each with its knobs, and a dashed plus at the end."><span class="zoom">Zoom</span></a>
+      <figcaption><b>The chain.</b> Up to eight, in one row from IN to OUT.</figcaption>
+    </figure>
+    <p>The row scrolls sideways once it is wider than the panel. A + in the gap between two effects adds one there and the dashed + adds one at the end; the ✕ removes one, and an effect's name drags it to another place. Each effect has a light that switches it off, and the light in the panel's header bypasses the whole chain. Every knob takes modulation, and a saved sound keeps the chain and replays it exactly.</p>
+    <p>A change to the chain does not click. Adding, removing, moving or retyping an effect dips the whole output by about 16 dB, makes the change at the bottom of the dip and brings the level back over 150 ms. Switching an effect or the whole chain on or off crossfades it over 20 ms, and a delay or reverb whose delay time or size changes fades its wet signal out and back in. The effects are written for this instrument in numpy and scipy, and each gives the same output whatever block size it is fed: 512 samples live, a 40 ms frame offline, a whole file in a test.</p>
+  </section>
+
+  <!-- 02 -->
+  <section class="section wrap reveal" id="each">
+    <span class="num">02</span>
+    <h2>Each effect</h2>
+    <div class="fxcards">
+      <figure><a class="shot" href="img/chain/fx-reverb.webp" data-cap="Reverb: Decay, Pre-delay, Damp and Mix."><img src="img/chain/fx-reverb.webp" width="240" height="215" loading="lazy" alt="The Reverb card with knobs for Decay, Pre-delay, Damp and Mix."></a><figcaption>Reverb</figcaption></figure>
+      <figure><a class="shot" href="img/chain/fx-plate.webp" data-cap="Plate in its 1970s colour: Decay, Size, Damp, Pre-delay, Mod and Mix, with the Colour switch."><img src="img/chain/fx-plate.webp" width="240" height="215" loading="lazy" alt="The Plate card with six knobs and a Colour switch set to 1970s."></a><figcaption>Plate</figcaption></figure>
+      <figure><a class="shot" href="img/chain/fx-hall.webp" data-cap="Hall in its 1980s colour: Decay, Pre-delay, Damp, Mod and Mix."><img src="img/chain/fx-hall.webp" width="240" height="215" loading="lazy" alt="The Hall card with five knobs and a Colour switch set to 1980s."></a><figcaption>Hall</figcaption></figure>
+      <figure><a class="shot" href="img/chain/fx-delay.webp" data-cap="Delay: Time, Feedback, Damp and Mix, with Ping-pong on."><img src="img/chain/fx-delay.webp" width="240" height="215" loading="lazy" alt="The Delay card with knobs for Time 375 ms, Feedback, Damp and Mix and a Ping-pong switch."></a><figcaption>Delay</figcaption></figure>
+      <figure><a class="shot" href="img/chain/fx-chorus.webp" data-cap="Chorus: Rate, Depth and Mix."><img src="img/chain/fx-chorus.webp" width="240" height="215" loading="lazy" alt="The Chorus card with knobs for Rate, Depth and Mix."></a><figcaption>Chorus</figcaption></figure>
+      <figure><a class="shot" href="img/chain/fx-drive.webp" data-cap="Drive with its meter of how hard the curve is driven, and the CLIP mark."><img src="img/chain/fx-drive.webp" width="154" height="215" loading="lazy" alt="The Drive card with a small row of drive cells and a CLIP mark above knobs for Drive, Tone and Mix."></a><figcaption>Drive</figcaption></figure>
+      <figure><a class="shot" href="img/chain/fx-tape.webp" data-cap="Tape at 7.5 inches a second, with its drive meter: Drive, Wow, Flutter, Hiss and Mix."><img src="img/chain/fx-tape.webp" width="240" height="231" loading="lazy" alt="The Tape card with a drive meter, five knobs and a Speed switch reading 3.75, 7.5, 15 and 30."></a><figcaption>Tape</figcaption></figure>
+      <figure><a class="shot" href="img/chain/fx-eq.webp" data-cap="EQ: Low, Mid with its frequency, and High, with the response curve."><img src="img/chain/fx-eq.webp" width="240" height="215" loading="lazy" alt="The EQ card with an orange response curve above knobs for Low, Mid, Mid freq and High."></a><figcaption>EQ</figcaption></figure>
+      <figure><a class="shot" href="img/chain/fx-eq8.webp" data-cap="EQ 8 with a low cut at 80 Hz, a dip at 400 Hz and a lift at 2.5 kHz, cuts at 24 dB an octave."><img src="img/chain/fx-eq8.webp" width="240" height="231" loading="lazy" alt="The EQ 8 card with a response curve, eight knobs and a Slope switch."></a><figcaption>EQ 8</figcaption></figure>
+      <figure><a class="shot" href="img/chain/fx-filter.webp" data-cap="Filter as a low-pass at 4 kHz with some resonance, and its curve."><img src="img/chain/fx-filter.webp" width="240" height="215" loading="lazy" alt="The Filter card with a curve that rises to a peak and falls, Cutoff and Resonance knobs, and an LP, HP, BP switch."></a><figcaption>Filter</figcaption></figure>
+      <figure><a class="shot" href="img/chain/fx-crush.webp" data-cap="Crush: Bits, Rate ÷ and Mix."><img src="img/chain/fx-crush.webp" width="240" height="231" loading="lazy" alt="The Crush card with knobs for Bits 8, Rate ÷ 2 and Mix."></a><figcaption>Crush</figcaption></figure>
+      <figure><a class="shot" href="img/chain/fx-pan.webp" data-cap="Pan auto-panning, with a dot for where the sound sits."><img src="img/chain/fx-pan.webp" width="154" height="231" loading="lazy" alt="The Pan card with a small L to R track and a dot, and knobs for Pan, Auto rate and Auto depth."></a><figcaption>Pan</figcaption></figure>
+      <figure><a class="shot" href="img/chain/fx-declick.webp" data-cap="De-click with its count of bursts redrawn."><img src="img/chain/fx-declick.webp" width="154" height="231" loading="lazy" alt="The De-click card with a count reading 0 and knobs for Sensitivity and Longest."></a><figcaption>De-click</figcaption></figure>
+    </div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Effect</th><th>What it does</th><th>Controls</th></tr></thead>
+      <tbody>
+        <tr><td>Reverb</td><td>A feedback delay network of eight lines with a Householder mix and four allpass diffusers before it, after Signalsmith's “Let's write a reverb”.</td><td>Decay (0.3 to 20 s), Damp, Pre-delay (up to 200 ms), Mix</td></tr>
+        <tr><td>Plate</td><td>Dattorro's 1997 plate tank, with modulated allpasses read by cubic interpolation. Colour: 2020s is clean; 1980s is a darker tank with noisier modulation; 1970s runs the tank at half rate behind a 10 kHz band limit.</td><td>Colour, Decay (0.2 to 20 s), Size, Damp, Pre-delay, Mod, Mix</td></tr>
+        <tr><td>Hall</td><td>The reverb's network with longer lines, each line's delay wandering along its own smooth random path, with the same three colours.</td><td>Colour, Decay (0.3 to 20 s), Damp, Pre-delay, Mod, Mix</td></tr>
+        <tr><td>Delay</td><td>A delay line with a low-pass in its feedback loop; Ping-pong throws the repeats from side to side.</td><td>Time (20 to 1,500 ms), Feedback (up to 0.95), Damp, Ping-pong, Mix</td></tr>
+        <tr><td>Chorus</td><td>Two modulated delays read in quadrature.</td><td>Rate (0.05 to 5 Hz), Depth (0.5 to 12 ms), Mix</td></tr>
+        <tr><td>Drive</td><td>Gain-matched tanh saturation with a tone filter. A small meter shows how hard the curve is driven, with a CLIP mark.</td><td>Drive (1 to 20×), Tone (1 to 20 kHz), Mix</td></tr>
+        <tr><td>Tape</td><td>Saturation through a slightly lopsided curve, gain-matched at the model's usual level (−26 dBFS); wow and flutter from a delay line whose length wobbles; a head bump and treble roll-off set by the tape speed; hiss. A meter shows how hard the tape is driven.</td><td>Drive, Wow, Flutter, Hiss, Mix, Speed (3.75, 7.5, 15 or 30 inches a second)</td></tr>
+        <tr><td>EQ</td><td>A low shelf at 200 Hz, a bell at a frequency you set, and a high shelf at 5 kHz, as RBJ biquads. It draws its response curve.</td><td>Low, Mid, High (±12 dB), Mid freq (200 Hz to 5 kHz)</td></tr>
+        <tr><td>EQ 8</td><td>A Butterworth low cut, six bells at 60 Hz, 150 Hz, 400 Hz, 1 kHz, 2.5 kHz and 6 kHz, and a Butterworth high cut, the cuts 12 or 24 dB an octave. It draws its response curve.</td><td>Low cut (20 Hz to 2 kHz), six bands (±15 dB), High cut (1 to 20 kHz), Slope</td></tr>
+        <tr><td>Filter</td><td>A low-pass, high-pass or band-pass RBJ biquad. It draws its response curve.</td><td>Mode, Cutoff (40 Hz to 18 kHz), Resonance (Q 0.5 to 12)</td></tr>
+        <tr><td>Crush</td><td>Fewer bits and a lower sample rate.</td><td>Bits (2 to 16), Rate ÷ (1 to 32), Mix</td></tr>
+        <tr><td>Pan</td><td>An equal-power balance, with an auto-pan whose phase carries on from block to block. A dot shows where the sound sits.</td><td>Pan, Auto rate (0.02 to 8 Hz), Auto depth</td></tr>
+        <tr><td>De-click</td><td>The Output section's de-click as an effect, so it can sit where you want it, before a reverb for example. It counts the bursts it has redrawn.</td><td>Sensitivity, Longest (0.2 to 4 ms)</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <!-- 03 -->
+  <section class="section wrap reveal" id="eq8">
+    <span class="num">03</span>
+    <h2>EQ 8</h2>
+    <p>EQ 8 is a low cut, six bells and a high cut. Each bell is about 1.2 octaves wide (Q 1.2) at a fixed centre; each cut is Butterworth, two sections at 24 dB an octave or one at 12. The curve below is computed with the instrument's own filter design, so it is the curve the card draws.</p>
+    <div class="viz" id="viz-eq8" role="group" aria-label="Interactive figure: EQ 8's response with sliders for the cuts and the six bands">
+      <svg viewBox="0 0 960 270" aria-hidden="true"></svg>
+      <div class="bar"><span class="lab">EQ 8</span>
+        <label>low cut <input type="range" min="1.301" max="3.301" step="0.01" value="1.903" data-k="lowcut"><output>80Hz</output></label>
+        <label>60 <input type="range" min="-15" max="15" step="0.5" value="0" data-k="b0"><output>0.0</output></label>
+        <label>150 <input type="range" min="-15" max="15" step="0.5" value="2" data-k="b1"><output>+2.0</output></label>
+        <label>400 <input type="range" min="-15" max="15" step="0.5" value="-3" data-k="b2"><output>-3.0</output></label>
+        <label>1k <input type="range" min="-15" max="15" step="0.5" value="0" data-k="b3"><output>0.0</output></label>
+        <label>2.5k <input type="range" min="-15" max="15" step="0.5" value="2.5" data-k="b4"><output>+2.5</output></label>
+        <label>6k <input type="range" min="-15" max="15" step="0.5" value="-1.5" data-k="b5"><output>-1.5</output></label>
+        <label>high cut <input type="range" min="3" max="4.301" step="0.01" value="4.146" data-k="highcut"><output>14kHz</output></label>
+        <button type="button" data-slope="0" aria-pressed="false">12 dB</button>
+        <button type="button" data-slope="1" aria-pressed="true">24 dB</button></div>
+      <div class="readout" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- 04 -->
+  <section class="section wrap reveal" id="tape">
+    <span class="num">04</span>
+    <h2>Tape</h2>
+    <p>Tape is a tape machine's colour written for this instrument. The saturation is a tanh curve tilted a little to one side, which adds the even harmonics, and it is gain-matched at −26 dBFS, about the model's usual level, so Drive changes the colour more than the level; louder material is pressed down, as on tape. Wow and flutter come from a delay line whose length wobbles on two slow sines at unrelated rates and one near 7 Hz. Then comes the EQ of the tape speed, a head bump in the lows and a roll-off in the highs, and hiss read from a fixed table by sample position, so the hiss of a saved sound is the same each time it is played.</p>
+    <div class="viz" id="viz-tape" role="group" aria-label="Interactive figure: a sine through Tape's saturation, and the EQ of each tape speed">
+      <svg viewBox="0 0 960 270" aria-hidden="true"></svg>
+      <div class="bar"><span class="lab">Tape</span>
+        <label>drive <input type="range" min="0" max="1" step="0.01" value="0.6" data-k="drive"><output>0.60</output></label>
+        <label>level <input type="range" min="-40" max="-6" step="1" value="-26" data-k="level"><output>-26 dB</output></label>
+        <button type="button" data-ips="0" aria-pressed="false">3.75</button>
+        <button type="button" data-ips="1" aria-pressed="true">7.5</button>
+        <button type="button" data-ips="2" aria-pressed="false">15</button>
+        <button type="button" data-ips="3" aria-pressed="false">30</button></div>
+      <div class="readout" aria-live="polite"></div>
+    </div>
+    <p class="viz-cap"><b>Computed with Tape's own formulas.</b> On the left, a sine at the level set, before and after the curve; turn the level up past −26 dBFS and the peaks flatten. On the right, the EQ of the speed: the slower the tape, the larger and lower the bump and the earlier the roll-off.</p>
+  </section>
+
+  <!-- 05 -->
+  <section class="section wrap reveal" id="pan">
+    <span class="num">05</span>
+    <h2>Pan</h2>
+    <p>Pan is an equal-power balance: at the centre both sides pass at unity, and at either end one side is silent and the other 3 dB up, so the sound keeps its loudness as it moves. Auto rate and Auto depth swing the position on a sine whose phase is carried from sample to sample, and every move is smoothed over 10 ms. A mono sound passes as it is.</p>
+    <div class="viz" id="viz-pan" role="group" aria-label="Animated figure: the left and right gains against the pan position, with an auto-pan moving the sound">
+      <svg viewBox="0 0 960 270" aria-hidden="true"></svg>
+      <div class="bar"><span class="lab">Pan</span>
+        <label>pan <input type="range" min="-1" max="1" step="0.01" value="0" data-k="pos"><output>0.00</output></label>
+        <label>auto rate <input type="range" min="0.02" max="2" step="0.01" value="0.25" data-k="rate"><output>0.25 Hz</output></label>
+        <label>auto depth <input type="range" min="0" max="1" step="0.01" value="0.5" data-k="depth"><output>0.50</output></label></div>
+      <div class="readout" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <section class="section wrap reveal">
+    <div class="links">
+      <a href="./#chain"><b>Signal chain</b><span>The whole path, stage by stage</span></a>
+      <a href="engine.html"><b>Engine</b><span>The model, the sampler, frames and Speed</span></a>
+      <a href="units.html"><b>Model layers</b><span>Steer and the units inside the model</span></a>
+      <a href="output.html"><b>Output</b><span>De-click to volume, and the dropout cover</span></a>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="foot">
+      <img src="img/mark.svg" alt="">
+      <div>
+        <p><b>Abliterator</b>, a <a href="https://vector-lab-tools.github.io">Vector Lab</a> tool. David M. Berry, University of Sussex. GPL-3.0-or-later.</p>
+        <p><a href="./">Home</a> · <a href="https://github.com/vector-lab-tools/abliterator">Repository</a> · <a href="https://vector-lab-tools.github.io/vector-abliteration-units/">Vector Abliteration Units</a></p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Screenshot, enlarged" hidden>
+  <button type="button" aria-label="Close">✕</button>
+  <img alt="">
+  <div class="cap"></div>
+</div>
+
+<audio id="player" preload="none"></audio>
+<script src="site.js?v=f8f63539"></script>
+<script src="chain.js?v=43fbe03f"></script>
+</body>
+</html>

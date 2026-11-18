@@ -16,7 +16,7 @@
   <meta name="theme-color" content="#f3f2ee" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#0e1015" media="(prefers-color-scheme: dark)">
   <script>(function(){try{var t=localStorage.getItem('abl-theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
-  <link rel="stylesheet" href="style.css?v=a7fbc234">
+  <link rel="stylesheet" href="style.css?v=c40f464e">
   <link rel="stylesheet" href="audio.css?v=75a41c3f">
 </head>
 <body>
@@ -91,10 +91,10 @@
       <p>Not in this version. The model plays from a style prompt and a seed.</p>
     </div></details>
     <details><summary>Can I write my own prompts?</summary><div>
-      <p>Yes. Type a style in the box under the preset menu on the Engine panel and press Enter: the engine makes the prompt's tokens (about 90 ms) and plays it, or switches to it if the model is already playing. It is kept under <b>Your prompts</b> in the menu, in <code>data/prompts.json</code>, and ✕ removes it. The twenty-five presets are prompts, sampler settings and seeds in <code>backend/config/presets.md</code>, as an editable block; edit it and restart the server. The knobs' ranges were measured on the ambient presets, and a new style uses them until it has been swept in Tune.</p>
+      <p>Yes. Type a style in the Prompt box under the preset menu on the Engine panel and press Enter: the engine makes the prompt's tokens (about 90 ms) and plays it, or switches to it if the model is already playing. It is kept under <b>Your prompts</b> in the menu, in <code>data/prompts.json</code>, and ✕ removes it. The twenty-five presets are prompts, sampler settings and seeds in <code>backend/config/presets.md</code>, as an editable block; edit it and restart the server. The knobs' ranges were measured on the ambient presets, and a new style uses them until it has been swept in Tune.</p>
     </div></details>
     <details><summary>How do I modulate a knob?</summary><div>
-      <p>Drag a source's tile (an LFO, an envelope, a random source, or a macro from the Macros tab) onto the knob; a badge with the source's shape follows the pointer, and the knobs that can take it light up. With the source selected, each knob it can move shows its send: drag the knob up for more, down for less, and double-click to unlink. Esc turns the knobs back into their values. Steer doses, Guidance, Temperature, the low-pass, the volume, and every knob of a Model layers unit and of an effect can be modulated. An LFO's Amount scales every send from it at once.</p>
+      <p>Drag a source's tile (an LFO, an envelope, a random source, or a macro from the Macros tab) onto the knob; a badge with the source's shape follows the pointer, and the knobs that can take it light up. With the source selected, each knob it can move shows its send: drag the knob up for more, down for less, and double-click to unlink. Esc turns the knobs back into their values. Steer doses, Strength, Temperature, the low-pass, the volume, and every knob of a Model layers unit and of an effect can be modulated. An LFO's Amount scales every send from it at once.</p>
     </div></details>
     <details><summary>Why do some settings break the sound, and what are the ⚠ marks?</summary><div>
       <p>A model's controls do not stay musical across their whole range: a Steer dose of 0.4 overdrives the Warm drone, and Lookback at a mix of 0.5 silences it. Every control and unit setting was swept on several presets and measured, and each knob now keeps to the range where the sound held. A ⚠ on a unit's knob or placement marks a setting that broke the sound on at least one preset. <b>Full range</b> on the Steer card unlocks the doses; the Tune view (◎) lets you listen to every measured setting and set a knob's range by ear.</p>
@@ -114,7 +114,7 @@
 
     <h3>Sounds and files</h3>
     <details><summary>Can I get the same sound again?</summary><div>
-      <p>Yes. The same seed, preset, settings and moves give the same audio, sample for sample. Every saved sound keeps its recipe, and Freeze renders it again from the recipe at the length you choose.</p>
+      <p>Yes. The same seed, preset, settings and moves give the same audio, sample for sample. Every saved sound keeps its recipe, and the engine renders it again from the recipe, sample for sample.</p>
     </div></details>
     <details><summary>What format are sounds saved in, and where?</summary><div>
       <p>WAV, 48 kHz stereo, 32-bit float, in <code>data/snapshots/</code>: the sound as you heard it (after the effects and the output section) and the model's own output. Session exports a track or the mix as WAV to <code>data/exports/</code>.</p>
@@ -160,6 +160,6 @@
   </div>
 </footer>
 <audio id="player" preload="none"></audio>
-<script src="site.js?v=abdc9fe1"></script>
+<script src="site.js?v=f8f63539"></script>
 </body>
 </html>

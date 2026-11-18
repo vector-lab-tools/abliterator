@@ -381,3 +381,20 @@ h3 .meterbadge { font-size: 0.55em; vertical-align: 0.3em; }
 /* the credits, in small type */
 #credits ul { font-size: 0.78rem; line-height: 1.55; }
 #credits li { margin-bottom: 0.25rem; }
+/* the signal chain's stages, in order, each a link to its page */
+.stagecards { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.9rem; margin: 1.4rem 0 2rem; counter-reset: none; }
+.stagecard { position: relative; display: flex; flex-direction: column; gap: 0.3rem; padding: 0 0 0.8rem; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); color: var(--ink); text-decoration: none; overflow: hidden; transition: border-color .2s, transform .2s; }
+.stagecard:hover { border-color: var(--accent); transform: translateY(-2px); text-shadow: none; }
+.stagecard .sc-img { display: block; height: 96px; overflow: hidden; background: var(--fig-bg); border-bottom: 1px solid var(--line-soft); }
+.stagecard .sc-img img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center top; }
+.stagecard .sc-n { position: absolute; top: 6px; left: 8px; font-family: var(--mono); font-size: 0.62rem; color: #fbfcfe; background: rgba(0,0,0,.6); border-radius: 3px; padding: 1px 5px; }
+.stagecard b { padding: 0 0.8rem; font-family: var(--mono); font-size: 0.82rem; color: var(--accent); letter-spacing: 0.4px; }
+.stagecard .sc-t { padding: 0 0.8rem; font-size: 0.84rem; line-height: 1.45; color: var(--ink-dim); }
+@media (min-width: 900px) { .stagecard:not(:last-child)::after { content: "→"; position: absolute; right: -0.85rem; top: 40px; z-index: 1; font-family: var(--mono); font-size: 0.8rem; color: var(--ink-dim); } .stagecards { overflow: visible; } .stagecard { overflow: visible; } .stagecard .sc-img { border-radius: 8px 8px 0 0; } }
+/* the effect cards, close up */
+.fxcards { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 1rem; margin: 1.4rem 0 1.8rem; }
+.fxcards figure { margin: 0; }
+.fxcards .shot img { width: 100%; height: auto; }
+.fxcards figcaption { margin-top: 0.35rem; font-family: var(--mono); font-size: 0.7rem; letter-spacing: 1px; text-transform: uppercase; color: var(--ink-dim); }
+ol.steps { padding-left: 1.3rem; }
+ol.steps li { margin: 0.3rem 0; }

@@ -97,6 +97,18 @@ HOST_PRESETS = {
 }
 
 
+# What a unit does differently on this instrument, for its help box (beside VAU's own help)
+HOST_NOTES = {
+    "abliterate": "Strength runs to 6 here; VAU stops at 1.5. Up to 1 the direction is taken out, from 1 to 2 it is turned round, "
+                  "and past 2 the sound is pushed further to the far side. Taking a direction out pulls a sound toward the middle of "
+                  "that direction, so a sound far along it changes most: on Deep techno, Pulse at strength 1 took the centroid from 69 Hz "
+                  "to 902 Hz, while on the Warm drone, which sits a little to the dark side of Brightness, Brightness at 1 raised it from "
+                  "138 to 191 Hz. Almost all of the writing along Brightness and Pulse is done in block 0 and blocks 9 to 11, so on a "
+                  "single block in between the unit changes little; it starts on all blocks, flat, with Keep size off. It runs in MLX, on "
+                  "the GPU, so all twelve blocks cost no more than none.",
+}
+
+
 CALIBRATION = ROOT / "data" / "calibration" / "mrt2_small.json"
 _cal: Dict[str, Any] = {"mtime": None, "controls": {}}
 
@@ -214,7 +226,7 @@ def catalogue() -> List[Dict[str, Any]]:
         if u.m["category"] == "meter":
             continue                                            # meters need a host view this engine has not got yet
         out.append({"id": u.id, "title": title(u), "short": short(u), "vau_title": vau_name(u), "renamed": u.id in NAMES, "what": u.m["what"], "category": u.m["category"],
-                    "site": u.m["site"], **space_of(u), "params": params(u), **placement(u), "presets": HOST_PRESETS.get(u.id, []), "example": u.m.get("example"),
+                    "site": u.m["site"], **space_of(u), "params": params(u), **placement(u), "presets": HOST_PRESETS.get(u.id, []), "host_note": HOST_NOTES.get(u.id), "example": u.m.get("example"),
                     "available": not missing, "missing": missing, "latency": LATENCY if not missing else None,
                     "help": u.m.get("help"), "inspired_by": u.m.get("inspired_by"), "version": u.m.get("version"), "author": u.m.get("author"),
                     "file": u.path.name if getattr(u, "path", None) else None, "explain": _has_explainer(u)})

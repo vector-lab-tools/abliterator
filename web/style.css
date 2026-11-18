@@ -1027,3 +1027,8 @@ html, body { overscroll-behavior-x: none; }
 #outknobs .knob .kv { font-size: 8.5px; margin-top: -3px; }
 #outknobs .knob .kl { font-size: 7.5px; color: #8a8f9b; }
 #pn-out .outtg .tg { white-space: nowrap; min-width: 0; overflow: hidden; text-overflow: ellipsis; }   /* De-click on one line */
+
+/* the ? at an effect card's foot, right, as on the unit cards: its help box */
+.fxs { position: relative; }
+.fxs .qhelp { position: absolute; right: 6px; bottom: 6px; width: 17px; height: 17px; padding: 0; border-radius: 50%; border: 1px solid #3a3f4a; background: #1a1d23; color: #9aa0ac; font: 700 10px/1 var(--mono); cursor: pointer; }
+.fxs .qhelp:hover, .fxs .qhelp:focus-visible { color: #14161b; background: var(--gold); border-color: var(--gold); outline: none; }

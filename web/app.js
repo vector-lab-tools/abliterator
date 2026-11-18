@@ -892,9 +892,10 @@ function drawFx() {
     if (!full) row.appendChild(gapAdd(i, i === 0 ? "Add an effect before effect 1" : `Add an effect between effects ${i} and ${i + 1}`, fxMenu));
     const el = h(`<div class="fxs ${sl.on ? "" : "off"} ${FX_SPACE.has(sl.type) ? "space" : "tone"} ${FX_NARROW.has(sl.type) ? "narrow" : ""} ${FX_ZIG.has(sl.type) ? "zig" : ""}"><div class="fxh"><button class="pw ${sl.on ? "on" : ""}" title="On or bypassed"></button>
       <b class="fxn" title="Drag to move it in the chain">${esc(T.label)}</b><span class="fxi">${i + 1}</span><button class="x" title="Remove">✕</button></div>
-      ${FX_GRAPH.has(sl.type) ? `<div class="fxg"><svg viewBox="0 0 ${GW} ${GH}" preserveAspectRatio="none" aria-hidden="true"></svg></div>` : ""}<div class="fxk"></div><div class="fxb"></div></div>`);
+      ${FX_GRAPH.has(sl.type) ? `<div class="fxg"><svg viewBox="0 0 ${GW} ${GH}" preserveAspectRatio="none" aria-hidden="true"></svg></div>` : ""}<div class="fxk"></div><div class="fxb"></div><button class="qhelp" type="button" aria-label="Help: ${esc(T.label)}" title="What ${esc(T.label)} does: how it works and its controls">?</button></div>`);
     el.querySelector(".pw").addEventListener("click", () => { fxSet(i, { on: !sl.on }); drawFx(); });
     el.querySelector(".x").addEventListener("click", () => { PFX.slots.splice(i, 1); PFX.touched = Date.now(); flushFx(); drawFx(); });
+    el.querySelector(".qhelp").addEventListener("click", (e) => { e.stopPropagation(); fxHelp(sl.type, e.currentTarget); });
     sortable(el, el.querySelector(".fxn"), row, i, (from, to) => { moved(PFX.slots, from, to); PFX.touched = Date.now(); flushFx(); drawFx(); });
     const svg = el.querySelector(".fxg svg");
     const params = () => { const o = {}; for (const q of T.params) o[q.key] = +(PFX.slots[i].params[q.key] ?? q.default); return o; };
@@ -1593,6 +1594,10 @@ async function unitHelp(u, opener) {
   body.innerHTML = `<p class="uh-what">${esc(u.what)}.</p>
     ${u.explain ? `<div class="uh-fig"><p class="uh-dim">Drawing the figure…</p></div>` : ""}
     ${u.group_title ? `<p class="uh-where"><b>${esc(u.group_title)}.</b> ${u.note ? esc(u.note) : ""}</p>` : ""}
+    ${u.host_note ? `<h4>On this instrument</h4><p class="uh-help">${esc(u.host_note)}</p>` : ""}
+    ${u.presets?.length ? `<h4>Presets (▾ by its name)</h4><ul class="uh-presets">${u.presets.map((q) => `<li><b>${esc(q.name)}</b>: ${esc(q.tip || "")}</li>`).join("")}</ul><p class="uh-dim">Each keeps the direction you chose.</p>` : ""}
+    <h4>Snap-back (↺ by the ✕)</h4>
+    <p class="uh-help">On by default. The model writes each frame by reading back about 20 seconds of the frames it made, so a unit's sound would linger after it goes off. With snap-back, the model's state is kept when you switch the unit on; when you switch it off or remove it, the model returns to that state, crossfaded over one 40 ms frame, and goes on as if the unit had never played. Off: its sound fades over up to 20 seconds. A saved sound replays it as heard.</p>
     <h4>Parameters</h4>
     ${rows ? `<table class="uh-params"><thead><tr><th>Parameter</th><th>Range</th><th>What it does</th></tr></thead><tbody>${rows}</tbody></table>` : `<p class="uh-dim">None.</p>`}
     ${u.example ? `<p class="uh-ex">Example line: <code>${esc(u.example)}</code></p>` : ""}
@@ -1613,6 +1618,59 @@ async function unitHelp(u, opener) {
     if (!box.hidden && window.VAUExplain && VAUExplain.has(u.id)) helpFig = VAUExplain.mount(slot, u.id, { title: u.title, examples: false });
     else slot.remove();
   } catch (e) { slot.innerHTML = `<p class="uh-dim">The figure did not load (${esc(e.message)}).</p>`; }
+}
+// What each effect does, for its help box (?): how it works, each control, and where the Effects page says more
+const FX_HELP = {
+  reverb: { at: "each", how: "A feedback delay network after Signalsmith's “Let's write a reverb”. The sound is pre-delayed, smeared by four allpass diffusers, then fed into eight delay lines, about 35 to 80 ms long, whose outputs are mixed by a Householder matrix and fed back, each through a low-pass. Each line falls 60 dB over the Decay time. Left and right are taken from alternate lines, so the tail is wide.",
+    p: { size: "how long the tail takes to fall 60 dB", damp: "how dark the tail grows: the low-pass in each line, from 20 kHz at 0 to 1.5 kHz at 1", predelay: "a gap before the tail begins", mix: "the tail against the dry sound" } },
+  plate: { at: "each", how: "Dattorro's 1997 plate tank: two halves, each a modulated allpass, a delay, damping and another allpass, each feeding the other, read out at several taps. Its allpasses are modulated and read with cubic interpolation, so the tail does not ring. Colour sets the era: 2020s is clean; 1980s is a darker tank with noisier modulation; 1970s runs the tank at half rate behind a 10 kHz band limit.",
+    p: { colour: "2020s, 1980s or 1970s, as above", decay: "how long the tail lasts", size: "the tank's lengths and taps, scaled: a smaller or larger plate", damp: "how dark the tail grows", predelay: "a gap before the tail begins", mod: "how far the modulated allpasses wander", mix: "the tail against the dry sound" } },
+  hall: { at: "each", how: "The reverb's network with longer lines, each line's delay wandering along its own smooth random path: a new target every so often, joined by a raised-cosine curve, drawn from the sample position, so it is the same at any block size. It has the plate's three colours.",
+    p: { colour: "2020s, 1980s or 1970s: clean, darker with noisier movement, or at half rate behind a 10 kHz band limit", size: "how long the tail takes to fall 60 dB", damp: "how dark the tail grows", predelay: "a gap before the tail begins", mod: "how far each line's delay wanders", mix: "the tail against the dry sound" } },
+  delay: { at: "each", how: "A delay line with a low-pass in its feedback loop, so each repeat is darker than the one before. With Ping-pong the input enters on the left and the repeats cross from side to side.",
+    p: { time: "the time between repeats", feedback: "how much of each repeat comes round again", damp: "the low-pass in the loop, from 20 kHz at 0 to 1.5 kHz at 1", pingpong: "repeats thrown from side to side", mix: "the repeats against the dry sound; at full Mix the dry sound is at half" } },
+  chorus: { at: "each", how: "Two copies of the sound delayed by about 12 ms, the delay swept by a sine, the right a quarter cycle behind the left, so the copies drift against the dry sound and widen it.",
+    p: { rate: "how fast the delay swings", depth: "how far the delay swings", mix: "the copies against the dry sound" } },
+  drive: { at: "each", how: "tanh saturation, gain-matched so that Drive changes the colour more than the level, then a one-pole low-pass. A small meter shows how hard the curve is driven, with a CLIP mark.",
+    p: { amount: "how hard the sound is pushed into the curve", tone: "the low-pass after it", mix: "the driven sound against the dry" } },
+  tape: { at: "tape", how: "A tape machine's colour. Saturation through a slightly lopsided tanh (the tilt adds even harmonics), gain-matched at −26 dBFS, about the model's usual level, so Drive changes the colour more than the level and louder passages are compressed, as on tape. Wow and flutter come from a delay line whose length wobbles. The tape speed sets a head bump in the lows and a roll-off in the highs; hiss is read from a fixed table by sample position. A meter shows how hard the tape is driven.",
+    p: { drive: "how hard the tape is driven, 1 to 16 times into the curve", wow: "slow pitch wobble, two slow sines at unrelated rates (about ±2% at 1)", flutter: "faster wobble near 7 Hz (about ±1.3% at 1)", noise: "tape hiss, from −84 to −50 dBFS", mix: "the tape against the dry sound, delayed to match so they do not comb", speed: "3.75, 7.5, 15 or 30 inches a second: the slower, the larger and lower the head bump and the earlier the treble falls" } },
+  eq: { at: "each", how: "Three RBJ biquads: a low shelf at 200 Hz, a bell at the frequency you set, and a high shelf at 5 kHz. It draws its response curve.",
+    p: { low: "the shelf below 200 Hz, cut or boost", mid: "the bell, cut or boost", freq: "the bell's centre", high: "the shelf above 5 kHz, cut or boost" } },
+  eq8: { at: "eq8", how: "A Butterworth low cut, six bells at fixed centres (60 Hz, 150 Hz, 400 Hz, 1 kHz, 2.5 kHz and 6 kHz, each about 1.2 octaves wide) and a Butterworth high cut. It draws its response curve.",
+    p: { lowcut: "everything below this falls away", b60: "the bell at 60 Hz", b150: "the bell at 150 Hz", b400: "the bell at 400 Hz", b1k: "the bell at 1 kHz", b2k5: "the bell at 2.5 kHz", b6k: "the bell at 6 kHz", highcut: "everything above this falls away", slope: "how steep the cuts are, 12 or 24 dB an octave" } },
+  filter: { at: "each", how: "One RBJ biquad, low-pass, high-pass or band-pass. It draws its response curve.",
+    p: { mode: "low-pass, high-pass or band-pass", cutoff: "where it acts", res: "how sharp the peak at the cutoff is (Q)" } },
+  crush: { at: "each", how: "A bit crusher. Each sample is held for a number of samples, counted from the start of the sound, which lowers the sample rate and folds high frequencies back down, then rounded to fewer bits.",
+    p: { bits: "how many bits each sample keeps", hold: "how many samples each one is held for", mix: "the crushed sound against the dry" } },
+  abliterated: { at: "abliterated", how: "Heavy distortion written for this instrument. Steer sets where it bites: a resonant boost of 12 dB before the clipping, after a low cut at 90 Hz that keeps the lows tight. Crunch drives two tanh stages, each tilted to one side and the second the other way, with a high-pass at 140 Hz between them. Edge blends in a sine wavefolder. Complicate adds an octave up, then a ring modulator. Tone is a two-pole low-pass standing in for a speaker cabinet. A make-up gain follows the input's power against the output's over 300 ms, so the controls change the character more than the level.",
+    p: { crunch: "how hard the two stages are driven, from about 2× to 300× (+50 dB) in all", edge: "the wavefolder, folding the clipped wave back on itself up to seven times: it rings like metal", steer: "where the distortion bites: the boost before it", complicate: "over its first half an octave up (the wave rectified), over its second a ring modulator at 1.5 times Steer, whose sum and difference tones clang", tone: "the cabinet low-pass", level: "a trim after the make-up gain", mix: "the distortion against the dry sound: parallel distortion" } },
+  pan: { at: "pan", how: "An equal-power balance: at the centre both sides pass at unity, at either end one side is silent and the other 3 dB up, so the sound keeps its loudness as it moves. Auto rate and depth swing it on a sine whose phase carries on from block to block. A mono sound passes as it is.",
+    p: { pos: "where the sound sits, left (−1) to right (+1)", rate: "how fast the auto-pan swings", depth: "how far it swings" } },
+  declick: { at: "each", how: "The Output section's De-click as an effect, so it can sit where you want it, before a reverb for example. It finds the few-sample bursts a unit pushed hard can make the model write and redraws each as a line between the good samples either side, 1.3 ms late. It counts the bursts it has redrawn.",
+    p: { sens: "how readily it acts: at 0 a burst must stand 12 times above the local level, at 0.5 six times (as Output's), at 1 three times", longest: "the longest burst it redraws" } },
+};
+function fxRange(q) {
+  if (q.scale && q.scale.startsWith("choice:")) return q.scale.slice(7).split(",").join(", ");
+  if (q.scale === "toggle") return "off or on";
+  return `${numX(q.min)} to ${numX(q.max)}${q.unit ? " " + esc(q.unit) : ""}`;
+}
+function fxHelp(type, opener) {
+  const T = PFX.types[type], H = FX_HELP[type] || {}, box = $("#unithelp"), body = box.querySelector(".uhbody");
+  if (!T) return;
+  box.querySelector(".uht").innerHTML = `<b>${esc(T.label)}</b><span>an effect</span>`;
+  const dflt = (q) => (q.scale && q.scale.startsWith("choice:") ? q.scale.slice(7).split(",")[Math.round(q.default)] : q.scale === "toggle" ? (q.default ? "on" : "off") : `${numX(q.default)}${q.unit ? " " + esc(q.unit) : ""}`);
+  const rows = T.params.map((q) => `<tr><td><b>${esc(q.label)}</b> <code>${esc(q.key)}</code></td><td>${fxRange(q)}<br><span class="uh-dim">default ${dflt(q)}</span></td><td>${esc(H.p?.[q.key] || "")}</td></tr>`).join("");
+  body.innerHTML = `<p class="uh-what">${esc((FX_WHAT[type] || "").replace(/^./, (c) => c.toUpperCase()))}.</p>
+    ${H.how ? `<h4>How it works</h4><p class="uh-help">${esc(H.how)}</p>` : ""}
+    <h4>Parameters</h4>
+    <table class="uh-params"><thead><tr><th>Parameter</th><th>Range</th><th>What it does</th></tr></thead><tbody>${rows}</tbody></table>
+    <p class="uh-help">Every effect here is written for this instrument in numpy and scipy, and gives the same output whatever block size the sound card asks for, so a saved sound renders as it was heard. Switching it on or off crossfades it; the light on its card bypasses it, ✕ removes it, and its name drags it to another place. Each knob takes modulation.</p>
+    <p class="uh-links"><a href="${SITE}effects.html#${H.at || "each"}" target="_blank" rel="noopener">More on the Effects page ↗</a></p>`;
+  box.hidden = false;
+  box._opener = opener;
+  box.querySelector(".uhclose").focus();
+  if (helpFig) { try { helpFig.destroy(); } catch (e) { /* gone */ } helpFig = null; }
 }
 function closeHelp() {
   const box = $("#unithelp");

@@ -452,3 +452,21 @@ def test_tape_same_at_any_block_size():
         e.set({**{q[0]: q[4] for q in fx.TYPES["tape"]["params"]}, "noise": 0.5, "wow": 0.8, "flutter": 0.6})
         outs.append(np.concatenate([e.process(x[i:i + block]) for i in range(0, len(x), block)]))
     assert all(np.allclose(outs[0], o, atol=1e-9) for o in outs[1:])
+
+
+@pytest.mark.parametrize("p", [{}, {"crunch": 1.0, "edge": 1.0, "complicate": 1.0, "steer": 3000.0}, {"crunch": 0.0, "edge": 0.0}])
+def test_abliterated_keeps_the_level_and_any_block_size(p):
+    """Abliterated's make-up gain holds the output near the input's level at any setting, and the output is the same
+    at any block size (the ring modulator reads the absolute sample position)."""
+    t = np.arange(48000 * 3) / 48000
+    x = (0.05 * (np.sin(2 * np.pi * 110 * t) + 0.5 * np.sin(2 * np.pi * 165 * t)))[:, None].repeat(2, 1)
+    outs = []
+    for block in (len(x), 512, 333):
+        e = fx.Abliterated(2)
+        e.set({**{k: d for k, _, _, _, d, _, _ in fx.TYPES["abliterated"]["params"]}, **p})
+        outs.append(np.concatenate([e.process(x[i:i + block]) for i in range(0, len(x), block)]))
+    for o in outs[1:]:
+        assert np.allclose(outs[0], o, atol=1e-9)
+    db = lambda a: 20 * np.log10(np.sqrt((a[48000:] ** 2).mean()))
+    assert abs(db(outs[0]) - db(x)) < 1.5
+    assert not np.allclose(outs[0], x, atol=1e-3)

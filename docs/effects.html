@@ -110,6 +110,7 @@
         <tr><td>EQ 8</td><td>A Butterworth low cut, six bells at 60 Hz, 150 Hz, 400 Hz, 1 kHz, 2.5 kHz and 6 kHz, and a Butterworth high cut, the cuts 12 or 24 dB an octave. It draws its response curve.</td><td>Low cut (20 Hz to 2 kHz), six bands (±15 dB), High cut (1 to 20 kHz), Slope</td></tr>
         <tr><td>Filter</td><td>A low-pass, high-pass or band-pass RBJ biquad. It draws its response curve.</td><td>Mode, Cutoff (40 Hz to 18 kHz), Resonance (Q 0.5 to 12)</td></tr>
         <tr><td>Crush</td><td>Fewer bits and a lower sample rate.</td><td>Bits (2 to 16), Rate ÷ (1 to 32), Mix</td></tr>
+        <tr><td><a href="#abliterated">Abliterated</a></td><td>Heavy distortion: a resonant boost where it bites, two lopsided clipping stages, a wavefolder, an octave and a ring modulator, a cabinet low-pass, and a make-up gain that holds the level.</td><td>Crunch, Edge, Complicate, Steer (150 Hz to 5 kHz), Tone (1.5 to 12 kHz), Level (−24 to +6 dB), Mix</td></tr>
         <tr><td>Pan</td><td>An equal-power balance, with an auto-pan whose phase carries on from block to block. A dot shows where the sound sits.</td><td>Pan, Auto rate (0.02 to 8 Hz), Auto depth</td></tr>
         <tr><td>De-click</td><td>The Output section's de-click as an effect, so it can sit where you want it, before a reverb for example. It counts the bursts it has redrawn.</td><td>Sensitivity, Longest (0.2 to 4 ms)</td></tr>
       </tbody>
@@ -170,6 +171,14 @@
         <label>auto depth <input type="range" min="0" max="1" step="0.01" value="0.5" data-k="depth"><output>0.50</output></label></div>
       <div class="readout" aria-live="polite"></div>
     </div>
+  </section>
+
+  <!-- 06 -->
+  <section class="section wrap reveal" id="abliterated">
+    <span class="num">06</span>
+    <h2>Abliterated</h2>
+    <p>Abliterated is heavy distortion written for this instrument, in the Distortion group of the add menu with Drive and Crush. <b>Steer</b> sets where it bites: a resonant boost of 12 dB before the clipping, after a low cut at 90 Hz that keeps the lows tight. <b>Crunch</b> drives two tanh stages, each tilted to one side and the second the other way, with a high-pass at 140 Hz between them, from about 2× to 300× (+50 dB) in all. <b>Edge</b> blends in a sine wavefolder that folds the clipped wave back on itself up to seven times, which rings like metal. <b>Complicate</b> adds an octave up, the wave rectified, over the first half of its travel, and over the second a ring modulator at 1.5 times Steer, whose sum and difference tones clang. <b>Tone</b> is a two-pole low-pass standing in for a speaker cabinet. A make-up gain follows the input's power against the output's over 300 ms, so the controls change the character more than the level; <b>Level</b> trims it and <b>Mix</b> blends in the dry sound for parallel distortion.</p>
+    <p>On Deep techno, whose sound is mostly below 100 Hz, the spectral centroid went from 65 Hz dry to 307 Hz at the defaults, 520 Hz with Crunch at 1 and Edge at 0.8, 1.06 kHz with Complicate at 0.5 and 2.23 kHz at 1, while the level stayed within 3 dB. It costs about 0.13 ms of the 10.7 ms block, and like every effect here it gives the same output at any block size.</p>
   </section>
 
   <section class="section wrap reveal">

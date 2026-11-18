@@ -756,8 +756,8 @@ function followFx() {
   }
   if (changed) { MOD.spec.routes = routes; sendMod(); drawTiles(); }
 }
-const FX_GROUPS = [["Space", ["reverb", "plate", "hall", "delay"]], ["Movement and colour", ["chorus", "drive", "tape", "pan", "eq", "eq8", "filter", "crush"]], ["Repair", ["declick"]]];
-const FX_WHAT = { reverb: "an eight-line feedback delay network", plate: "Dattorro's plate: a dense, bright tail", hall: "a larger network whose delays drift slowly at random",
+const FX_GROUPS = [["Space", ["reverb", "plate", "hall", "delay"]], ["Movement and colour", ["chorus", "tape", "pan", "eq", "eq8", "filter"]], ["Distortion", ["drive", "crush", "abliterated"]], ["Repair", ["declick"]]];
+const FX_WHAT = { abliterated: "heavy distortion: two clipping stages (Crunch), a wavefolder (Edge), an octave and a ring modulator (Complicate), aimed by Steer", reverb: "an eight-line feedback delay network", plate: "Dattorro's plate: a dense, bright tail", hall: "a larger network whose delays drift slowly at random",
   delay: "repeats, with feedback and ping-pong", chorus: "a modulated short delay", drive: "saturation with a tone control", pan: "places the sound left or right, or swings it with an auto-pan", tape: "a tape machine's colour: saturation, wow and flutter, head bump and roll-off by speed (inches a second), hiss", eq: "three bands", eq8: "a low cut, six bands and a high cut", filter: "low-, high- or band-pass with resonance", crush: "fewer bits and a lower rate", declick: "redraws the few-sample bursts a unit can make the model write" };
 function addFx(type, slot = PFX.slots.length) {
   if (PFX.slots.length >= PFX.max) return;
@@ -780,6 +780,7 @@ const FX_ROWS = {
   eq8: [["lowcut", "b60", "b150", "b400"], ["b1k", "b2k5", "b6k", "highcut"]],
   filter: [["cutoff", "res"]],
   crush: [["bits", "hold", "mix"]],
+  abliterated: [["crunch", "edge", "complicate", "steer"], ["tone", "level", "mix"]],
   declick: [["sens"], ["longest"]],
 };
 const FX_SPACE = new Set(["reverb", "plate", "hall", "delay"]);

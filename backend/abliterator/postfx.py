@@ -86,6 +86,10 @@ TYPES: Dict[str, Dict[str, Any]] = {
                                          ("mix", "Mix", 0.0, 1.0, 1.0, "lin", ""), ("speed", "Speed", 0.0, 3.0, 1.0, "choice:3.75,7.5,15,30", "")]},
     "pan": {"label": "Pan", "params": [("pos", "Pan", -1.0, 1.0, 0.0, "lin", ""), ("rate", "Auto rate", 0.02, 8.0, 0.25, "log", "Hz"),
                                        ("depth", "Auto depth", 0.0, 1.0, 0.0, "lin", "")]},
+    "abliterated": {"label": "Abliterated", "params": [("crunch", "Crunch", 0.0, 1.0, 0.5, "lin", ""), ("edge", "Edge", 0.0, 1.0, 0.2, "lin", ""),
+                                                       ("steer", "Steer", 150.0, 5000.0, 900.0, "log", "Hz"), ("complicate", "Complicate", 0.0, 1.0, 0.0, "lin", ""),
+                                                       ("tone", "Tone", 1500.0, 12000.0, 5500.0, "log", "Hz"), ("mix", "Mix", 0.0, 1.0, 1.0, "lin", ""),
+                                                       ("level", "Level", -24.0, 6.0, 0.0, "lin", "dB")]},
     "declick": {"label": "De-click", "params": [("sens", "Sensitivity", 0.0, 1.0, 0.5, "lin", ""), ("longest", "Longest", 0.2, 4.0, 1.0, "log", "ms")]}
 }
 DEFAULT_SLOTS = [{"type": t, "on": False, "params": {}} for t in ("drive", "chorus", "delay", "reverb")]
@@ -864,7 +868,68 @@ class Crush(Effect):
         return x * (1 - m) + out * m
 
 
-CLASSES = {"reverb": Reverb, "plate": Plate, "hall": Hall, "delay": Delay, "chorus": Chorus, "drive": Drive, "eq": EQ, "eq8": EQ8, "pan": Pan, "tape": Tape, "filter": Filter, "crush": Crush}
+class Abliterated(Effect):
+    """Heavy distortion, written for this instrument. Steer sets where it bites: a resonant boost (+12 dB, Q 1.4) before
+    the clipping, after a low cut at 90 Hz that keeps the lows tight. Crunch drives two lopsided tanh stages with a
+    high-pass at 140 Hz between them, from about 2x to 300x (+50 dB) in all. Edge blends in a sine wavefolder, folding
+    the clipped wave back on itself up to seven times, which rings like metal. Complicate adds an octave up (the wave
+    rectified) over its first half and, over its second, a ring modulator at 1.5 times Steer, whose sum and difference
+    tones are clangorous. Tone is a two-pole low-pass, standing in for a speaker cabinet, after a DC blocker. A make-up
+    gain follows the input's power against the output's (300 ms, held between 0.001 and 10), so the controls change the
+    character more than the level; Mix blends with the dry sound (parallel distortion) and Level trims the output. Every stage carries its state or reads the absolute
+    sample position, so the output is the same at any block size."""
+    REF = 0.05
+
+    def __init__(self, ch):
+        super().__init__(ch)
+        self.sos, self.zi, self.key = None, None, None
+        self.peak = 0.0
+        self.env = np.array([[1e-6], [1e-6]])           # the input's and the output's power, followed
+
+    FOLLOW = math.exp(-1.0 / (0.3 * SR))
+
+    def _design(self, steer: float, tone: float):
+        pre = np.stack([_biquad("hp", 90.0, 0.707), _biquad("peak", steer, 1.4, 12.0)])
+        mid = np.stack([_biquad("hp", 140.0, 0.707)])
+        post = np.stack([_biquad("hp", 20.0, 0.707), _biquad("lp", tone, 0.8), _biquad("lp", tone * 1.3, 0.6)])
+        return pre, mid, post
+
+    def chunk(self, x):
+        p, n = self.p, len(x)
+        key = (round(p["steer"], 1), round(p["tone"], 1))
+        if key != self.key:
+            self.sos, self.key = self._design(*key), key
+            if self.zi is None:
+                self.zi = [np.zeros((len(s), 2, x.shape[1])) for s in self.sos]
+        y, self.zi[0] = sosfilt(self.sos[0], x / self.REF * 0.25, axis=0, zi=self.zi[0])   # -26 dBFS in reads as 0.25
+        g = 2.0 + 298.0 * p["crunch"] ** 2
+        g1, g2 = math.sqrt(g), math.sqrt(g)
+        self.peak = max(self.peak, float(np.abs(y).max()) * g) if n else self.peak
+        y = np.tanh(g1 * y + 0.2) - math.tanh(0.2)                                     # stage one, lopsided: even harmonics
+        y, self.zi[1] = sosfilt(self.sos[1], y, axis=0, zi=self.zi[1])
+        y = np.tanh(g2 * y - 0.1) + math.tanh(0.1)                                     # stage two, the other way
+        e = p["edge"]
+        if e > 0:
+            y = (1 - e) * y + e * np.sin((1 + 6 * e) * (math.pi / 2) * y)
+        c = p["complicate"]
+        if c > 0:
+            octave = np.abs(y) - 0.5                                                    # the rectified wave: an octave up
+            y = y * (1 - 0.4 * min(1.0, 2 * c)) + 0.8 * min(1.0, 2 * c) * octave
+            r = max(0.0, 2 * c - 1)
+            if r > 0:
+                t = (self.n + np.arange(n)) / SR
+                y = y * (1 - 0.6 * r) + 0.9 * r * y * np.sin(2 * math.pi * 1.5 * p["steer"] * t)[:, None]
+        y, self.zi[2] = sosfilt(self.sos[2], y, axis=0, zi=self.zi[2])
+        a = self.FOLLOW
+        pin, self.env[0] = lfilter([1 - a], [1, -a], (x.astype(np.float64) ** 2).mean(axis=1), zi=self.env[0])
+        pout, self.env[1] = lfilter([1 - a], [1, -a], (y ** 2).mean(axis=1), zi=self.env[1])
+        mk = np.clip(np.sqrt((pin + 1e-12) / (pout + 1e-12)), 0.001, 10.0)
+        y = y * (mk * 10 ** (p["level"] / 20))[:, None]
+        m = p["mix"]
+        return x * (1 - m) + y * m
+
+
+CLASSES = {"reverb": Reverb, "plate": Plate, "hall": Hall, "delay": Delay, "chorus": Chorus, "drive": Drive, "eq": EQ, "eq8": EQ8, "pan": Pan, "tape": Tape, "filter": Filter, "crush": Crush, "abliterated": Abliterated}
 
 
 # Params whose change jumps a delay line's read point. With fades on, the effect's wet signal is

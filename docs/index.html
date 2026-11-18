@@ -274,7 +274,7 @@
           <figcaption><b><a href="units.html#u-saturator">Tanh Squash</a></b><span class="uwhat">Soft-clips each dimension of the stream, harder as the drive rises</span></figcaption>
         </figure>
     </div>
-    <p>vMorph, the fourteenth VAU unit, needs texts to fit itself to and is not offered yet. The units' code is PyTorch and the model runs on MLX; a bridge hands each unit the stream at its layer for the one position being written, and hands back the change. Each crossing makes the GPU wait for the CPU, so Neuron and Quantise, which act value by value, run as MLX versions of the same arithmetic instead, checked against VAU's own units: Neuron in all twelve blocks now adds under a millisecond to a step, where the bridge added nine.</p>
+    <p>vMorph, the fourteenth VAU unit, needs texts to fit itself to and is not offered yet. The units' code is PyTorch and the model runs on MLX; a bridge hands each unit the stream at its layer for the one position being written, and hands back the change. Each crossing makes the GPU wait for the CPU, so Neuron and Quantise, which act value by value, and Abliterate run as MLX versions of the same arithmetic instead, checked against VAU's own units: Neuron in all twelve blocks now adds under a millisecond to a step, where the bridge added nine, and Abliterate on all blocks no longer stalls each step 24 times.</p>
     <p><a href="units.html"><b>Model layers</b></a> has a page of its own: where the units' code lives and how Abliterator hosts it, a diagram of where each unit acts inside the model with its measured placements, a card for each unit with a drawing of what it does and its whole sweep to listen to, and the scope.</p>
 
     <h3 id="speed">4 · Speed</h3>

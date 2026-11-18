@@ -69,7 +69,7 @@
   <section class="section wrap reveal" id="where">
     <span class="num">01</span>
     <h2>Where the units live</h2>
-    <p class="lede">No unit's code is in Abliterator. VAU is a standard and a Python package of its own, <code>vau</code>, kept in <a href="https://github.com/vector-lab-tools/vector-abliteration-units">its own repository</a>. Abliterator is a <b>host</b>: it installs the package, and gives the units the places in the model they ask for.</p>
+    <p class="lede">The units' PyTorch code is not in Abliterator. VAU is a standard and a Python package of its own, <code>vau</code>, kept in <a href="https://github.com/vector-lab-tools/vector-abliteration-units">its own repository</a>. Abliterator is a <b>host</b>: it installs the package at a pinned commit and gives the units the places in the model they ask for. Its own code for the units is the host, and MLX versions of three of them (<code>mlxunits.py</code>).</p>
     <div class="viz" id="viz-where" role="group" aria-label="Animated figure: the VAU package, the Abliterator host, and the model, with the stream of one frame passing through a unit">
       <svg viewBox="0 0 960 360" aria-hidden="true"></svg>
       <div class="readout" aria-live="polite"></div>
@@ -77,7 +77,7 @@
     <ul>
       <li><b>In the VAU package</b> each unit is one Python file with a manifest: its parameters with their ranges and tips, the kind of place it acts on (the stream at a layer, or the output of a block's attention or MLP), and what it needs from its host (the stream's statistics, a direction, the frame's position). The code is PyTorch.</li>
       <li><b>In Abliterator</b> the host (<code>units.py</code>) reads each line of the Model layers row, checks it against the manifest, and attaches the unit. It also gives each unit the name it has here, defaults that work on a music model, and the measured ranges and placements. The engine (<code>mrt2_proc.py</code>) wraps each of the model's blocks so that a unit runs where it was placed.</li>
-      <li><b>The bridge.</b> Magenta RT 2 runs on Apple's MLX, and the units are PyTorch. At each step, for the one frame being written, the engine copies the stream at the unit's layer out of MLX, passes it through the unit, and copies the result back. Neuron and Quantise skip the bridge: their arithmetic is written again in MLX, tested against VAU's own units, and stays on the GPU, unless a unit uses a window or a random control. A unit with memory (Lookback, Running Average) keeps the streams of past frames itself; moving one of its knobs attaches it afresh and clears that memory.</li>
+      <li><b>The bridge.</b> Magenta RT 2 runs on Apple's MLX, and the units are PyTorch. At each step, for the one frame being written, the engine copies the stream at the unit's layer out of MLX, passes it through the unit, and copies the result back. Neuron, Quantise and Abliterate skip the bridge: their arithmetic is written again in MLX (<code>mlxunits.py</code>), tested against VAU's own units, and stays on the GPU. Neuron and Quantise take the bridge again when a unit uses a window or a random control. A unit with memory (Lookback, Running Average) keeps the streams of past frames itself; moving one of its knobs attaches it afresh and clears that memory.</li>
       <li><b>The version</b> is pinned: <code>requirements-mrt2.txt</code> names the VAU commit the engine installs, and every saved sound's recipe records the chain lines it was made with.</li>
     </ul>
   </section>

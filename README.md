@@ -44,7 +44,7 @@ Abliterator plays a music model on your own machine and changes how it runs whil
 
 <p align="center"><img src="docs/img/c-scopes.webp" alt="Two scopes on the Model layers row: layer 6 in Trace, a cyan waveform of the stream; layer 9 in Time, with the brightness reading stepping up when a Brightness dose was set" width="80%"></p>
 
-The [Model layers page](https://vector-lab-tools.github.io/abliterator/units.html) shows where the units' code lives (in the VAU package; this repository hosts it), where each acts inside the model, and for each unit a drawing of what it does and its whole measured sweep to listen to.
+The [Model layers page](https://vector-lab-tools.github.io/abliterator/units.html) shows where the units' code lives (the PyTorch units in the VAU package; the host and MLX versions of three units in this repository), where each acts inside the model, and for each unit a drawing of what it does and its whole measured sweep to listen to.
 
 <p align="center">
 <a href="docs/img/session.png"><img src="docs/img/session.png" alt="Session: eight tracks of saved sounds above a mixer of channel strips, each with pan, mute, solo, effects, and a fader with a ladder of LEDs, and the mix bus" width="48%"></a>
@@ -88,7 +88,7 @@ A Python backend (FastAPI) holds the desk and talks to the engine, which runs in
 | `backend/abliterator/spectro.py` | The spectrogram of what is heard, from the sound-card callbacks, for Listen and the Engine scope |
 | `backend/abliterator/scope.py` | The scope: what it reads from the stream at a layer, and what it keeps for the page |
 | `backend/abliterator/mod.py` | Modulation sources, routes and the calibrated curves they move along |
-| `backend/abliterator/mlxunits.py` | Neuron and Quantise (VAU's Erosion) in MLX, swapped in for their PyTorch hooks |
+| `backend/abliterator/mlxunits.py` | Neuron, Quantise (VAU's Erosion) and Abliterate in MLX, swapped in for their PyTorch hooks |
 | `backend/abliterator/dsp.py`, `postfx.py` | The output section: de-click, auto level, the effect chain, dynamics, width, low-pass, limiter, volume, and the dropout cover |
 | `backend/abliterator/desk.py`, `library.py` | Session's tracks and mixer; the sound library |
 | `backend/abliterator/measure.py`, `calibrate.py` | The measures of a render and the calibration built from the sweeps |

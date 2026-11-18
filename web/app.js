@@ -2004,7 +2004,11 @@ function routesEl(id) {
 }
 function drawGraphs() {
   document.querySelectorAll("#editor canvas.graph").forEach((c) => {
+    const dpr = window.devicePixelRatio || 1, cw = Math.round(c.clientWidth * dpr), ch = Math.round(c.clientHeight * dpr);
+    if (cw > 0 && ch > 0 && (c.width !== cw || c.height !== ch)) { c.width = cw; c.height = ch; }   // drawn at the size shown, so text is not stretched
     const id = c.dataset.g, s = SRC[id], g = c.getContext("2d"), w = c.width, hh = c.height, col = CSSCOL[s.kind];
+    const FONT = `${Math.round(10 * dpr)}px ui-monospace, Menlo, monospace`;
+    g.lineJoin = "round";
     g.clearRect(0, 0, w, hh);
     g.strokeStyle = "#23272f"; g.lineWidth = 1; g.beginPath(); g.moveTo(0, hh / 2); g.lineTo(w, hh / 2); g.stroke();
     const p = MOD.spec.sources[id];
@@ -2013,29 +2017,29 @@ function drawGraphs() {
       const n = Math.round(p.length), bw = w / 16;
       for (let i = 0; i < 16; i++) { const v = +p[`s${i}`], y0 = hh / 2, y1 = hh / 2 - v * hh * 0.42;
         g.fillStyle = i < n ? col : "#2a2e37"; g.fillRect(i * bw + 3, Math.min(y0, y1), bw - 6, Math.max(2, Math.abs(y1 - y0))); }
-      g.fillStyle = "#5a606d"; g.font = "18px ui-monospace, Menlo, monospace"; g.textAlign = "right"; g.fillText(`${n} steps · ${(n / p.rate_hz).toFixed(1)} s`, w - 6, hh - 4); g.textAlign = "left";
+      g.fillStyle = "#5a606d"; g.font = FONT; g.textAlign = "right"; g.fillText(`${n} steps · ${(n / p.rate_hz).toFixed(1)} s`, w - 6, hh - 4); g.textAlign = "left";
       return;
     }
     if (s.kind === "follow") {                                // what it has read in the last 20 s of play
       const H = MOD.folHist, t1 = H.length ? H[H.length - 1][0] : 0;
-      g.strokeStyle = col; g.lineWidth = 3; g.beginPath();
+      g.strokeStyle = col; g.lineWidth = 2 * dpr; g.beginPath();
       H.filter((q) => q[0] >= t1 - 20).forEach((q, i) => { const x = w - ((t1 - q[0]) / 20) * w, y = hh * 0.92 - q[1] * hh * 0.84; i ? g.lineTo(x, y) : g.moveTo(x, y); });
-      g.stroke(); g.fillStyle = "#5a606d"; g.font = "20px ui-monospace, Menlo, monospace"; g.fillText(H.length ? "the last 20 s" : "reads the sound while it plays", 8, 22);
+      g.stroke(); g.fillStyle = "#5a606d"; g.font = FONT; g.fillText(H.length ? "the last 20 s" : "reads the sound while it plays", 6 * dpr, 13 * dpr);
       return;
     }
     const span = s.kind === "lfo" ? 1 / p.rate_hz : s.kind === "rand" ? 8 / p.rate_hz / 2 : s.kind === "drift" || s.kind === "chaos" ? Math.min(240, 4 / p.rate_hz)
       : p.loop ? Math.max(4, 2 * cyc) : Math.max(8, p.attack_s + p.decay_s + 4);
     const len = null, N = 400;
     const y = (v) => (s.bipolar ? hh / 2 - v * hh * 0.42 : hh * 0.92 - v * hh * 0.84);
-    g.strokeStyle = col; g.lineWidth = 3; g.beginPath();
+    g.strokeStyle = col; g.lineWidth = 2 * dpr; g.beginPath();
     for (let i = 0; i <= N; i++) {
       const t = (i / N) * span, v = s.kind === "lfo" ? lfoV({ ...p, phase: p.phase }, t) : s.kind === "rand" ? randV(p, t) : s.kind === "drift" ? driftV(p, t)
         : s.kind === "chaos" ? chaosV(p, t) : envV(p, t, len);
       i ? g.lineTo((i / N) * w, y(v)) : g.moveTo(0, y(v));
     }
     g.stroke();
-    g.fillStyle = "#5a606d"; g.font = "20px ui-monospace, Menlo, monospace";
-    g.fillText(s.kind === "lfo" ? "one cycle" : s.kind === "env" ? `${span.toFixed(0)} s` : `${span.toFixed(1)} s`, 8, 22);
+    g.fillStyle = "#5a606d"; g.font = FONT;
+    g.fillText(s.kind === "lfo" ? "one cycle" : s.kind === "env" ? `${span.toFixed(0)} s` : `${span.toFixed(1)} s`, 6 * dpr, 13 * dpr);
   });
 }
 document.querySelectorAll("#modtabs button").forEach((b) => b.addEventListener("click", () => { MOD.tab = b.dataset.k; drawEditor(); }));

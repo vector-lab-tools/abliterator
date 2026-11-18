@@ -152,3 +152,5 @@ def test_follower_reads_only_frames_before():
     assert tr.at(f, 10) == 0.0 and tr.at(f, 12) > 0 and tr.at(f, 18) > 0.7       # frame 10 is loud; from frame 11 on it rises
     assert tr.at(f, 30) < tr.at(f, 21) and tr.at(f, 99) == tr.at(f, 40)          # falls after; past the end, the last
     assert mod.value(spec(), "follow", 0.6, None, None) == 0.0                    # no track: still
+    inv = {**f, "invert": 1}
+    assert tr.at(inv, 10) == 1.0 and abs(tr.at(inv, 18) - (1 - tr.at(f, 18))) < 1e-12   # inverted: quiet high, loud low

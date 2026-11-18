@@ -1939,6 +1939,12 @@ function drawEditor() {
       b.addEventListener("click", () => { setSrc(id, "loop", p.loop ? 0 : 1); drawEditor(); });
       sh.appendChild(b); col.appendChild(sh);
     }
+    if (s.kind === "follow") {                                // Invert: loud moves the knob down
+      const sh = h(`<div class="shapes"></div>`);
+      const b = h(`<button class="loopbtn" aria-pressed="${!!+p.invert}" title="Invert: quiet reads high and loud reads low, so the sound getting louder moves a knob down">Invert</button>`);
+      b.addEventListener("click", () => { setSrc(id, "invert", +p.invert ? 0 : 1); drawEditor(); });
+      sh.appendChild(b); col.appendChild(sh);
+    }
     if (s.kind === "chaos") {                                 // which attractor
       const sh = h(`<div class="shapes"></div>`);
       for (const [k, name] of [["lorenz", "Lorenz"], ["rossler", "Rössler"]]) {

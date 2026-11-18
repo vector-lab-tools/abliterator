@@ -62,7 +62,8 @@ PARAMS: Dict[str, Dict[str, Tuple]] = {
     "macro": {"value": (0.0, 0.0, 1.0), "name": ("", None)},
     "steps": {"rate_hz": (2.0, 0.1, 16.0), "length": (8, 2, STEP_N), "glide": (0.0, 0.0, 1.0), "amount": (1.0, 0.0, 1.0),
               **{f"s{i}": (STEP_DEFAULT[i], -1.0, 1.0) for i in range(STEP_N)}},
-    "follow": {"attack_s": (0.05, 0.01, 2.0), "release_s": (0.5, 0.04, 5.0), "floor_db": (-45.0, -70.0, -10.0), "amount": (1.0, 0.0, 1.0)},
+    "follow": {"attack_s": (0.05, 0.01, 2.0), "release_s": (0.5, 0.04, 5.0), "floor_db": (-45.0, -70.0, -10.0), "amount": (1.0, 0.0, 1.0),
+               "invert": (0, 0, 1)},
     "drift": {"rate_hz": (0.05, 0.005, 1.0), "rough": (0.4, 0.0, 1.0), "amount": (1.0, 0.0, 1.0), "seed": (1, 0, 9999)},
     "chaos": {"system": ("lorenz", CHAOS_SYSTEMS), "rate_hz": (0.2, 0.01, 4.0), "amount": (1.0, 0.0, 1.0), "seed": (1, 0, 9999)},
 }
@@ -339,7 +340,8 @@ class FollowTrack:
                 a = up if d > cur else down
                 e.append(cur + (1 - a) * (d - cur))
             lvl = e[f]
-        return max(0.0, min(1.0, (lvl - p["floor_db"]) / 30.0)) * p.get("amount", 1.0)
+        v = max(0.0, min(1.0, (lvl - p["floor_db"]) / 30.0))
+        return (1.0 - v if p.get("invert") else v) * p.get("amount", 1.0)      # inverted: quiet reads high, loud low
 
 
 def value(spec: Dict[str, Any], src: str, t: float, length: Optional[float] = None, track: Optional[FollowTrack] = None) -> float:

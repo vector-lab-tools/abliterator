@@ -77,3 +77,19 @@ def test_attach_ports_only_what_it_can():
     assert not any(getattr(f, "mlx", False) for fs in t["ins"].values() for f in fs)
     w = _attach(["erosion layer=6 bits=6 wfrom=3"], True)                       # a window keeps the torch path
     assert not any(getattr(f, "mlx", False) for f in w["edits"][6])
+
+
+@pytest.mark.parametrize("s,keep", [(1.0, False), (2.0, True), (6.0, False), (0.4, True)])
+def test_abliterate_matches_vau(s, keep):
+    from vau.units import abliterate as V_abl
+    d = 256
+    v = torch.from_numpy(RNG.standard_normal(d).astype(np.float32))
+    v = v / v.norm()
+    scale = torch.from_numpy((1 + 0.1 * RNG.standard_normal(d)).astype(np.float32)) if keep else None
+    hook = V_abl.abliterate_hook(v, s, scale, None, True)
+    h = RNG.standard_normal((1, 1, d)).astype(np.float32)
+    want = hook(None, (None,), torch.from_numpy(h))
+    got = mlxunits.abliterate_fn(v.numpy(), s, None if scale is None else scale.numpy())(mx.array(h))
+    close(got, want, tol=1e-4)
+    c = mlxunits._closure(hook)                                   # what the port reads from the hook VAU made
+    assert set(c) >= {"v", "s", "scale", "bias"} and float(c["s"]) == s

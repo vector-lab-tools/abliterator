@@ -104,7 +104,7 @@ def test_freeze_equals_render(p):
 
 def test_abliterate_removes_the_direction(p):
     """At one block, flat kernel, no projection or size keeping: what attention writes has no
-    component along the direction (measured on the hook's output, before it goes back to MLX)."""
+    component along the direction (measured on the hook's output, as the model's own precision rounds it)."""
     import torch
     bundle, _ = p.attach_chain(["abliterate block=6 dir=brightness shape=flat strength=1 projected=0 size=0 share=0"])
     from abliterator import directions as dr
@@ -120,7 +120,7 @@ def test_abliterate_removes_the_direction(p):
         p.hooks.frame = f
         _, st = p.step(st, cond)
     p._use({"edits": {}, "outs": {}, "ins": {}})
-    assert len(seen) == 5 and max(seen) < 1e-5
+    assert len(seen) == 5 and max(seen) < 1e-4       # the MLX hook (mlxunits) hands back the model's half precision: ~3e-5 left
 
 
 def test_snap_back_returns_to_the_moment_the_strip_went_on(p):

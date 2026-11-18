@@ -12,7 +12,9 @@ torch hook when the strip is attached; tests/test_mlxunits.py checks each agains
 
 Ported: Neuron (the six operations on an MLP's hidden units) and Erosion (bits and hold), each
 with the host features Wet, Envelope and Keep size. A strip with a window or a random control
-keeps the torch path.
+keeps the torch path. Abliterate (the direction taken out of what each block's attention and MLP
+write) is ported without host features: its 24 hooks at block=all made each step wait for the CPU
+24 times, and the MLX hook takes the direction, strength and rescaling from the hook VAU made.
 """
 from __future__ import annotations
 
@@ -20,7 +22,7 @@ from typing import Any, Callable, Dict, List, Optional
 
 import numpy as np
 
-PORTED = {"neuron", "erosion"}
+PORTED = {"neuron", "erosion", "abliterate"}
 
 
 def _mx():
@@ -120,6 +122,29 @@ def erosion_fn(step: Optional[np.ndarray], hold: int, held: Dict[int, Any], f: f
     return mlx_fn(edit)
 
 
+def abliterate_fn(v: np.ndarray, s: float, scale: Optional[np.ndarray]) -> Callable:
+    """What a block's attention or MLP writes, less s times its part along the unit direction v, then with Keep
+    size each output feature scaled back, as vau/units/abliterate.py's abliterate_hook does it (no bias here)."""
+    vv, sc = None, None
+
+    def edit(h):
+        nonlocal vv, sc
+        mx = _mx()
+        if vv is None:
+            vv = mx.array(v.astype(np.float32))
+            sc = mx.array(scale.astype(np.float32)) if scale is not None else None
+        x = h.astype(mx.float32)
+        x = x - s * mx.sum(x * vv, axis=-1, keepdims=True) * vv
+        if sc is not None:
+            x = x * sc
+        return x.astype(h.dtype)
+    return mlx_fn(edit)
+
+
+def _closure(fn: Callable) -> Dict[str, Any]:
+    return dict(zip(fn.__code__.co_freevars, (c.cell_contents for c in (fn.__closure__ or ()))))
+
+
 def _param(u, strip, key: str):
     p = u.param(key) or {}
     return strip.params.get(key, p.get("default"))
@@ -147,6 +172,20 @@ def port(u, strip, host, before: Dict[str, Dict], after: Dict[str, Dict]) -> Opt
                 f = _factor(s, block, n)
                 out["ins"].setdefault((block, kind), []).extend(
                     [neuron_fn(ns, op, value, f, s["keepnorm"]) if f != 0.0 else mlx_fn(lambda h: h)] * len(fns))
+            return out
+        if u.id == "abliterate":
+            from vau import hostfx
+            if hostfx.active(s):
+                return None
+            added = {k: v[len(before["outs"].get(k, [])):] for k, v in after["outs"].items() if len(v) > len(before["outs"].get(k, []))}
+            for key, fns in added.items():
+                for fn in fns:
+                    c = _closure(fn)
+                    if c.get("bias") is not None or "v" not in c or "s" not in c:
+                        return None                               # not the hook this port knows: keep the torch path
+                    sc = c.get("scale")
+                    out["outs"].setdefault(key, []).append(abliterate_fn(c["v"].float().cpu().numpy(), float(c["s"]),
+                                                                         None if sc is None else sc.float().cpu().numpy()))
             return out
         if u.id == "erosion":
             bits, hold = int(_param(u, strip, "bits")), max(1, int(_param(u, strip, "hold")))

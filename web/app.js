@@ -1770,6 +1770,7 @@ function drawTiles() {
     const id = el.dataset.s, n = MOD.spec.routes.filter((r) => r.src === id).length;
     el.classList.toggle("sel", MOD.assign === id); el.classList.toggle("used", n > 0); el.classList.toggle("off", !MOD.on);
     if (SRC[id].kind === "macro") el.hidden = !n && MOD.assign !== id;      // a macro's tile shows once it moves something; take one from the Macros tab
+    if (id === "env2" || id === "env3") el.hidden = !n && MOD.assign !== id;   // one envelope shown; the other two from the Envelope tab, once they move something
     el.querySelector("span").textContent = n ? `→ ${n}` : "";
   }
 }
@@ -1861,7 +1862,12 @@ function drawEditor() {
   for (const id of ids) {
     const s = SRC[id], p = MOD.spec.sources[id];
     if (!p) continue;
-    const col = h(`<div class="ecol" style="--c:${s.color}"><h4>${esc(s.label)}</h4></div>`);
+    const col = h(`<div class="ecol" style="--c:${s.color}"><h4 class="egrab" title="Drag onto a knob to link ${esc(s.label)}, or click to assign it">${esc(s.label)}</h4></div>`);
+    {                                                            // the name is a handle, so a source whose tile is hidden can still be linked
+      const hd = col.querySelector("h4");
+      hd.addEventListener("click", () => { if (hd.dragged) { hd.dragged = false; return; } if (MOD.on) assign(id); });
+      dragSource(hd, id); hintOn(hd);
+    }
     if (s.kind === "lfo") {
       const sh = h(`<div class="shapes"></div>`);
       for (const k in SHAPE_ICON) {
@@ -1889,7 +1895,7 @@ function drawEditor() {
     col.appendChild(routesEl(id));
     ed.appendChild(col);
   }
-  if (MOD.tab === "env") ed.appendChild(h(`<div class="ecol"><p class="pnote">Each envelope runs from ▶ and holds at its sustain while it plays. With Loop on, it holds for Hold, falls to zero over Release, and starts again.</p></div>`));
+  if (MOD.tab === "env") ed.appendChild(h(`<div class="ecol"><p class="pnote">Each envelope runs from ▶ and holds at its sustain while it plays. ENV 2 and ENV 3 show above once they move something: drag one by its name here. With Loop on, it holds for Hold, falls to zero over Release, and starts again.</p></div>`));
   drawGraphs();
 }
 function routesEl(id) {

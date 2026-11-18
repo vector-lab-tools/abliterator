@@ -455,6 +455,8 @@ details.more summary { cursor: pointer; color: var(--text-2); font-size: 12.5px;
 .ecol .krow:has(> .knob:nth-child(5)) .knob svg { width: 30px; height: 30px; }
 .ecol .krow:has(> .knob:nth-child(5)) .kv { font-size: 9px; letter-spacing: -.03em; }
 .ecol .krow:has(> .knob:nth-child(5)) .kl { font-size: 8.5px; letter-spacing: -.02em; }
+.ecol h4.egrab { cursor: grab; display: inline-block; }
+.ecol h4.egrab:hover { text-decoration: underline; text-underline-offset: 3px; }
 .ecol h4 { margin: 0 0 6px; font: 700 11px -apple-system, BlinkMacSystemFont, sans-serif; letter-spacing: .12em; color: var(--c); }
 .shapes { display: flex; gap: 3px; margin-bottom: 6px; flex-wrap: wrap; }
 .shapes button { width: 30px; height: 22px; padding: 0; border-radius: 5px; border: 1px solid #2c303a; background: #14161b; color: #8a8f9b; cursor: pointer; display: grid; place-items: center; }

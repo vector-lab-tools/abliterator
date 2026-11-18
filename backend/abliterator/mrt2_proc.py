@@ -50,6 +50,9 @@ from abliterator.spectro import Spectro  # noqa: E402
 from abliterator.dsp import Conceal, Master  # noqa: E402
 
 SR, HOP, FRAME_MS, CHANNELS = 48000, 1920, 40, 2
+DEVICE_S = 0.040                       # the sound card's queue (see play)
+_TS = os.environ.get("ABL_TEST_SRC")   # diagnostic: a raw float32 stereo file played in place of the model, to test the rest of the path
+TEST_SRC = np.fromfile(_TS, dtype=np.float32).reshape(-1, CHANNELS) if _TS else None
 SIZE, BITS, LAYER = "mrt2_small", 8, 6
 DIRS = ROOT / "data" / "directions" / SIZE
 SESSIONS = ROOT / "data" / "sessions"
@@ -719,7 +722,10 @@ class Proc:
         if self.heard_chain():
             self.chain_pending, _ = self.attach_chain(self.heard_chain())      # fresh memory for the strips
         settle_heap()                                    # the strips just attached join the model in the frozen generation
-        self.stream = sd.OutputStream(samplerate=SR, channels=CHANNELS, blocksize=self.block, latency="low",
+        # 40 ms queued at the card, not "low" (about 12 ms): while a model step runs, the callback can take longer than
+        # its block (Smear's FFT, waiting for the interpreter), and CoreAudio plays silence for the shortfall without
+        # reporting an underflow. 40 ms covers the longest gaps between callbacks measured under load (27 ms).
+        self.stream = sd.OutputStream(samplerate=SR, channels=CHANNELS, blocksize=self.block, latency=DEVICE_S,
                                       callback=self._callback)
         self.playing = True
         self.stream.start()
@@ -825,7 +831,11 @@ class Proc:
         reading = self.gen % READ_EVERY == 0                    # the strips' readings, every third frame (120 ms)
         self.hooks.meas, self.hooks.probes, self.hooks.measuring = [], {}, reading
         try:
-            a, self.state = self.step(self.state, self.cond)
+            if TEST_SRC is not None:
+                i = (self.gen * HOP) % (len(TEST_SRC) - HOP)
+                a = TEST_SRC[i:i + HOP].copy()
+            else:
+                a, self.state = self.step(self.state, self.cond)
         finally:
             self.hooks.measuring = False
         self.step_ms.append((time.perf_counter() - t0) * 1000); self._ph("read")
@@ -833,9 +843,10 @@ class Proc:
         cushion = self.lead * FRAME_MS / r - 20                       # what the knob's frames cover, less the card's own margin
         if self.step_ms[-1] > 0.85 * cushion:                         # this step would have used most of it: hold enough for one like it
             self._need_more(int(np.ceil((self.step_ms[-1] * 1.3 + 20) * r / FRAME_MS)) - self.lead)
-        self._read_scopes(self.gen)
+        if TEST_SRC is None:
+            self._read_scopes(self.gen)
         tc = time.perf_counter()
-        if reading:
+        if reading and TEST_SRC is None:
             self._read_activity()
         td = time.perf_counter(); st_seen = st_seen or self.in_status
         if (td - ta) * 1000 > 45:                                   # a slow step and where its time went (status.slow_steps)
@@ -1029,7 +1040,7 @@ class Proc:
 
     # ------------------------------------------------------------------ readings
     def latency(self) -> Dict[str, Any]:
-        dev_ms = (self.stream.latency * 1000) if (self.playing and self.stream) else 22.0
+        dev_ms = (self.stream.latency * 1000) if (self.playing and self.stream) else DEVICE_S * 1000 + 10.0
         parts = {"generation lead": self.lead_eff() * FRAME_MS, "codec (declared by the sampler; not yet checked by ear)": 0,
                  "device": round(dev_ms, 1)}
         first = self.lead_eff() * FRAME_MS + dev_ms

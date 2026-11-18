@@ -154,6 +154,8 @@ details.more summary { cursor: pointer; color: var(--text-2); font-size: 12.5px;
 .strip.off > :not(.sh) { opacity: .38; }
 .strip.fresh { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold), 0 0 16px rgba(217,170,63,.35); }
 .strip .sh { display: flex; width: 100%; align-items: flex-start; gap: 6px; }
+.strip .snapb { flex: none; width: 16px; height: 16px; padding: 0; border: 0; background: none; color: #5d6472; font-size: 12px; line-height: 16px; cursor: pointer; }
+.strip .snapb[aria-pressed="true"] { color: var(--gold); }
 .strip .spre { flex: none; width: 18px; height: 16px; padding: 0; border: 1px solid #2c303a; border-radius: 4px; background: #14161b; color: var(--gold); font-size: 10px; line-height: 1; text-align: center; text-align-last: center; appearance: none; -webkit-appearance: none; cursor: pointer; }
 .strip .spre:hover { border-color: var(--gold); }
 .strip .st { flex: 1; min-width: 0; font-size: 11px; font-weight: 650; line-height: 1.2; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

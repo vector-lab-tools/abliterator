@@ -571,6 +571,29 @@ class Proc:
             memo["c"] = ck
         return memo["cond"]
 
+    def _step_snapping(self, state, cond, anchors: Dict[str, Any], anchor, snap, frame: int):
+        """One step, with snap-back. A strip switched on keeps the model's state at this frame; a strip switched
+        off with snap-back returns the model to the state kept for it, so its effect does not linger in the
+        frames the model reads back (about 20 s). The frame where it returns is a crossfade, equal-power over
+        its 40 ms, from the step the model would have made to the step from the kept state. Live and offline
+        alike, so a saved sound replays it."""
+        for u in anchor or ():
+            anchors[str(u)] = (state, frame)
+        back = None
+        for u in snap or ():
+            got = anchors.pop(str(u), None)
+            if got is not None and (back is None or got[1] < back[1]):
+                back = got                                   # several at once: the earliest moment
+        if back is None:
+            return self.step(state, cond)
+        cont, _ = self.step(state, cond)                     # the sound going on, faded from
+        for k, (s, f) in list(anchors.items()):
+            if f > back[1]:
+                anchors[k] = back                            # a strip switched on since keeps the moment returned to
+        a, state = self.step(back[0], cond)
+        w = (0.5 * np.pi * (np.arange(len(a)) + 0.5) / len(a))[:, None]
+        return (cont * np.cos(w) + a * np.sin(w)).astype(np.float32), state
+
     def render(self, spec: Dict[str, Any], frames: int, progress=None) -> Dict[str, np.ndarray]:
         """Offline: the same steps as live play, with each move applied before the step of its frame.
         spec holds `prompt` and `seed`, and optionally `start` {doses, sampling, master, prompt, chain,
@@ -601,10 +624,14 @@ class Proc:
         chain_now = list(st0.get("chain") or [])
         unow = {"store": first.get("store"), "lines": None}
         pre, post = [], []
+        anchors: Dict[str, Any] = {}
         try:
             for f in range(frames):
                 self.hooks.frame = f
+                anc, snp = [], []
                 for m in by_frame.get(f, []):
+                    anc += m.get("anchor") or []
+                    snp += m.get("snap") or []
                     if "chain" in m:
                         b = self.attach_chain(m["chain"])[0] if m["chain"] else empty
                         self._use(b)
@@ -628,7 +655,7 @@ class Proc:
                 if not steer_on:
                     d = {k: 0.0 for k in d}
                 cond = self._apply(d, smp, prompt, memo)
-                a, state = self.step(state, cond)
+                a, state = self._step_snapping(state, cond, anchors, anc, snp, f)
                 pre.append(a)
                 master.update(mod.apply_master(mspec, mbase, t, length) if mod.active(mspec, model=False) else mbase)
                 post.append(master.process(a))
@@ -668,6 +695,7 @@ class Proc:
         return {"lr": np.round(y, 3).tolist(), "corr": None if corr is None else round(float(corr), 3)}
 
     def _reset(self):
+        self.anchors: Dict[str, Any] = {}              # snap-back: the model's state kept for each strip switched on
         self.ring: "collections.deque" = collections.deque()
         self.buf = np.zeros((0, CHANNELS), np.float32)
         self.conceal = Conceal(SR)                     # dropouts covered without a click (dsp.Conceal)
@@ -813,10 +841,13 @@ class Proc:
                 self.unit_now = {"store": self.chain_pending.get("store"), "lines": None}
                 self.chain_pending = None
             self.hooks.frame = self.gen
+            anc, snp = [], []
             for p in self.pending:
                 if p["frame"] is None:
                     p["frame"] = self.gen                      # the first frame computed with the move
                     self.moves.append({"frame": self.gen, **p["move"]})
+                    anc += p["move"].get("anchor") or []
+                    snp += p["move"].get("snap") or []
             t = self.gen * mod.FRAME_S
             self._mod_units(self.mod_spec, self.heard_chain(), t, None, self.unit_now)
             if mod.active(self.mod_spec, model=True):
@@ -835,7 +866,7 @@ class Proc:
                 i = (self.gen * HOP) % (len(TEST_SRC) - HOP)
                 a = TEST_SRC[i:i + HOP].copy()
             else:
-                a, self.state = self.step(self.state, self.cond)
+                a, self.state = self._step_snapping(self.state, self.cond, self.anchors, anc, snp, self.gen)
         finally:
             self.hooks.measuring = False
         self.step_ms.append((time.perf_counter() - t0) * 1000); self._ph("read")
@@ -958,9 +989,12 @@ class Proc:
         """The strips the model plays with: all of them, or none while the Model layers switch is off."""
         return list(self.chain) if self.layers_on else []
 
-    def set_chain(self, lines: List[str], on: Optional[bool] = None) -> Dict[str, Any]:
+    def set_chain(self, lines: List[str], on: Optional[bool] = None, anchor: Optional[List[Any]] = None,
+                  snap: Optional[List[Any]] = None) -> Dict[str, Any]:
         """New strips, and/or the Model layers switch. A move records the strips heard (none while
-        off), so a replay hears what was heard."""
+        off), so a replay hears what was heard. `anchor` names strips just switched on (the model's
+        state is kept at the frame they start acting); `snap` names strips just switched off whose
+        kept state the model returns to (snap-back, _step_snapping)."""
         lines = [l.strip() for l in lines if l.strip() and not l.strip().startswith("#")]
         live = on if on is not None else self.layers_on
         edits, report = self.attach_chain(lines if live else [])          # a strip that cannot work is reported, the rest attached
@@ -971,7 +1005,12 @@ class Proc:
             self.chain, self.chain_report, self.layers_on = lines, report, live
             self.chain_pending = edits
             if self.playing:
-                self.pending.append({"t": t, "frame": None, "move": {"chain": self.heard_chain()}})
+                move: Dict[str, Any] = {"chain": self.heard_chain()}
+                if anchor:
+                    move["anchor"] = [str(u) for u in anchor]
+                if snap:
+                    move["snap"] = [str(u) for u in snap]
+                self.pending.append({"t": t, "frame": None, "move": move})
         return {"chain": self.chain, "report": report, "layers_on": self.layers_on}
 
     def _control(self, doses, master, sampling, prompt, steer_on=None) -> Dict[str, Any]:
@@ -1318,7 +1357,7 @@ def reader(p: Proc):
             elif cmd == "chain":
                 if p.status_text != "ready":
                     raise RuntimeError("not ready")
-                send({"id": rid, "ok": True, **p.set_chain(m.get("lines") or [], m.get("on"))})
+                send({"id": rid, "ok": True, **p.set_chain(m.get("lines") or [], m.get("on"), m.get("anchor"), m.get("snap"))})
             elif cmd == "scopes":
                 if p.status_text != "ready":
                     raise RuntimeError("not ready")

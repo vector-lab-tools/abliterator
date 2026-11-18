@@ -123,6 +123,21 @@ def test_abliterate_removes_the_direction(p):
     assert len(seen) == 5 and max(seen) < 1e-5
 
 
+def test_snap_back_returns_to_the_moment_the_strip_went_on(p):
+    """On at frame 10, off with snap-back at 20: from 21 the model goes on as if the strip had never played,
+    so the sound equals the plain render from frame 11; frame 20 is the crossfade into the plain frame 10."""
+    H = M.HOP
+    plain = p.render({"prompt": P, "seed": 3}, F)["pre"]
+    on = "abliterate block=all dir=pulse shape=flat size=0 strength=2"
+    moves = [{"frame": 10, "chain": [on], "anchor": ["7"]}, {"frame": 20, "chain": [], "snap": ["7"]}]
+    b = p.render({"prompt": P, "seed": 3, "moves": moves}, F)["pre"]
+    assert np.array_equal(b[:10 * H], plain[:10 * H])
+    assert not np.allclose(b[10 * H:20 * H], plain[10 * H:20 * H])
+    assert np.array_equal(b[21 * H:], plain[11 * H:(F - 10) * H])
+    lingers = p.render({"prompt": P, "seed": 3, "moves": [dict(moves[0], anchor=[]), dict(moves[1], snap=[])]}, F)["pre"]
+    assert not np.allclose(lingers[21 * H:], plain[11 * H:(F - 10) * H])     # without snap-back the strip's frames are still read
+
+
 def test_neuron_changes_sound(p):
     a = p.render({"prompt": P, "seed": 3}, F)["pre"]
     b = p.render({"prompt": P, "seed": 3, "start": {"chain": ["neuron block=5 n=1,2,3,4,5,6,7,8 op=zero"]}}, F)["pre"]

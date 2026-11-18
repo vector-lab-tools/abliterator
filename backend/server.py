@@ -339,7 +339,8 @@ async def set_chain(request: Request):
     if not isinstance(lines, list) or not all(isinstance(x, str) for x in lines):
         return err("Send the strips as a list of lines.")
     try:
-        return mrt2.set_chain(lines[:16], on=(bool(b["on"]) if "on" in b else None))
+        ids = lambda k: [str(x)[:16] for x in (b.get(k) or [])][:16] if isinstance(b.get(k), list) else None   # snap-back: strips' ids
+        return mrt2.set_chain(lines[:16], on=(bool(b["on"]) if "on" in b else None), anchor=ids("anchor"), snap=ids("snap"))
     except Exception as e:
         return err(str(e))
 

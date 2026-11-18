@@ -1060,14 +1060,15 @@ requestAnimationFrame(function waveLoop() {                       // started on 
 });
 
 // Bend: the strips (VAU units inside the model)
-const U = { units: [], chain: [], uid: 0, sentOn: null };       // chain: [{id, tk, layer, params, on, uid}]
+const U = { units: [], chain: [], uid: 0, sentOn: null, noSnap: new Set() };   // chain: [{id, tk, layer, params, on, uid}]; noSnap: uids with snap-back off
 // Modulation names a unit's knob by the strip's place among those playing (unit:<k>:<key>), as the
 // engine counts them. When strips are switched off, removed or added, the routes follow their strips.
 function followStrips() {
   const now = U.chain.filter((c) => c.on).map((c) => (c.uid ??= ++U.uid));
   const was = U.sentOn;
   U.sentOn = now;
-  if (!was) return;
+  if (!was) return {};
+  const ends = { anchor: now.filter((u) => !was.includes(u)), snap: was.filter((u) => !now.includes(u) && !U.noSnap.has(u)) };   // snap-back
   let moved = false;
   const routes = [];
   for (const r of MOD.spec.routes) {
@@ -1079,6 +1080,7 @@ function followStrips() {
     routes.push({ ...r, tgt: `unit:${k}:${m[2]}` });
   }
   if (moved) { MOD.spec.routes = routes; sendMod(); drawTiles(); }
+  return ends;
 }
 async function loadUnits() {
   try {
@@ -1102,8 +1104,8 @@ async function loadUnits() {
 const lineOf = (c) => [c.id, `${c.tk || "layer"}=${c.layer}`, ...Object.entries(c.params).map(([k, v]) => `${k}=${v}`)].join(" ");
 // a strip's move re-attaches it (resetting its memory), so the chain goes at most every 150 ms
 const sendChain = throttle(async () => {
-  followStrips();
-  try { const r = await api("/api/chain", { lines: U.chain.filter((c) => c.on).map(lineOf) }); showChainErrors(r.report || []); }
+  const ends = followStrips();
+  try { const r = await api("/api/chain", { lines: U.chain.filter((c) => c.on).map(lineOf), anchor: ends.anchor || [], snap: ends.snap || [] }); showChainErrors(r.report || []); }
   catch (e) { info(e.message, "bad", 8000); }
 }, 150);
 // a strip the engine could not attach is marked on the desk with why; the others still play
@@ -1436,6 +1438,11 @@ function stripEl(c, k) {
   st.appendChild(h(`<div class="serr"></div>`));
   if (c.error) { st.classList.add("bad"); st.querySelector(".serr").textContent = c.error; }
   st.querySelector(".led").addEventListener("click", () => { c.on = !c.on; drawStrips(); sendChain(); });
+  {                                                              // snap-back, by the ✕: on unless switched off here
+    const uid = (c.uid ??= ++U.uid), sb = h(`<button class="snapb" aria-pressed="${!U.noSnap.has(uid)}" aria-label="Snap-back" title="Snap-back. On: when you switch this unit off (or remove it), the model goes back to where it was when you switched the unit on, crossfaded over 40 ms, so the unit's sound stops at once. Off: its effect fades over up to 20 seconds, because the model keeps reading back the frames it made with the unit on.">↺</button>`);
+    sb.addEventListener("click", () => { U.noSnap.has(uid) ? U.noSnap.delete(uid) : U.noSnap.add(uid); sb.setAttribute("aria-pressed", String(!U.noSnap.has(uid))); });
+    st.querySelector(".x").before(sb);
+  }
   st.querySelector(".x").addEventListener("click", () => { U.chain.splice(k, 1); drawStrips(); sendChain(); });
   st.querySelector(".st").title += "\nDrag to move it along the row: units at the same layer act in this order.";
   sortable(st, st.querySelector(".st"), $("#stripdesk"), k, (from, to) => { moved(U.chain, from, to); drawStrips(); sendChain(); });

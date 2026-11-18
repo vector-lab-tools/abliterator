@@ -117,8 +117,10 @@ class MRT2Engine:
     def freeze(self, preset: Dict[str, Any], seed: int, seconds: float) -> Dict[str, Any]:
         return self.call("freeze", timeout=60 + seconds * 2, preset=preset, seed=seed, seconds=seconds)
 
-    def set_chain(self, lines: List[str], on: Optional[bool] = None) -> Dict[str, Any]:
-        return self.call("chain", timeout=60, lines=lines, **({} if on is None else {"on": on}))
+    def set_chain(self, lines: List[str], on: Optional[bool] = None, anchor: Optional[List[Any]] = None,
+                  snap: Optional[List[Any]] = None) -> Dict[str, Any]:
+        return self.call("chain", timeout=60, lines=lines, **({} if on is None else {"on": on}),
+                         **({"anchor": anchor} if anchor else {}), **({"snap": snap} if snap else {}))
 
     def set_scopes(self, layers: List[int]) -> Dict[str, Any]:
         return self.call("scopes", timeout=30, layers=layers)

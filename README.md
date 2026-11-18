@@ -18,7 +18,7 @@
 
 **Author:** David M. Berry
 **Institution:** University of Sussex
-**Version:** 0.2.4
+**Version:** 0.2.5
 **Status:** alpha
 **Licence:** GPL-3.0-or-later
 **Website:** https://vector-lab-tools.github.io/abliterator/

@@ -991,3 +991,5 @@ html, body { overscroll-behavior-x: none; }
 .knob.kmini .kl { font-size: 7px; color: #8a8f9b; }
 /* the Prompt box's text a size down, so more of a typed style shows */
 #pform #ptype { font-size: 10px; }
+/* the quoted prompt the width of the preset box above it, inside the two arrows */
+.eng > .engl .pnote#prompt { margin-left: 28px; margin-right: 28px; }

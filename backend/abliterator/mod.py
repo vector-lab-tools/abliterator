@@ -58,7 +58,7 @@ PARAMS: Dict[str, Dict[str, Tuple]] = {
             "symmetry": (0.5, 0.05, 0.95), "smooth": (0.0, 0.0, 1.0)},
     "env": {"attack_s": (4.0, 0.0, 60.0), "decay_s": (4.0, 0.0, 60.0), "sustain": (0.6, 0.0, 1.0), "release_s": (4.0, 0.0, 60.0),
             "loop": (0, 0, 1), "hold_s": (4.0, 0.0, 60.0)},
-    "rand": {"rate_hz": (0.25, 0.01, 4.0), "amount": (1.0, 0.0, 1.0), "smooth": (0.5, 0.0, 1.0), "seed": (1, 0, 9999)},
+    "rand": {"rate_hz": (2.0, 0.01, 4.0), "amount": (1.0, 0.0, 1.0), "smooth": (0.5, 0.0, 1.0), "seed": (1, 0, 9999)},
     "macro": {"value": (0.0, 0.0, 1.0), "name": ("", None)},
     "steps": {"rate_hz": (2.0, 0.1, 16.0), "length": (8, 2, STEP_N), "glide": (0.0, 0.0, 1.0), "amount": (1.0, 0.0, 1.0),
               **{f"s{i}": (STEP_DEFAULT[i], -1.0, 1.0) for i in range(STEP_N)}},

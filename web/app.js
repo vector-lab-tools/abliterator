@@ -1914,7 +1914,7 @@ Object.assign(PARAM, {
   chaos: [["rate_hz", "Rate", 0.01, 4, { log: true, step: 0.01, fmt: HZ, tip: "how fast it runs along the attractor" }], ["amount", "Amount", 0, 1, { step: 0.01, fmt: PCT, tip: "scales every knob it moves" }],
     ["seed", "Seed", 0, 999, { int: true, tip: "another starting point: another path" }]],
 });
-const DEFK = { steps: { rate_hz: 2, length: 8, glide: 0, amount: 1 }, follow: { attack_s: 0.05, release_s: 0.5, floor_db: -45, amount: 1 },
+const DEFK = { rand: { rate_hz: 2 }, steps: { rate_hz: 2, length: 8, glide: 0, amount: 1 }, follow: { attack_s: 0.05, release_s: 0.5, floor_db: -45, amount: 1 },
   drift: { rate_hz: 0.05, rough: 0.4, amount: 1, seed: 1 }, chaos: { rate_hz: 0.2, amount: 1, seed: 1 } };      // where a kind's default differs from DEF
 const DEF = { rate_hz: 0.1, amount: 1, phase: 0, symmetry: 0.5, smooth: 0, attack_s: 4, decay_s: 4, sustain: 0.6, release_s: 4, hold_s: 4, loop: 0, seed: 1 };
 function setSrc(id, k, v) { MOD.spec.sources[id][k] = v; sendMod(); }

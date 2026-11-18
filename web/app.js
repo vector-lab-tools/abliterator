@@ -135,7 +135,16 @@ function knob(p) {
       x = ev.clientX; y = ev.clientY;
       nudge(d);
     };
-    const up = () => { acc = null; mine = false; holding--; if (depthMode) { sendMod(); drawEditor(); } el.removeEventListener("pointermove", move); el.removeEventListener("pointerup", up); el.removeEventListener("pointercancel", up); };
+    const x0 = e.clientX, y0 = e.clientY;
+    const up = (ev) => {
+      acc = null; mine = false; holding--;
+      if (depthMode) {
+        const moved = Math.hypot((ev?.clientX ?? x0) - x0, (ev?.clientY ?? y0) - y0) > 3;
+        if (!moved && !routeDepth(MOD.assign, p.mod)) { setRoute(MOD.assign, p.mod, START_SEND, false); el.paintMod(); }   // a click links it at the starting send
+        sendMod(); drawEditor();
+      }
+      el.removeEventListener("pointermove", move); el.removeEventListener("pointerup", up); el.removeEventListener("pointercancel", up);
+    };
     el.addEventListener("pointermove", move); el.addEventListener("pointerup", up); el.addEventListener("pointercancel", up);
   });
   let idle = null, restAt = Infinity;
@@ -379,6 +388,7 @@ function srcV(id, t, len = null) {
     : k === "drift" ? driftV(p, t) : k === "chaos" ? chaosV(p, t) : k === "follow" ? followV(t) : +p.value;
 }
 function modTime() { return MOD.playing ? MOD.t0 + (performance.now() - MOD.tAt) / 1000 : performance.now() / 1000; }
+const START_SEND = 0.5;                     // a new link's send, however it is made: drag the knob for another
 const routeDepth = (src, tgt) => MOD.spec.routes.find((r) => r.src === src && r.tgt === tgt)?.depth || 0;
 function setRoute(src, tgt, depth, send = true) {
   const had = MOD.spec.routes.find((r) => r.src === src && r.tgt === tgt);
@@ -1814,7 +1824,7 @@ function drawTiles() {
   }
 }
 // Drag and drop: a source's tile dragged over the page carries a small badge of its shape; dropped
-// on a knob that modulation can move, it links the source to it (depth 0.3, or the link's own) and
+// on a knob that modulation can move, it links the source to it (START_SEND, or the link's own) and
 // selects the source, so dragging the knob then sets how far it moves it.
 function glyph(id) {
   const k = SRC[id].kind, p = MOD.spec.sources[id] || {}, N = 32, W = 30, H = 14;
@@ -1858,7 +1868,7 @@ function dragSource(el, id) {
       if (ghost) { el.dragged = true; setTimeout(() => { el.dragged = false; }, 60); }     // the click that ends a drag is not a click
       end();
       if (!k) return;
-      const tgt = k.dataset.mod, d = routeDepth(id, tgt) || 0.15;      // a new link starts light: drag the knob for more
+      const tgt = k.dataset.mod, d = routeDepth(id, tgt) || START_SEND;
       setRoute(id, tgt, d);
       if (MOD.assign !== id) assign(id);
       MODKNOBS.forEach((x) => x.paintMod());

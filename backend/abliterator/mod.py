@@ -5,11 +5,16 @@
 Modulation: sources that move the instrument's controls over time, and the routes that join a
 source to a control with a depth.
 
-Sources: three LFOs, three envelopes, two random sources and four macros. Every source is a pure
-function of time from the start of play (frame f is at f × 40 ms), with no state carried from
-frame to frame, so live play, a freeze and a replay of a recipe compute the same values at the
-same frame. LFOs and random sources are bipolar (−1 to 1, times their Amount, which scales every
-route from them at once); the envelope and the macros are unipolar (0 to 1).
+Sources: three LFOs, three envelopes, two random sources, Steps, the Follower, Drift and Chaos, and four
+macros. Every source but the Follower is a function of time from the start of play (frame f is at
+f × 40 ms) alone, so live play and a replay of a recipe compute the same values at the same frame;
+Chaos integrates its attractor once and reads it back (_chaos_track). The Follower follows the
+loudness of the model's own output, frame by frame, from the frames written before the one it moves
+(FollowTrack): live play, a render and the output section's re-render each build the track from the
+same model output, so it replays too (exactly at Speed 1; a Follower moving an output or effect knob
+while Speed is slowed is read in output frames and replays close to, not exactly as, it was heard).
+LFOs, random sources, Steps, Drift and Chaos are bipolar (−1 to 1, times their Amount, which scales
+every route from them at once); the envelopes, the Follower and the macros are unipolar (0 to 1).
 
 Targets: the Steer doses (`dose:<direction>`), guidance and temperature (the model's
 conditioning), the master's low-pass and volume (after the model), the knobs of the Model layers
@@ -40,8 +45,12 @@ LFOS = ["lfo1", "lfo2", "lfo3"]
 RANDS = ["rand1", "rand2"]
 MACROS = ["m1", "m2", "m3", "m4"]
 ENVS = ["env", "env2", "env3"]                # "env" is envelope 1 (its id from before there were three)
-SOURCES = LFOS + ENVS + RANDS + MACROS
-BIPOLAR = set(LFOS + RANDS)
+STEPS, FOLLOWS, WILDS = ["steps"], ["follow"], ["drift", "chaos"]
+SOURCES = LFOS + ENVS + RANDS + STEPS + FOLLOWS + WILDS + MACROS
+BIPOLAR = set(LFOS + RANDS + STEPS + WILDS)
+STEP_N = 16
+STEP_DEFAULT = [1.0, -1.0, 0.5, -0.5, 0.75, -0.25, 0.25, -0.75, 1.0, 0.0, -0.5, 0.5, -1.0, 0.25, 0.75, -0.25]
+CHAOS_SYSTEMS = ["lorenz", "rossler"]
 
 # each source's settings: (default, low, high); a string default is a choice
 PARAMS: Dict[str, Dict[str, Tuple]] = {
@@ -51,6 +60,11 @@ PARAMS: Dict[str, Dict[str, Tuple]] = {
             "loop": (0, 0, 1), "hold_s": (4.0, 0.0, 60.0)},
     "rand": {"rate_hz": (0.25, 0.01, 4.0), "amount": (1.0, 0.0, 1.0), "smooth": (0.5, 0.0, 1.0), "seed": (1, 0, 9999)},
     "macro": {"value": (0.0, 0.0, 1.0), "name": ("", None)},
+    "steps": {"rate_hz": (2.0, 0.1, 16.0), "length": (8, 2, STEP_N), "glide": (0.0, 0.0, 1.0), "amount": (1.0, 0.0, 1.0),
+              **{f"s{i}": (STEP_DEFAULT[i], -1.0, 1.0) for i in range(STEP_N)}},
+    "follow": {"attack_s": (0.05, 0.01, 2.0), "release_s": (0.5, 0.04, 5.0), "floor_db": (-45.0, -70.0, -10.0), "amount": (1.0, 0.0, 1.0)},
+    "drift": {"rate_hz": (0.05, 0.005, 1.0), "rough": (0.4, 0.0, 1.0), "amount": (1.0, 0.0, 1.0), "seed": (1, 0, 9999)},
+    "chaos": {"system": ("lorenz", CHAOS_SYSTEMS), "rate_hz": (0.2, 0.01, 4.0), "amount": (1.0, 0.0, 1.0), "seed": (1, 0, 9999)},
 }
 TARGETS = {"guidance": (0.0, 8.0), "temperature": (0.5, 2.0), "lowpass_hz": (1000.0, 16000.0), "volume": (0.0, 1.0), "width": (0.0, 2.0), "spread": (0.0, 1.0)}
 DOSE_SPAN = (-0.4, 0.4)
@@ -100,7 +114,8 @@ def along(tgt: str, t: float) -> float:
 
 
 def kind(src: str) -> str:
-    return "lfo" if src in LFOS else "rand" if src in RANDS else "macro" if src in MACROS else "env"
+    return ("lfo" if src in LFOS else "rand" if src in RANDS else "macro" if src in MACROS else "steps" if src in STEPS
+            else "follow" if src in FOLLOWS else src if src in WILDS else "env")
 
 
 def target_range(tgt: str) -> Tuple[float, float]:
@@ -209,7 +224,125 @@ def env(p: Dict[str, Any], t: float, length: Optional[float]) -> float:
     return v
 
 
-def value(spec: Dict[str, Any], src: str, t: float, length: Optional[float] = None) -> float:
+def steps(p: Dict[str, Any], t: float) -> float:
+    """A sequence of `length` values, one a step at `rate_hz`; Glide eases into the next value over that share of
+    the step's end."""
+    n = int(p["length"])
+    x = t * p["rate_hz"]
+    k = int(math.floor(x))
+    a, b = p[f"s{k % n}"], p[f"s{(k + 1) % n}"]
+    g, f = p["glide"], x - k
+    if g > 0 and f > 1 - g:
+        e = (f - (1 - g)) / g
+        a = a + (b - a) * (0.5 - 0.5 * math.cos(math.pi * e))
+    return a * p.get("amount", 1.0)
+
+
+def _vnoise(seed: int, x: float) -> float:
+    k = int(math.floor(x))
+    f = x - k
+    a, b = _hash01(seed, k) * 2 - 1, _hash01(seed, k + 1) * 2 - 1
+    return a + (b - a) * (f * f * (3 - 2 * f))
+
+
+def drift(p: Dict[str, Any], t: float) -> float:
+    """A slow wander: smooth noise at the rate, with three faster layers at double the rate each, each weighted
+    by Roughness to the power of its layer."""
+    seed, x, r = int(p["seed"]), t * p["rate_hz"], p["rough"]
+    tot = wsum = 0.0
+    for o in range(4):
+        w = r ** o
+        tot += w * _vnoise(seed + 7919 * o, x * 2 ** o)
+        wsum += w
+    return max(-1.0, min(1.0, tot / wsum * 1.4)) * p.get("amount", 1.0)
+
+
+import threading as _threading  # noqa: E402
+_CH: Dict[Tuple[str, int], List[float]] = {}
+_CH_LOCK = _threading.Lock()
+CH_DT = 0.01                      # attractor time between stored samples; 1 Hz reads 1 unit of attractor time a second
+
+
+def _chaos_track(system: str, seed: int, upto: int) -> List[float]:
+    """The attractor's first coordinate, normalised to about ±1, integrated (RK4, two steps a sample) from a
+    starting point set by the seed, past its first 2,000 samples, and kept: extended as play needs more."""
+    with _CH_LOCK:
+        tr = _CH.get((system, seed))
+        if tr is None:
+            tr = _CH[(system, seed)] = []
+            st = [1.0 + 0.001 * seed, 1.0, 1.0 + 0.0007 * (seed % 97)]
+            tr.append(st)                                   # the integrator's state rides at the front
+            need = 2000
+        else:
+            need = 0
+        st = tr[0]
+        if system == "lorenz":
+            f = lambda x, y, z: (10.0 * (y - x), x * (28.0 - z) - y, x * y - (8.0 / 3.0) * z)
+            scale = 20.0
+        else:
+            f = lambda x, y, z: (-y - z, x + 0.2 * y, 0.2 + z * (x - 5.7))
+            scale = 11.0
+        h = CH_DT / 2
+        while len(tr) - 1 < upto + 1 or need:
+            for _ in range(2):
+                x, y, z = st
+                k1 = f(x, y, z)
+                k2 = f(x + h / 2 * k1[0], y + h / 2 * k1[1], z + h / 2 * k1[2])
+                k3 = f(x + h / 2 * k2[0], y + h / 2 * k2[1], z + h / 2 * k2[2])
+                k4 = f(x + h * k3[0], y + h * k3[1], z + h * k3[2])
+                st = [x + h / 6 * (k1[0] + 2 * k2[0] + 2 * k3[0] + k4[0]), y + h / 6 * (k1[1] + 2 * k2[1] + 2 * k3[1] + k4[1]),
+                      z + h / 6 * (k1[2] + 2 * k2[2] + 2 * k3[2] + k4[2])]
+            if need:
+                need -= 1
+                continue
+            tr.append(max(-1.0, min(1.0, st[0] / scale)))
+        tr[0] = st
+        return tr
+
+
+def chaos(p: Dict[str, Any], t: float) -> float:
+    """A chaotic attractor's path, read at the rate: smooth, never repeating, the same for the same seed."""
+    x = t * p["rate_hz"] / CH_DT
+    i = int(x)
+    tr = _chaos_track(p["system"], int(p["seed"]), i + 2)
+    a, b = tr[1 + i], tr[2 + i]
+    return (a + (b - a) * (x - i)) * p.get("amount", 1.0)
+
+
+class FollowTrack:
+    """The Follower's input: the level of each frame of the model's output, in order (push), and, for each
+    setting of the Follower, its value at each frame, worked out from the frames before it (at)."""
+
+    def __init__(self):
+        self.db: List[float] = []
+        self.env: Dict[Tuple[float, float], List[float]] = {}
+        self.lock = _threading.Lock()
+
+    def push(self, frame) -> None:
+        import numpy as np
+        a = np.asarray(frame, np.float64)
+        with self.lock:
+            self.db.append(max(-100.0, 20 * math.log10(math.sqrt(float((a * a).mean())) + 1e-9)) if a.size else -100.0)
+
+    def at(self, p: Dict[str, Any], f: int) -> float:
+        key = (round(p["attack_s"], 4), round(p["release_s"], 4))
+        up, down = math.exp(-FRAME_S / max(1e-3, key[0])), math.exp(-FRAME_S / max(1e-3, key[1]))
+        with self.lock:
+            e = self.env.get(key)
+            if e is None:
+                if len(self.env) >= 4:
+                    self.env.pop(next(iter(self.env)))
+                e = self.env[key] = [-100.0]                    # the follower before any frame: silence
+            f = max(0, min(int(f), len(self.db)))
+            while len(e) <= f:
+                d, cur = self.db[len(e) - 1], e[-1]
+                a = up if d > cur else down
+                e.append(cur + (1 - a) * (d - cur))
+            lvl = e[f]
+        return max(0.0, min(1.0, (lvl - p["floor_db"]) / 30.0)) * p.get("amount", 1.0)
+
+
+def value(spec: Dict[str, Any], src: str, t: float, length: Optional[float] = None, track: Optional[FollowTrack] = None) -> float:
     p = spec["sources"][src]
     k = kind(src)
     if k == "lfo":
@@ -218,11 +351,19 @@ def value(spec: Dict[str, Any], src: str, t: float, length: Optional[float] = No
         return rand(p, t)
     if k == "env":
         return env(p, t, length)
+    if k == "steps":
+        return steps(p, t)
+    if k == "drift":
+        return drift(p, t)
+    if k == "chaos":
+        return chaos(p, t)
+    if k == "follow":
+        return track.at(p, int(round(t / FRAME_S))) if track is not None else 0.0
     return float(p["value"])
 
 
-def values(spec: Dict[str, Any], t: float, length: Optional[float] = None) -> Dict[str, float]:
-    return {s: round(value(spec, s, t, length), 4) for s in SOURCES}
+def values(spec: Dict[str, Any], t: float, length: Optional[float] = None, track: Optional[FollowTrack] = None) -> Dict[str, float]:
+    return {s: round(value(spec, s, t, length, track), 4) for s in SOURCES}
 
 
 def active(spec: Dict[str, Any], model: Optional[bool] = None) -> bool:
@@ -234,7 +375,8 @@ def active(spec: Dict[str, Any], model: Optional[bool] = None) -> bool:
     return False
 
 
-def offsets(spec: Dict[str, Any], t: float, length: Optional[float] = None, curved: bool = False) -> Dict[str, float]:
+def offsets(spec: Dict[str, Any], t: float, length: Optional[float] = None, curved: bool = False,
+            track: Optional[FollowTrack] = None) -> Dict[str, float]:
     """Each routed target's offset, summed over its routes: in the target's units, except the
     low-pass, whose offset is in octaves; with `curved`, a target with a curve gets its offset as
     a share of the knob's travel."""
@@ -244,7 +386,7 @@ def offsets(spec: Dict[str, Any], t: float, length: Optional[float] = None, curv
         tgt = r["tgt"]
         if is_param(tgt):
             continue
-        v = cache.setdefault(r["src"], value(spec, r["src"], t, length))
+        v = cache.setdefault(r["src"], value(spec, r["src"], t, length, track))
         if tgt == "lowpass_hz":
             out[tgt] = out.get(tgt, 0.0) + r["depth"] * v * LP_OCTAVES
         elif curved and tgt in CURVES:
@@ -261,15 +403,15 @@ def _clamp(tgt: str, x: float) -> float:
 
 
 def apply_model(spec: Dict[str, Any], doses: Dict[str, float], sampling: Dict[str, Any], t: float,
-                length: Optional[float] = None) -> Tuple[Dict[str, float], Dict[str, Any]]:
+                length: Optional[float] = None, track: Optional[FollowTrack] = None) -> Tuple[Dict[str, float], Dict[str, Any]]:
     """The doses and sampling at time t: the knobs' settings plus the routed sources."""
-    off = offsets(spec, t, length, curved=True)
+    off = offsets(spec, t, length, curved=True, track=track)
 
     def moved(tgt: str, base: float, digits: int) -> float:
         tr = travel(tgt, base)
         if tr is not None:
             return round(along(tgt, tr + off[tgt]), digits)
-        plain = offsets({"routes": [r for r in spec["routes"] if r["tgt"] == tgt], "sources": spec["sources"]}, t, length)
+        plain = offsets({"routes": [r for r in spec["routes"] if r["tgt"] == tgt], "sources": spec["sources"]}, t, length, track=track)
         return round(_clamp(tgt, base + plain[tgt]), digits)
     d = dict(doses)
     for k in list(d):
@@ -282,12 +424,13 @@ def apply_model(spec: Dict[str, Any], doses: Dict[str, float], sampling: Dict[st
     return d, s
 
 
-def param_offsets(spec: Dict[str, Any], t: float, length: Optional[float] = None, prefix: str = "") -> Dict[str, float]:
+def param_offsets(spec: Dict[str, Any], t: float, length: Optional[float] = None, prefix: str = "",
+                  track: Optional[FollowTrack] = None) -> Dict[str, float]:
     """Each routed unit or effect knob's offset, as a share of its travel, summed over its routes."""
     out: Dict[str, float] = {}
     for r in spec["routes"]:
         if is_param(r["tgt"]) and r["tgt"].startswith(prefix):
-            out[r["tgt"]] = out.get(r["tgt"], 0.0) + r["depth"] * value(spec, r["src"], t, length)
+            out[r["tgt"]] = out.get(r["tgt"], 0.0) + r["depth"] * value(spec, r["src"], t, length, track)
     return out
 
 
@@ -310,11 +453,12 @@ def has_units(spec: Dict[str, Any]) -> bool:
     return any(r["tgt"].startswith("unit:") for r in spec["routes"])
 
 
-def apply_units(spec: Dict[str, Any], lines: List[str], t: float, length: Optional[float], info) -> List[str]:
+def apply_units(spec: Dict[str, Any], lines: List[str], t: float, length: Optional[float], info,
+                track: Optional[FollowTrack] = None) -> List[str]:
     """The strips with their routed knobs moved. info(kind, key) gives (low, high, scale, default) for a
     numeric knob, or None. Values move in 1/QUANT of the travel, so the lines change only when a move
     is large enough to matter."""
-    off = param_offsets(spec, t, length, "unit:")
+    off = param_offsets(spec, t, length, "unit:", track)
     if not off:
         return list(lines)
     out = list(lines)
@@ -341,10 +485,11 @@ def apply_units(spec: Dict[str, Any], lines: List[str], t: float, length: Option
     return out
 
 
-def apply_master(spec: Dict[str, Any], master: Dict[str, Any], t: float, length: Optional[float] = None) -> Dict[str, Any]:
-    off = offsets(spec, t, length)
+def apply_master(spec: Dict[str, Any], master: Dict[str, Any], t: float, length: Optional[float] = None,
+                 track: Optional[FollowTrack] = None) -> Dict[str, Any]:
+    off = offsets(spec, t, length, track=track)
     m = dict(master)
-    poff = param_offsets(spec, t, length, "pfx:")
+    poff = param_offsets(spec, t, length, "pfx:", track)
     if poff and m.get("fx"):
         from abliterator import postfx
         fxs = [{**sl, "params": dict(sl.get("params") or {})} for sl in m["fx"]]

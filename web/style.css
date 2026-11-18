@@ -369,7 +369,7 @@ details.more summary { cursor: pointer; color: var(--text-2); font-size: 12.5px;
 
 /* ================================================================ the synth panel (Make)
    Panels on the desk's black, as Lens's Instrument and strips; the modulation sources colour-coded. */
-:root { --c-lfo: #d9aa3f; --c-env: #f08a4b; --c-rand: #a78bfa; --c-macro: #4ac6e8; }
+:root { --c-lfo: #d9aa3f; --c-env: #f08a4b; --c-rand: #a78bfa; --c-macro: #4ac6e8; --c-steps: #5fd38d; --c-follow: #ef6f8f; --c-drift: #7fb8ff; --c-chaos: #ff6a4c; }
 .synth { display: grid; gap: 8px; padding: 10px; border-radius: 16px; background: #101216; border: 1px solid #23272f; color: #e9eaee;
   grid-template-columns: minmax(0, 6.2fr) minmax(0, 3.6fr) minmax(0, 1.9fr);
   grid-template-areas: "engine steer out" "bend bend bend" "fx fx fx" "mods mods mods" "edit edit edit"; box-shadow: var(--shadow); }
@@ -443,6 +443,8 @@ details.more summary { cursor: pointer; color: var(--text-2); font-size: 12.5px;
 .tabs button:hover { color: #e9eaee; }
 .tabs button[aria-selected="true"] { color: #fff; border-bottom-color: var(--c, var(--gold)); }
 .tabs button[data-k="macro"] { --c: var(--c-macro); } .tabs button[data-k="lfo"] { --c: var(--c-lfo); } .tabs button[data-k="env"] { --c: var(--c-env); } .tabs button[data-k="rand"] { --c: var(--c-rand); }
+.tabs button[data-k="steps"] { --c: var(--c-steps); } .tabs button[data-k="follow"] { --c: var(--c-follow); } .tabs button[data-k="wild"] { --c: var(--c-chaos); }
+canvas.graph.stepsed { cursor: crosshair; touch-action: none; }
 .tabnote { margin-left: auto; align-self: center; font-size: 11px; color: #8a8f9b; padding-right: 6px; }
 .tabnote.on { color: var(--gold); }
 #assignnote { opacity: 0; transition: opacity .15s; }          /* shown over a source, or while one is selected */

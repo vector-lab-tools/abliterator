@@ -126,3 +126,29 @@ def test_amount_scales_an_lfo_and_old_specs_keep_full_swing():
     assert mod.value(half, "lfo1", 0.1) == pytest.approx(0.5 * mod.value(full, "lfo1", 0.1))
     r = mod.clean({"sources": {"rand1": {"amount": 0}}})
     assert mod.value(r, "rand1", 3.3) == 0.0
+
+
+def test_steps_drift_chaos_are_functions_of_time():
+    s = spec()["sources"]
+    st = {**s["steps"], "length": 4, "rate_hz": 1.0, "glide": 0.0}
+    assert [mod.steps(st, t) for t in (0.5, 1.5, 2.5, 3.5, 4.5)] == [st["s0"], st["s1"], st["s2"], st["s3"], st["s0"]]
+    g = {**st, "glide": 0.5}
+    assert mod.steps(g, 0.4) == st["s0"] and abs(mod.steps(g, 0.999) - st["s1"]) < 0.01      # eased into the next
+    d = [mod.drift(s["drift"], i * 0.5) for i in range(400)]
+    assert d == [mod.drift(s["drift"], i * 0.5) for i in range(400)] and all(-1 <= x <= 1 for x in d) and max(d) - min(d) > 0.3
+    c = [mod.chaos(s["chaos"], i * 0.1) for i in range(600)]
+    assert all(-1 <= x <= 1 for x in c) and max(c) > 0.5 and min(c) < -0.5
+    r = [mod.chaos({**s["chaos"], "system": "rossler"}, i * 0.1) for i in range(600)]
+    assert r != c and all(-1 <= x <= 1 for x in r)
+    assert mod.chaos({**s["chaos"], "seed": 2}, 30.0) != mod.chaos(s["chaos"], 30.0)
+
+
+def test_follower_reads_only_frames_before():
+    import numpy as np
+    tr = mod.FollowTrack()
+    for i in range(40):
+        tr.push(np.full((1920, 2), 0.1 if 10 <= i < 20 else 0.0))
+    f = spec()["sources"]["follow"]
+    assert tr.at(f, 10) == 0.0 and tr.at(f, 12) > 0 and tr.at(f, 18) > 0.7       # frame 10 is loud; from frame 11 on it rises
+    assert tr.at(f, 30) < tr.at(f, 21) and tr.at(f, 99) == tr.at(f, 40)          # falls after; past the end, the last
+    assert mod.value(spec(), "follow", 0.6, None, None) == 0.0                    # no track: still

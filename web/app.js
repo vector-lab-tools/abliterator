@@ -291,11 +291,12 @@ document.addEventListener("keydown", (e) => { if (e.key === "Escape") { closeMen
 // The engine computes modulation at each frame; this copy of the sources' shapes draws them,
 // and the dots on the knobs, between the engine's readings.
 const SRC = {};
-[["lfo1", "LFO 1", "lfo"], ["lfo2", "LFO 2", "lfo"], ["lfo3", "LFO 3", "lfo"], ["env", "ENV 1", "env"], ["env2", "ENV 2", "env"], ["env3", "ENV 3", "env"], ["rand1", "RAND 1", "rand"], ["rand2", "RAND 2", "rand"],
+[["lfo1", "LFO 1", "lfo"], ["lfo2", "LFO 2", "lfo"], ["lfo3", "LFO 3", "lfo"], ["env", "ENV 1", "env"], ["env2", "ENV 2", "env"], ["env3", "ENV 3", "env"], ["rand1", "RAND 1", "rand"], ["rand2", "RAND 2", "rand"], ["steps", "STEPS", "steps"], ["follow", "FOLLOW", "follow"], ["drift", "DRIFT", "drift"], ["chaos", "CHAOS", "chaos"],
  ["m1", "M 1", "macro"], ["m2", "M 2", "macro"], ["m3", "M 3", "macro"], ["m4", "M 4", "macro"]]
-  .forEach(([id, label, kind]) => (SRC[id] = { id, label, kind, color: `var(--c-${kind})`, bipolar: kind === "lfo" || kind === "rand" }));
-const CSSCOL = { lfo: "#d9aa3f", env: "#f08a4b", rand: "#a78bfa", macro: "#4ac6e8" };
-const MOD = { spec: { sources: {}, routes: [] }, assign: null, on: false, touched: 0, t0: 0, tAt: performance.now(), playing: false, tab: "lfo" };
+  .forEach(([id, label, kind]) => (SRC[id] = { id, label, kind, color: `var(--c-${kind})`, bipolar: ["lfo", "rand", "steps", "drift", "chaos"].includes(kind) }));
+const tabOf = (k) => (k === "drift" || k === "chaos" ? "wild" : k);           // Drift and Chaos share the Wild tab
+const CSSCOL = { lfo: "#d9aa3f", env: "#f08a4b", rand: "#a78bfa", macro: "#4ac6e8", steps: "#5fd38d", follow: "#ef6f8f", drift: "#7fb8ff", chaos: "#ff6a4c" };
+const MOD = { spec: { sources: {}, routes: [] }, assign: null, on: false, touched: 0, t0: 0, tAt: performance.now(), playing: false, tab: "lfo", folHist: [] };
 const TGT = { guidance: { label: "Strength", span: 8 }, temperature: { label: "Temperature", span: 1.5 }, lowpass_hz: { label: "Low-pass", span: 4, oct: true }, volume: { label: "Volume", span: 1 }, width: { label: "Width", span: 2 }, spread: { label: "Spread", span: 1 } };
 // the knobs of the Model layers units and the effect slots, as modulation targets: {label, min, max, log}
 const MODTGT = {};
@@ -333,11 +334,49 @@ function envV(p, t, len) {                 // as mod.env: with Loop on, Sustain 
   if (len != null && r > 0 && t > len - r) v *= Math.max(0, (len - t) / r);
   return v;
 }
+function stepsV(p, t) {                    // as mod.steps
+  const n = Math.round(p.length), x = t * p.rate_hz, k = Math.floor(x), m = (j) => ((j % n) + n) % n;
+  let a = +p[`s${m(k)}`]; const b = +p[`s${m(k + 1)}`], g = p.glide, f = x - k;
+  if (g > 0 && f > 1 - g) { const e = (f - (1 - g)) / g; a += (b - a) * (0.5 - 0.5 * Math.cos(Math.PI * e)); }
+  return a * (p.amount ?? 1);
+}
+function vnoise(seed, x) { const k = Math.floor(x), f = x - k, a = hash01(seed, k) * 2 - 1, b = hash01(seed, k + 1) * 2 - 1; return a + (b - a) * (f * f * (3 - 2 * f)); }
+function driftV(p, t) {                    // as mod.drift
+  const seed = Math.round(p.seed), x = t * p.rate_hz, r = p.rough;
+  let tot = 0, ws = 0;
+  for (let o = 0; o < 4; o++) { const w = r ** o; tot += w * vnoise(seed + 7919 * o, x * 2 ** o); ws += w; }
+  return Math.max(-1, Math.min(1, (tot / ws) * 1.4)) * (p.amount ?? 1);
+}
+const CHT = new Map();                      // as mod._chaos_track, for drawing: the attractor integrated once a seed
+function chaosTrack(system, seed, upto) {
+  const key = `${system}:${seed}`;
+  let T = CHT.get(key);
+  const f = system === "lorenz" ? (x, y, z) => [10 * (y - x), x * (28 - z) - y, x * y - (8 / 3) * z] : (x, y, z) => [-y - z, x + 0.2 * y, 0.2 + z * (x - 5.7)];
+  const scale = system === "lorenz" ? 20 : 11, h = 0.005;
+  if (!T) { T = { st: [1 + 0.001 * seed, 1, 1 + 0.0007 * (seed % 97)], v: [], need: 2000 }; CHT.set(key, T); }
+  while (T.v.length < upto + 1 || T.need) {
+    for (let r = 0; r < 2; r++) {
+      const [x, y, z] = T.st, k1 = f(x, y, z), k2 = f(x + h / 2 * k1[0], y + h / 2 * k1[1], z + h / 2 * k1[2]),
+        k3 = f(x + h / 2 * k2[0], y + h / 2 * k2[1], z + h / 2 * k2[2]), k4 = f(x + h * k3[0], y + h * k3[1], z + h * k3[2]);
+      T.st = [0, 1, 2].map((j) => T.st[j] + h / 6 * (k1[j] + 2 * k2[j] + 2 * k3[j] + k4[j]));
+    }
+    if (T.need) { T.need--; continue; }
+    T.v.push(Math.max(-1, Math.min(1, T.st[0] / scale)));
+  }
+  return T.v;
+}
+function chaosV(p, t) { const x = Math.max(0, t) * p.rate_hz / 0.01, i = Math.floor(x), v = chaosTrack(p.system, Math.round(p.seed), i + 1); return (v[i] + (v[i + 1] - v[i]) * (x - i)) * (p.amount ?? 1); }
+function followV(t) {                       // the engine's Follower readings (status), the last at or before t
+  const H = MOD.folHist; let v = 0;
+  for (let i = H.length - 1; i >= 0; i--) if (H[i][0] <= t) { v = H[i][1]; break; }
+  return v;
+}
 function srcV(id, t, len = null) {
   const p = MOD.spec.sources[id];
   if (!p) return 0;
   const k = SRC[id].kind;
-  return k === "lfo" ? lfoV(p, t) : k === "rand" ? randV(p, t) : k === "env" ? envV(p, Math.max(0, t), len) : +p.value;
+  return k === "lfo" ? lfoV(p, t) : k === "rand" ? randV(p, t) : k === "env" ? envV(p, Math.max(0, t), len) : k === "steps" ? stepsV(p, t)
+    : k === "drift" ? driftV(p, t) : k === "chaos" ? chaosV(p, t) : k === "follow" ? followV(t) : +p.value;
 }
 function modTime() { return MOD.playing ? MOD.t0 + (performance.now() - MOD.tAt) / 1000 : performance.now() / 1000; }
 const routeDepth = (src, tgt) => MOD.spec.routes.find((r) => r.src === src && r.tgt === tgt)?.depth || 0;
@@ -400,7 +439,7 @@ function assign(src) {
   const n = $("#assignnote");
   n.classList.toggle("on", !!MOD.assign);
   n.textContent = MOD.assign ? `${SRC[MOD.assign].label}: each knob it can move is now its send. Drag up for more, down for less; double-click removes. Esc to finish.` : "Drag a source above onto a knob to link it.";
-  if (MOD.assign) { MOD.tab = SRC[MOD.assign].kind; drawEditor(); }
+  if (MOD.assign) { MOD.tab = tabOf(SRC[MOD.assign].kind); drawEditor(); }
   drawTiles(); MODKNOBS.forEach((k) => k.paint());          // every knob it can move turns into its send, or back
 }
 
@@ -1761,7 +1800,7 @@ function drawTiles() {
       const s = SRC[id];
       const el = h(`<button class="mt" data-s="${id}" style="--c:${s.color}" title="${esc(s.label)}: drag onto a knob to link it, or click to assign it to knobs; double-click to edit it"><b>${esc(s.label)}</b><span></span><canvas width="240" height="84"></canvas></button>`);
       el.addEventListener("click", () => { if (el.dragged) { el.dragged = false; return; } if (MOD.on) assign(id); else info("Modulation is written for Magenta RT 2.", "bad"); });
-      el.addEventListener("dblclick", () => { MOD.tab = s.kind; drawEditor(); });
+      el.addEventListener("dblclick", () => { MOD.tab = tabOf(s.kind); drawEditor(); });
       dragSource(el, id); hintOn(el);
       box.appendChild(el);
     }
@@ -1783,6 +1822,10 @@ function glyph(id) {
   if (k === "lfo") f = (x) => lfoV({ ...p, phase: 0 }, x / (p.rate_hz || 1)) * 0.5 + 0.5;
   else if (k === "rand") f = (x) => randV({ ...p, smooth: Math.min(p.smooth ?? 0.5, 0.6) }, x * 4 / (p.rate_hz || 1)) * 0.5 + 0.5;
   else if (k === "env") { const L = (p.attack_s || 0) + (p.decay_s || 0) + 4 + (p.release_s || 0); f = (x) => envV(p, x * L, L); }
+  else if (k === "steps") { const n = Math.round(p.length || 8); f = (x) => stepsV({ ...p, glide: 0, rate_hz: 1, amount: 1 }, Math.min(x, 0.999) * n) * 0.5 + 0.5; }   // one cycle
+  else if (k === "drift") f = (x) => driftV(p, x * 4 / (p.rate_hz || 0.05)) * 0.5 + 0.5;
+  else if (k === "chaos") f = (x) => chaosV(p, x * 4 / (p.rate_hz || 0.2)) * 0.5 + 0.5;
+  else if (k === "follow") f = (x) => Math.max(0, Math.sin(x * 9) * Math.exp(-x * 1.5));
   else return `<svg viewBox="0 0 ${W} ${H}" aria-hidden="true"><circle cx="15" cy="7" r="5.5" fill="none" stroke="currentColor" stroke-width="1.6"/><line x1="15" y1="7" x2="15" y2="2.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>`;
   const pts = Array.from({ length: N + 1 }, (_, i) => `${((i / N) * W).toFixed(1)},${(H - 1 - f(i / N) * (H - 2)).toFixed(1)}`).join(" ");
   return `<svg viewBox="0 0 ${W} ${H}" aria-hidden="true"><polyline points="${pts}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/></svg>`;
@@ -1831,7 +1874,7 @@ function traceTiles() {
     const id = el.dataset.s, c = el.querySelector("canvas"), g = c.getContext("2d"), w = c.width, hh = c.height, col = CSSCOL[SRC[id].kind];
     g.clearRect(0, 0, w, hh);
     if (!MOD.spec.sources[id]) continue;
-    const bip = SRC[id].bipolar, win = SRC[id].kind === "env" ? 30 : 8, N = 120;
+    const bip = SRC[id].bipolar, win = SRC[id].kind === "env" ? 30 : SRC[id].kind === "drift" ? 40 : 8, N = 120;
     const y = (v) => (bip ? hh / 2 - v * hh * 0.4 : hh * 0.9 - v * hh * 0.8);
     g.fillStyle = col + "22"; g.strokeStyle = col; g.lineWidth = 3;
     g.beginPath();
@@ -1850,6 +1893,19 @@ const PARAM = {
   env: [["attack_s", "Attack", 0, 60, { step: 0.1, fmt: (v) => `${v.toFixed(1)} s` }], ["decay_s", "Decay", 0, 60, { step: 0.1, fmt: (v) => `${v.toFixed(1)} s` }], ["sustain", "Sustain", 0, 1, { step: 0.01 }], ["hold_s", "Hold", 0, 60, { step: 0.1, fmt: (v) => `${v.toFixed(1)} s`, tip: "with Loop on: how long the envelope holds at Sustain before its release" }], ["release_s", "Release", 0, 60, { step: 0.1, fmt: (v) => `${v.toFixed(1)} s`, tip: "with Loop on: the fall from Sustain to zero before the envelope starts again" }]],
   rand: [["rate_hz", "Rate", 0.01, 4, { log: true, step: 0.01, fmt: (v) => (v < 0.1 ? v.toFixed(3) : v.toFixed(2)) + " Hz" }], ["amount", "Amount", 0, 1, { step: 0.01, fmt: (v) => `${Math.round(v * 100)}%`, tip: "the source's amplitude: scales every knob it moves" }], ["smooth", "Smooth", 0, 1, { step: 0.01 }], ["seed", "Seed", 0, 999, { int: true }]],
 };
+const HZ = (v) => (v < 0.1 ? v.toFixed(3) : v.toFixed(2)) + " Hz", PCT = (v) => `${Math.round(v * 100)}%`, SECS = (v) => (v < 1 ? `${Math.round(v * 1000)} ms` : `${v.toFixed(2)} s`);
+Object.assign(PARAM, {
+  steps: [["rate_hz", "Rate", 0.1, 16, { log: true, step: 0.01, fmt: (v) => `${v.toFixed(2)}/s`, tip: "steps a second" }], ["length", "Length", 2, 16, { int: true, tip: "how many steps before it repeats" }],
+    ["glide", "Glide", 0, 1, { step: 0.01, tip: "the share of each step spent easing into the next" }], ["amount", "Amount", 0, 1, { step: 0.01, fmt: PCT, tip: "scales every knob it moves" }]],
+  follow: [["attack_s", "Attack", 0.01, 2, { log: true, step: 0.001, fmt: SECS, tip: "how fast it rises with the sound" }], ["release_s", "Release", 0.04, 5, { log: true, step: 0.001, fmt: SECS, tip: "how fast it falls back" }],
+    ["floor_db", "Floor", -70, -10, { step: 1, fmt: (v) => `${v.toFixed(0)} dB`, tip: "the level it reads as 0; 30 dB above it reads as 1" }], ["amount", "Amount", 0, 1, { step: 0.01, fmt: PCT, tip: "scales every knob it moves" }]],
+  drift: [["rate_hz", "Rate", 0.005, 1, { log: true, step: 0.001, fmt: HZ, tip: "how fast it wanders" }], ["rough", "Roughness", 0, 1, { step: 0.01, tip: "how much faster detail rides on the wander" }],
+    ["amount", "Amount", 0, 1, { step: 0.01, fmt: PCT, tip: "scales every knob it moves" }], ["seed", "Seed", 0, 999, { int: true, tip: "another path" }]],
+  chaos: [["rate_hz", "Rate", 0.01, 4, { log: true, step: 0.01, fmt: HZ, tip: "how fast it runs along the attractor" }], ["amount", "Amount", 0, 1, { step: 0.01, fmt: PCT, tip: "scales every knob it moves" }],
+    ["seed", "Seed", 0, 999, { int: true, tip: "another starting point: another path" }]],
+});
+const DEFK = { steps: { rate_hz: 2, length: 8, glide: 0, amount: 1 }, follow: { attack_s: 0.05, release_s: 0.5, floor_db: -45, amount: 1 },
+  drift: { rate_hz: 0.05, rough: 0.4, amount: 1, seed: 1 }, chaos: { rate_hz: 0.2, amount: 1, seed: 1 } };      // where a kind's default differs from DEF
 const DEF = { rate_hz: 0.1, amount: 1, phase: 0, symmetry: 0.5, smooth: 0, attack_s: 4, decay_s: 4, sustain: 0.6, release_s: 4, hold_s: 4, loop: 0, seed: 1 };
 function setSrc(id, k, v) { MOD.spec.sources[id][k] = v; sendMod(); }
 let editorKnobs = [];
@@ -1858,7 +1914,7 @@ function drawEditor() {
   const ed = $("#editor");
   ed.innerHTML = ""; editorKnobs = [];
   if (MOD.tab === "macro") { ed.appendChild(h(`<div class="macros-ed" id="macros"></div>`)); drawMacros(); return; }
-  const ids = Object.keys(SRC).filter((id) => SRC[id].kind === MOD.tab);
+  const ids = Object.keys(SRC).filter((id) => tabOf(SRC[id].kind) === MOD.tab);
   for (const id of ids) {
     const s = SRC[id], p = MOD.spec.sources[id];
     if (!p) continue;
@@ -1883,11 +1939,29 @@ function drawEditor() {
       b.addEventListener("click", () => { setSrc(id, "loop", p.loop ? 0 : 1); drawEditor(); });
       sh.appendChild(b); col.appendChild(sh);
     }
+    if (s.kind === "chaos") {                                 // which attractor
+      const sh = h(`<div class="shapes"></div>`);
+      for (const [k, name] of [["lorenz", "Lorenz"], ["rossler", "Rössler"]]) {
+        const b = h(`<button class="loopbtn" aria-pressed="${p.system === k}" title="${name}'s attractor">${name}</button>`);
+        b.addEventListener("click", () => { setSrc(id, "system", k); drawEditor(); });
+        sh.appendChild(b);
+      }
+      col.appendChild(sh);
+    }
     const g = h(`<canvas class="graph" width="600" height="92" data-g="${id}"></canvas>`);
     col.appendChild(g);
+    if (s.kind === "steps") {                                 // draw the steps: press and drag across the bars
+      g.classList.add("stepsed"); g.title = "Press and drag to draw the steps; up is positive";
+      const at = (e) => { const r = g.getBoundingClientRect(), n = Math.round(p.length);
+        const i = Math.max(0, Math.min(n - 1, Math.floor(((e.clientX - r.left) / r.width) * n))), v = Math.max(-1, Math.min(1, 1 - 2 * (e.clientY - r.top) / r.height));
+        p[`s${i}`] = Math.round(v * 20) / 20; drawGraphs(); };
+      g.addEventListener("pointerdown", (e) => { g.setPointerCapture(e.pointerId); at(e);
+        const mv = (ev) => at(ev), up = () => { g.removeEventListener("pointermove", mv); g.removeEventListener("pointerup", up); MOD.touched = Date.now(); sendMod(); drawTiles(); };
+        g.addEventListener("pointermove", mv); g.addEventListener("pointerup", up); });
+    }
     const kr = h(`<div class="krow"></div>`);
     for (const [k, label, min, max, o] of PARAM[s.kind]) {
-      const kn = knob({ label, min, max, reset: DEF[k], get: () => +MOD.spec.sources[id][k], put: (v) => { setSrc(id, k, v); drawGraphs(); }, ...o });
+      const kn = knob({ label, min, max, reset: DEFK[s.kind]?.[k] ?? DEF[k], get: () => +MOD.spec.sources[id][k], put: (v) => { setSrc(id, k, v); drawGraphs(); }, ...o });
       kr.appendChild(kn); editorKnobs.push(kn);
       if (s.kind === "env" && (k === "hold_s" || k === "release_s")) dimKnob(kn, !p.loop);
     }
@@ -1919,12 +1993,28 @@ function drawGraphs() {
     g.strokeStyle = "#23272f"; g.lineWidth = 1; g.beginPath(); g.moveTo(0, hh / 2); g.lineTo(w, hh / 2); g.stroke();
     const p = MOD.spec.sources[id];
     const cyc = p.attack_s + p.decay_s + (p.hold_s ?? 4) + p.release_s;
-    const span = s.kind === "lfo" ? 1 / p.rate_hz : s.kind === "rand" ? 8 / p.rate_hz / 2 : p.loop ? Math.max(4, 2 * cyc) : Math.max(8, p.attack_s + p.decay_s + 4);
+    if (s.kind === "steps") {                                 // the steps as bars, the ones past Length dimmed
+      const n = Math.round(p.length), bw = w / 16;
+      for (let i = 0; i < 16; i++) { const v = +p[`s${i}`], y0 = hh / 2, y1 = hh / 2 - v * hh * 0.42;
+        g.fillStyle = i < n ? col : "#2a2e37"; g.fillRect(i * bw + 3, Math.min(y0, y1), bw - 6, Math.max(2, Math.abs(y1 - y0))); }
+      g.fillStyle = "#5a606d"; g.font = "18px ui-monospace, Menlo, monospace"; g.textAlign = "right"; g.fillText(`${n} steps · ${(n / p.rate_hz).toFixed(1)} s`, w - 6, hh - 4); g.textAlign = "left";
+      return;
+    }
+    if (s.kind === "follow") {                                // what it has read in the last 20 s of play
+      const H = MOD.folHist, t1 = H.length ? H[H.length - 1][0] : 0;
+      g.strokeStyle = col; g.lineWidth = 3; g.beginPath();
+      H.filter((q) => q[0] >= t1 - 20).forEach((q, i) => { const x = w - ((t1 - q[0]) / 20) * w, y = hh * 0.92 - q[1] * hh * 0.84; i ? g.lineTo(x, y) : g.moveTo(x, y); });
+      g.stroke(); g.fillStyle = "#5a606d"; g.font = "20px ui-monospace, Menlo, monospace"; g.fillText(H.length ? "the last 20 s" : "reads the sound while it plays", 8, 22);
+      return;
+    }
+    const span = s.kind === "lfo" ? 1 / p.rate_hz : s.kind === "rand" ? 8 / p.rate_hz / 2 : s.kind === "drift" || s.kind === "chaos" ? Math.min(240, 4 / p.rate_hz)
+      : p.loop ? Math.max(4, 2 * cyc) : Math.max(8, p.attack_s + p.decay_s + 4);
     const len = null, N = 400;
     const y = (v) => (s.bipolar ? hh / 2 - v * hh * 0.42 : hh * 0.92 - v * hh * 0.84);
     g.strokeStyle = col; g.lineWidth = 3; g.beginPath();
     for (let i = 0; i <= N; i++) {
-      const t = (i / N) * span, v = s.kind === "lfo" ? lfoV({ ...p, phase: p.phase }, t) : s.kind === "rand" ? randV(p, t) : envV(p, t, len);
+      const t = (i / N) * span, v = s.kind === "lfo" ? lfoV({ ...p, phase: p.phase }, t) : s.kind === "rand" ? randV(p, t) : s.kind === "drift" ? driftV(p, t)
+        : s.kind === "chaos" ? chaosV(p, t) : envV(p, t, len);
       i ? g.lineTo((i / N) * w, y(v)) : g.moveTo(0, y(v));
     }
     g.stroke();
@@ -2047,6 +2137,10 @@ async function poll() {
       S.playing = !!s.playing;
       MOD.playing = !!s.playing;
       if (s.playing) { MOD.t0 = s.seconds; MOD.tAt = performance.now(); }
+      if (s.playing && s.mod_values && s.mod_values.follow != null) {      // the Follower is read from the engine, not computed here
+        MOD.folHist.push([s.seconds, s.mod_values.follow]);
+        while (MOD.folHist.length && MOD.folHist[0][0] < s.seconds - 60) MOD.folHist.shift();
+      } else if (!s.playing && MOD.folHist.length) MOD.folHist = [];
       if (s.mod) adoptMod(s.mod);
       if (Date.now() - SW.touched > 800 && "steer_on" in s) { SW.steer = s.steer_on !== false; SW.layers = s.layers_on !== false; paintSwitches(); }
   });

@@ -482,12 +482,13 @@ class Proc:
         dirs = dirs if dirs is not None else dr.load_all(DIRS)
         return units.attach(lines, (self.n_layers, self.stream_stats, dirs, lambda: self.hooks.frame, self.components), strict, store, native=True)
 
-    def _mod_units(self, spec: Dict[str, Any], base: List[str], t: float, length: Optional[float], now: Dict[str, Any]):
+    def _mod_units(self, spec: Dict[str, Any], base: List[str], t: float, length: Optional[float], now: Dict[str, Any],
+                   track: Optional["mod.FollowTrack"] = None):
         """Modulation of the units' knobs at one frame, the same live and offline: the strips with their
         routed knobs moved, attached again with the units' memory kept, only when the lines change.
         `now` holds the store and the lines last attached (None: the strips as written)."""
         from abliterator import units
-        lines = mod.apply_units(spec, base, t, length, units.param_info) if base and mod.has_units(spec) else None
+        lines = mod.apply_units(spec, base, t, length, units.param_info, track) if base and mod.has_units(spec) else None
         if lines == base:
             lines = None
         if lines != now.get("lines"):
@@ -625,6 +626,7 @@ class Proc:
         unow = {"store": first.get("store"), "lines": None}
         pre, post = [], []
         anchors: Dict[str, Any] = {}
+        follow = mod.FollowTrack()                       # the Follower's input: the frames written so far
         try:
             for f in range(frames):
                 self.hooks.frame = f
@@ -650,14 +652,15 @@ class Proc:
                     if "steer_on" in m:
                         steer_on = bool(m["steer_on"])
                 t = f * mod.FRAME_S
-                self._mod_units(mspec, chain_now, t, length, unow)
-                d, smp = mod.apply_model(mspec, doses, sampling, t, length) if mod.active(mspec, model=True) else (doses, sampling)
+                self._mod_units(mspec, chain_now, t, length, unow, follow)
+                d, smp = mod.apply_model(mspec, doses, sampling, t, length, follow) if mod.active(mspec, model=True) else (doses, sampling)
                 if not steer_on:
                     d = {k: 0.0 for k in d}
                 cond = self._apply(d, smp, prompt, memo)
                 a, state = self._step_snapping(state, cond, anchors, anc, snp, f)
+                follow.push(a)
                 pre.append(a)
-                master.update(mod.apply_master(mspec, mbase, t, length) if mod.active(mspec, model=False) else mbase)
+                master.update(mod.apply_master(mspec, mbase, t, length, follow) if mod.active(mspec, model=False) else mbase)
                 post.append(master.process(a))
                 if progress and f % 250 == 0:
                     progress(f, frames)
@@ -696,6 +699,7 @@ class Proc:
 
     def _reset(self):
         self.anchors: Dict[str, Any] = {}              # snap-back: the model's state kept for each strip switched on
+        self.follow_track = mod.FollowTrack()           # the Follower's input: this take's frames, as written
         self.ring: "collections.deque" = collections.deque()
         self.buf = np.zeros((0, CHANNELS), np.float32)
         self.conceal = Conceal(SR)                     # dropouts covered without a click (dsp.Conceal)
@@ -849,9 +853,9 @@ class Proc:
                     anc += p["move"].get("anchor") or []
                     snp += p["move"].get("snap") or []
             t = self.gen * mod.FRAME_S
-            self._mod_units(self.mod_spec, self.heard_chain(), t, None, self.unit_now)
+            self._mod_units(self.mod_spec, self.heard_chain(), t, None, self.unit_now, self.follow_track)
             if mod.active(self.mod_spec, model=True):
-                d, smp = mod.apply_model(self.mod_spec, self.doses, self.sampling, t)
+                d, smp = mod.apply_model(self.mod_spec, self.doses, self.sampling, t, None, self.follow_track)
             else:
                 d, smp = self.doses, self.sampling
             if not self.steer_on:
@@ -870,6 +874,7 @@ class Proc:
         finally:
             self.hooks.measuring = False
         self.step_ms.append((time.perf_counter() - t0) * 1000); self._ph("read")
+        self.follow_track.push(a)
         r = max(0.125, float(getattr(getattr(self, "speed", None), "ratio", 1.0) or 1.0))   # slower playback: each frame in hand lasts longer
         cushion = self.lead * FRAME_MS / r - 20                       # what the knob's frames cover, less the card's own margin
         if self.step_ms[-1] > 0.85 * cushion:                         # this step would have used most of it: hold enough for one like it
@@ -947,7 +952,7 @@ class Proc:
                 self.scope_n -= len(self.scope_hist.popleft())
             spec = self.mod_spec
             if mod.active(spec, model=False):                   # the master's controls, moved at the frame being heard
-                self.master.update(mod.apply_master(spec, self.master_base, (self.played // HOP) * mod.FRAME_S))
+                self.master.update(mod.apply_master(spec, self.master_base, (self.played // HOP) * mod.FRAME_S, None, self.follow_track))
                 self.master_modded = True
             elif self.master_modded:
                 self.master.update(self.master_base)
@@ -1110,7 +1115,7 @@ class Proc:
                       "underruns": self.underruns, "xruns": self.xruns, "clicks": list(self.clicks),
                       "cb_ms_p50": round(float(np.median(self.cb_ms)), 2) if self.cb_ms else None,
                       "cb_ms_max": round(float(max(self.cb_ms)), 2) if self.cb_ms else None, "level": heard[-1][2] if heard else 0.0, "level_lr": heard[-1][3] if heard else [0.0, 0.0], "peak_lr": [round(max(d[4][c] for d in heard[-12:]), 4) for c in range(len(heard[-1][4]))] if heard else [0.0, 0.0],
-                      "mod_values": mod.values(self.mod_spec, (self.played // HOP) * mod.FRAME_S), "eff": getattr(self, "eff", None)})
+                      "mod_values": mod.values(self.mod_spec, (self.played // HOP) * mod.FRAME_S, None, self.follow_track) if self.playing else None, "eff": getattr(self, "eff", None)})
         return s
 
     def about(self) -> Dict[str, Any]:
@@ -1175,8 +1180,13 @@ class Proc:
         spec = mod.clean(start_mod, list(self.vectors))
         self.last_where = None
         changes = [(int(mv["speed_at"]), float(mv["speed"]), mv.get("speed_mode", "tape")) for mv in moves if "speed_at" in mv]
+        follow = mod.FollowTrack()                       # the Follower's input, from the same model output as live
+        if frame0:
+            follow.db = [-100.0] * frame0
+        for f in range(len(pre) // HOP):
+            follow.push(pre[f * HOP:(f + 1) * HOP])
         if heard_speed(base)[0] != 1.0 or changes:
-            return self._post_slowed(pre, m, base, spec, moves, changes, frame0, unity, length)
+            return self._post_slowed(pre, m, base, spec, moves, changes, frame0, unity, length, follow)
         by: Dict[int, List[Dict[str, Any]]] = {}
         for mv in moves:
             if "master" in mv or "mod" in mv:
@@ -1188,12 +1198,12 @@ class Proc:
                     base.update(mv["master"])
                 if "mod" in mv:
                     spec = mod.clean(mv["mod"], list(self.vectors))
-            m.update(mod.apply_master(spec, base, (frame0 + f) * mod.FRAME_S, length) if mod.active(spec, model=False) else base)
+            m.update(mod.apply_master(spec, base, (frame0 + f) * mod.FRAME_S, length, follow) if mod.active(spec, model=False) else base)
             y = m.process(pre[f * HOP:(f + 1) * HOP])
             out.append(y / max(float(base["volume"]), 1e-6) if unity else y)
         return np.concatenate(out) if out else pre
 
-    def _post_slowed(self, pre, m, base, spec, moves, changes, frame0, unity, length) -> np.ndarray:
+    def _post_slowed(self, pre, m, base, spec, moves, changes, frame0, unity, length, follow=None) -> np.ndarray:
         """post_of with the Speed stage: the model's sound read slower, each change at the output sample it was
         taken at live, then the output section in output time (as live: its modulation at the frame being heard,
         its moves where their model frame came out). Keeps, for each model frame, where it came out (last_where)."""
@@ -1214,7 +1224,7 @@ class Proc:
                 if "mod" in mv:
                     spec = mod.clean(mv["mod"], list(self.vectors))
                 j += 1
-            m.update(mod.apply_master(spec, base, (b // HOP) * mod.FRAME_S, length) if mod.active(spec, model=False) else base)
+            m.update(mod.apply_master(spec, base, (b // HOP) * mod.FRAME_S, length, follow) if mod.active(spec, model=False) else base)
             z = m.process(y[b:b + HOP].astype(np.float32))
             out.append(z / max(float(base["volume"]), 1e-6) if unity else z)
         return np.concatenate(out) if out else y

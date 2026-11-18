@@ -166,6 +166,22 @@ def test_mod_constant_macro_equals_the_dose(p):
     assert np.array_equal(a, b)
 
 
+def test_follower_moves_the_sound_and_its_post_replays(p):
+    """The Follower reads the model's own output: a render with it routed to a dose and to the volume differs from
+    the plain one, repeats exactly, and the output section's re-render from the model output (post_of, as a saved
+    sound is made) matches the render's own output, so the track is built the same way in both."""
+    name = sorted(p.vectors)[0]
+    spec = _modspec(p, [{"src": "follow", "tgt": f"dose:{name}", "depth": 0.5}, {"src": "follow", "tgt": "volume", "depth": -0.5}],
+                    {"follow": {"floor_db": -60.0, "attack_s": 0.05, "release_s": 0.3}})
+    plain = p.render({"prompt": P, "seed": 3}, F)["pre"]
+    st = {"mod": spec, "master": {"volume": 0.8}}
+    a = p.render({"prompt": P, "seed": 3, "start": st}, F)
+    b = p.render({"prompt": P, "seed": 3, "start": st}, F)
+    assert np.array_equal(a["pre"], b["pre"]) and not np.allclose(a["pre"], plain)
+    post = p.post_of(a["pre"], {**st["master"]}, [], 0, spec)
+    assert np.allclose(post, a["post"], atol=1e-6)
+
+
 def test_mod_lfo_moves_the_sound_and_live_equals_render(p):
     name = sorted(p.vectors)[0]
     spec = _modspec(p, [{"src": "lfo1", "tgt": f"dose:{name}", "depth": 0.4}, {"src": "lfo2", "tgt": "temperature", "depth": 0.2}],

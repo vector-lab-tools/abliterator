@@ -766,6 +766,7 @@ class Proc:
         if not self.playing:
             return None
         self.playing = False
+        self.boost = 0                                   # the automatic buffer's frames end with the take
         self.stream.stop()
         self.stream.close()
         return self._save()
@@ -1094,7 +1095,7 @@ class Proc:
 
     def status(self) -> Dict[str, Any]:
         s = {"tool": TOOL, "version": VERSION, "state": self.status_text, "error": self.error, "playing": self.playing,
-             "model": self.info(), "lead": self.lead, "lead_boost": self.boost, "lead_range": [1, 12], "frame_ms": FRAME_MS, "block": self.block,
+             "model": self.info(), "lead": self.lead, "lead_boost": self.boost if self.playing else 0, "lead_range": [1, 12], "frame_ms": FRAME_MS, "block": self.block,
              "doses": dict(self.doses), "master": dict(self.master_base), "sampling": dict(self.sampling),
              "mod": self.mod_spec, "master_now": self.master.settings(), "scope": self.scope(), "scope_lr": getattr(self, "scope_lr", None), "field": self.field() if self.playing else None, "stages": self.master.readings() if self.playing else None,
              "steer_on": self.steer_on, "layers_on": self.layers_on, "scopes": list(self.meters.at), "meters": self.meters.payload(), "spec": self.spectro.payload(),

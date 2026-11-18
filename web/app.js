@@ -687,7 +687,7 @@ const outToggles = [toggle("Bypass", () => !S.master.on, (v) => sendMaster({ on:
 outToggles[3].title = "De-click: redraws the few-sample bursts a unit can make the model write (Quantise at low bits makes them), across 1.3 ms of look-ahead; drum attacks are left as they are";
 outToggles[0].title = "Bypass: the model straight to Volume, skipping auto level, the effects, Dynamics, Width/Spread, the low-pass and the limiter";
 outToggles[1].title = "Auto level: holds the loudness steady (−20 dBFS) while the controls move, so a move is heard as a change of sound more than of level. Saved sounds keep it.";
-const leadKnob = knob({ label: "Buffer", min: 1, max: 12, int: true, reset: 2, get: () => +(S.status.lead || 2), put: (v) => { S.status.lead = v; api("/api/lead", { lead: v }).catch(fail); }, fmt: (v) => `${v * S.frameMs}${S.status.lead_boost ? ` +${S.status.lead_boost * S.frameMs}` : ""} ms`, tip: "frames made ahead of the sound card (+: frames the engine added by itself after a step ran long, given back one at a time after a quiet minute): shorter answers sooner and risks dropouts" });
+const leadKnob = knob({ label: "Buffer", min: 1, max: 12, int: true, reset: 2, get: () => +(S.status.lead || 2), put: (v) => { S.status.lead = v; api("/api/lead", { lead: v }).catch(fail); }, fmt: (v) => `${(v + (S.status.lead_boost || 0)) * S.frameMs} ms`, tip: "frames made ahead of the sound card: shorter answers sooner and risks dropouts. Shown in gold when the engine has added frames by itself after a step ran long (given back one at a time after a quiet minute); the readout is then the total" });
 outKnobs.forEach((k) => $("#outknobs").appendChild(k));
 // the stereo field's knobs, beside its scope at the foot of the Engine panel
 const widenKnobs = [
@@ -2177,6 +2177,11 @@ async function poll() {
   });
   part("readout", () => {
       if (!holding) leadKnob.paint();
+      {                                                            // the automatic buffer: the total in gold, the split on hover
+        const b = S.status.lead_boost || 0, set = (S.status.lead || 2) * S.frameMs;
+        leadKnob.classList.toggle("boosted", b > 0);
+        leadKnob.querySelector(".kv").title = b ? `${set} ms set, +${b * S.frameMs} ms added by the engine after a step ran long` : "";
+      }
       if (s.frame_ms) S.frameMs = s.frame_ms;
       const name = s.model?.model_id || (s.engines || []).find((e) => e.id === s.engine)?.label || "";
       $("#modelchip").innerHTML = `<b>${esc(name)}</b> · ` + (s.error ? `<span class="busy">${esc(s.error)}</span>` : s.freezing ? `<span class="busy">freezing ${s.freezing[0]} / ${s.freezing[1]} frames</span>` : s.playing ? `playing ${esc(s.preset)} · seed ${s.seed}` : `<span class="${s.state === "ready" ? "" : "busy"}">${esc(s.state)}</span>`);

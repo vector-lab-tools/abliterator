@@ -718,7 +718,7 @@ body.moddrag .knob[data-mod].drophover svg { box-shadow: 0 0 0 3px var(--dragc),
 .steerctl .pchk { font-size: 11px; }
 
 /* Output as a grid: Low-pass and Volume, then Buffer beside the three switches in one column */
-#pn-out .outk { grid-template-columns: 1fr 1fr; align-items: center; justify-items: center; gap: 8px 6px; align-content: start; }
+#pn-out .outk { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: center; justify-items: center; gap: 8px 6px; align-content: start; }
 #pn-out .outtg { display: flex; flex-direction: column; gap: 4px; width: 100%; }
 #pn-out .outtg .tg { width: 100%; justify-content: flex-start; }
 .tg:focus:not(:focus-visible) { outline: none; box-shadow: none; }
@@ -798,7 +798,7 @@ body.moddrag .knob[data-mod].drophover svg { box-shadow: 0 0 0 3px var(--dragc),
 .loads b.bad { color: #ff6a4a; }
 @media (max-width: 900px) { .loads { display: none; } }
 /* Output: Low-pass, Volume and Buffer in a row, the four switches two by two beneath */
-#pn-out .outk { grid-template-columns: repeat(3, 1fr); }
+#pn-out .outk { grid-template-columns: repeat(3, minmax(0, 1fr)); }   /* a long readout cannot widen the row into the meter */
 #pn-out .outtg { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; gap: 3px; }
 #pn-out .outtg .tg { padding: 2px 6px; font-size: 10.5px; gap: 5px; }
 
@@ -1017,3 +1017,13 @@ html, body { overscroll-behavior-x: none; }
 /* the quoted prompt keeps two lines' height whatever its length: a long one ends in an ellipsis (the whole of it on hover) and moves nothing below it */
 .eng > .engl .pnote#prompt { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; line-height: 1.35; height: 2.7em; min-height: 0; flex: none; }
 .eng > .engl .pnote#prompt { font-style: italic; }
+
+.knob.boosted .kv { color: var(--gold); }
+#pn-out .outk .knob { min-width: 0; max-width: 100%; }
+#pn-out .outk .knob .kv { max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+/* the Output panel's top knobs small, as the Dynamics knobs are, a little larger */
+#outknobs .knob { padding: 0; }
+#outknobs .knob svg { width: 30px; height: 30px; }
+#outknobs .knob .kv { font-size: 8.5px; margin-top: -3px; }
+#outknobs .knob .kl { font-size: 7.5px; color: #8a8f9b; }
+#pn-out .outtg .tg { white-space: nowrap; min-width: 0; overflow: hidden; text-overflow: ellipsis; }   /* De-click on one line */

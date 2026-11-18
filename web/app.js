@@ -1445,7 +1445,7 @@ function stripEl(c, k) {
   if (c.error) { st.classList.add("bad"); st.querySelector(".serr").textContent = c.error; }
   st.querySelector(".led").addEventListener("click", () => { c.on = !c.on; drawStrips(); sendChain(); });
   {                                                              // snap-back, by the ✕: on unless switched off here
-    const uid = (c.uid ??= ++U.uid), sb = h(`<button class="snapb" aria-pressed="${!U.noSnap.has(uid)}" aria-label="Snap-back" title="Snap-back. On: when you switch this unit off (or remove it), the model goes back to where it was when you switched the unit on, crossfaded over 40 ms, so the unit's sound stops at once. Off: its effect fades over up to 20 seconds, because the model keeps reading back the frames it made with the unit on.">↺</button>`);
+    const uid = (c.uid ??= ++U.uid), sb = h(`<button class="snapb" aria-pressed="${!U.noSnap.has(uid)}" aria-label="Snap-back" title="SNAPBACK: This sets the model frame when this unit is turned on or off. ON instantly restores the sound to default, OFF leaves a temporary trace in the model generated sound.">↺</button>`);
     sb.addEventListener("click", () => { U.noSnap.has(uid) ? U.noSnap.delete(uid) : U.noSnap.add(uid); sb.setAttribute("aria-pressed", String(!U.noSnap.has(uid))); });
     st.querySelector(".x").before(sb);
   }

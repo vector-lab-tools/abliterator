@@ -149,7 +149,12 @@ function knob(p) {
   }, { passive: false });
   el.querySelector("svg").addEventListener("dblclick", () => {
     acc = null;
-    if (assigning()) { setRoute(MOD.assign, p.mod, 0); drawEditor(); el.paintMod(); } else put(p.reset);
+    if (assigning() && routeDepth(MOD.assign, p.mod)) { setRoute(MOD.assign, p.mod, 0); drawEditor(); el.paintMod(); }
+    else if (p.mod && MOD.spec.routes.some((r) => r.tgt === p.mod)) {          // modulated, no source picked: its links go first
+      MOD.spec.routes.filter((r) => r.tgt === p.mod).forEach((r) => setRoute(r.src, p.mod, 0, false));
+      sendMod(); drawEditor(); MODKNOBS.forEach((x) => x.paintMod());
+      info(`${tgtOf(p.mod)?.label || p.mod}: modulation removed. Double-click again to reset the knob.`, "ok", 4000);
+    } else put(p.reset);
   });
   el.addEventListener("keydown", (e) => {
     const d = { ArrowUp: 1, ArrowRight: 1, ArrowDown: -1, ArrowLeft: -1 }[e.key];
@@ -1809,7 +1814,7 @@ function dragSource(el, id) {
       if (ghost) { el.dragged = true; setTimeout(() => { el.dragged = false; }, 60); }     // the click that ends a drag is not a click
       end();
       if (!k) return;
-      const tgt = k.dataset.mod, d = routeDepth(id, tgt) || 0.3;
+      const tgt = k.dataset.mod, d = routeDepth(id, tgt) || 0.15;      // a new link starts light: drag the knob for more
       setRoute(id, tgt, d);
       if (MOD.assign !== id) assign(id);
       MODKNOBS.forEach((x) => x.paintMod());

@@ -1308,20 +1308,20 @@ function flowInit(N = 12, codec = "SpectroStream") {
   if (!host) return;
   const dots = (path, n, dur, cls) => Array.from({ length: n }, (_, j) => `<circle class="${cls}" r="2"><animateMotion dur="${dur}s" repeatCount="indefinite" begin="${(-j * dur / n).toFixed(2)}s"><mpath href="#${path}"/></animateMotion></circle>`).join("");
   const X0 = 24, MW = 352;                                       // the model's box: twelve columns, a block each
-  const cols = Array.from({ length: N + 1 }, (_, L) => `<line class="fcol" x1="${X0 + L * MW / N}" y1="24" x2="${X0 + L * MW / N}" y2="132"/>`).join("");
+  const cols = Array.from({ length: N + 1 }, (_, L) => `<line class="fcol" x1="${X0 + L * MW / N}" y1="24" x2="${X0 + L * MW / N}" y2="152"/>`).join("");
   FLOW.n = N; FLOW.codec = codec; FLOW.key = null;
-  host.innerHTML = `<svg viewBox="0 0 400 258" aria-label="The signal path, live">
-    <path id="fp1" class="fpath v" d="M2 78 H392 V160 H44 V188"/><path id="fp2" class="fpath a" d="M80 210 H396"/>
+  host.innerHTML = `<svg viewBox="0 0 400 292" aria-label="The signal path, live">
+    <path id="fp1" class="fpath v" d="M2 88 H392 V180 H44 V208"/><path id="fp2" class="fpath a" d="M80 238 H396"/>
     <g class="fdots">${dots("fp1", 9, 6, "dv")}${dots("fp2", 7, 2.2, "da")}</g>
-    <text class="fcap" id="fl-cap1" x="200" y="149">Model stream</text>
-    <text class="fcap" id="fl-cap2" x="200" y="250">its sound</text>
-    <g class="fnode fgo" data-go="#pn-engine"><title>From the Engine, beside this panel</title><path class="farr" d="M12 74 L18 78 L12 82Z"/></g><path class="farr" d="M40 174 L44 180 L48 174Z"/>
-    <path class="farr" d="M96 206 L102 210 L96 214Z"/><path class="farr" d="M244 206 L250 210 L244 214Z"/>
-    <g class="fnode" data-go="#pn-bend"><rect x="${X0}" y="24" width="${MW}" height="108" rx="5"/>${cols}<text class="fh" x="200" y="19">MODEL ${N} LAYERS - STEER${codec === "SpectroStream" ? " + MODEL UNITS" : ""}</text><rect id="fl-sweep" class="fsweep" x="${X0}" y="25" width="10" height="106"/><g id="fl-units"></g></g>
-    <g class="fnode"><rect x="8" y="188" width="72" height="44" rx="5"/><text class="fh" x="44" y="205">CODEC</text><text class="fv" x="44" y="218">${codec}</text></g>
-    <g class="fnode" data-go="#pn-engine"><rect x="108" y="188" width="128" height="44" rx="5"/><text class="fh" x="172" y="200">THE MODEL'S SOUND</text><polyline id="fl-wave" class="fwave"/></g>
-    <g class="fnode" data-go="#pn-fx"><rect x="256" y="188" width="96" height="44" rx="5"/><text class="fh" x="304" y="200">EFFECTS</text><g id="fl-fx"></g><text class="fv" id="fl-fxn" x="304" y="226">·</text></g>
-    <g class="fnode fgo" data-go="#pn-out"><title>On to the Output section, beside this panel</title><path class="farr" d="M390 206 L396 210 L390 214Z"/></g>
+    <text class="fcap" id="fl-cap1" x="200" y="169">Model stream</text>
+    <text class="fcap" id="fl-cap2" x="200" y="285">its sound</text>
+    <g class="fnode fgo" data-go="#pn-engine"><title>From the Engine, beside this panel</title><path class="farr" d="M12 84 L18 88 L12 92Z"/></g><path class="farr" d="M40 196 L44 202 L48 196Z"/>
+    <path class="farr" d="M96 234 L102 238 L96 242Z"/><path class="farr" d="M244 234 L250 238 L244 242Z"/>
+    <g class="fnode" data-go="#pn-bend"><rect x="${X0}" y="24" width="${MW}" height="128" rx="5"/>${cols}<text class="fh" x="200" y="19">MODEL ${N} LAYERS - STEER${codec === "SpectroStream" ? " + MODEL UNITS" : ""}</text><rect id="fl-sweep" class="fsweep" x="${X0}" y="25" width="10" height="126"/><g id="fl-units"></g></g>
+    <g class="fnode"><rect x="8" y="208" width="72" height="60" rx="5"/><text class="fh" x="44" y="232">CODEC</text><text class="fv" x="44" y="248">${codec}</text></g>
+    <g class="fnode" data-go="#pn-engine"><rect x="108" y="208" width="128" height="60" rx="5"/><text class="fh" x="172" y="222">THE MODEL'S SOUND</text><polyline id="fl-wave" class="fwave"/></g>
+    <g class="fnode" data-go="#pn-fx"><rect x="256" y="208" width="96" height="60" rx="5"/><text class="fh" x="304" y="222">EFFECTS</text><g id="fl-fx"></g><text class="fv" id="fl-fxn" x="304" y="256">·</text></g>
+    <g class="fnode fgo" data-go="#pn-out"><title>On to the Output section, beside this panel</title><path class="farr" d="M390 234 L396 238 L390 242Z"/></g>
   </svg>`;
   host.querySelectorAll(".fnode[data-go]").forEach((g) => g.addEventListener("click", () => $(g.dataset.go)?.scrollIntoView({ behavior: "smooth", block: "center" })));
   FLOW.el = host;
@@ -1378,7 +1378,7 @@ function drawFlow(s) {
 
   if (key !== FLOW.key) {
     FLOW.key = key;
-    const n = rep.length + 1, lane = (k) => 28 + (k + 0.5) * 100 / n;   // Steer on the top lane, then a lane a unit
+    const n = rep.length + 1, lane = (k) => 28 + (k + 0.5) * 120 / n;   // Steer on the top lane, then a lane a unit
     host.querySelector("#fl-units").innerHTML = `<g class="fu fs ${s.steer_on === false ? "off" : ""}" data-k="steer"><title>Steer: layer ${SL}</title><circle cx="${xL(SL).toFixed(1)}" cy="${lane(0).toFixed(1)}" r="3.2"/>${laneTag(xL(N) - 2, lane(0), "Steer")}</g>`
       + rep.map((r, k) => `<g class="fu ${s.layers_on === false ? "off" : ""}" data-k="${k + 1}"><title>${esc(r.title)}: ${esc((r.at || []).join(", "))}</title>${(r.at || []).map((a) => { const b = /^block (\d+)$/.exec(String(a)); return `<circle cx="${(b ? xB(+b[1]) : xL(+a)).toFixed(1)}" cy="${lane(k + 1).toFixed(1)}" r="3.2"/>`; }).join("")}${laneTag(xL(N) - 2, lane(k + 1), r.short || r.title)}</g>`).join("");
   }
@@ -1392,11 +1392,11 @@ function drawFlow(s) {
   if (st) st.dataset.lv = FLOW.dose.toFixed(3);                  // Steer flashes and pulses by the size of its doses
   // the model's sound, its effects, the output section and OUT
   const sc = playing && s.scope ? s.scope : [];
-  const pts = []; for (let j = 0; j < sc.length; j += 4) pts.push(`${(114 + j * 116 / Math.max(1, sc.length - 1)).toFixed(1)},${(219 - Math.max(-1, Math.min(1, sc[j][1] * 4)) * 10).toFixed(1)}`);
-  host.querySelector("#fl-wave").setAttribute("points", pts.join(" ") || "114,219 230,219");
+  const pts = []; for (let j = 0; j < sc.length; j += 4) pts.push(`${(114 + j * 116 / Math.max(1, sc.length - 1)).toFixed(1)},${(244 - Math.max(-1, Math.min(1, sc[j][1] * 4)) * 14).toFixed(1)}`);
+  host.querySelector("#fl-wave").setAttribute("points", pts.join(" ") || "114,244 230,244");
   FLOW.lvl = playing && s.level > 0 ? Math.max(0, Math.min(1, (20 * Math.log10(s.level) + 48) / 42)) : 0;
   const fx = (s.master && s.master.fx) || [], fxOn = !(s.master && s.master.fx_on === false), m = Math.max(1, fx.length);
-  host.querySelector("#fl-fx").innerHTML = fx.map((x, j) => `<rect class="${x.on && fxOn ? "on" : ""}" x="${(264 + j * 80 / m).toFixed(1)}" y="205" width="${Math.max(3, 80 / m - 2).toFixed(1)}" height="8" rx="1"><title>${esc(x.type)}</title></rect>`).join("");
+  host.querySelector("#fl-fx").innerHTML = fx.map((x, j) => `<rect class="${x.on && fxOn ? "on" : ""}" x="${(264 + j * 80 / m).toFixed(1)}" y="232" width="${Math.max(3, 80 / m - 2).toFixed(1)}" height="9" rx="1"><title>${esc(x.type)}</title></rect>`).join("");
   host.querySelector("#fl-fxn").textContent = !fxOn ? "bypassed" : fx.length ? `${fx.filter((x) => x.on).length} of ${fx.length} on` : "none";
 }
 function paintActivity(s) {

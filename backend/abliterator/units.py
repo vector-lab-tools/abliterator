@@ -61,11 +61,39 @@ NAME_MAX = 14
 # neuron, Rotate needs two different directions, Principal Bands and Quantise are neutral. These
 # are starting points to be calibrated by ear like the rest.
 HOST_DEFAULTS = {
-    "abliterate": {"dir": "brightness"},
+    "abliterate": {"dir": "brightness", "shape": "flat", "size": 0},
     "neuron": {"n": "373", "op": "scale", "value": 6},
     "shifter": {"dir": "brightness", "dir2": "pulse", "angle": 45},
     "eq": {"low": 1.3, "high": 0.7},
     "erosion": {"bits": 6},
+}
+
+
+# Ranges this host opens beyond VAU's own. Abliterate's Strength: VAU stops at 1.5; above 1 the direction is
+# turned round rather than removed, and from 2 to 6 the sound is pushed further past its far side (measured on
+# Deep techno and the Warm drone, 2026-11-18: strength 1 to 2 and 4 to 6 both held). The taper puts 1 at about a
+# third of the travel and 2 at the middle. VAU's unit reads the value unclamped.
+HOST_RANGES = {
+    "abliterate": {"strength": {"max": 6.0, "taper": [[0.0, 0.0], [0.15, 0.5], [0.35, 1.0], [0.5, 2.0], [0.75, 4.0], [1.0, 6.0]]}},
+}
+
+
+# Starting points offered on a unit's strip (a small menu by its name): each sets the settings it names and leaves
+# the rest, the direction included. `block` is the placement ("all" or a block). Abliterate's are by strength.
+HOST_PRESETS = {
+    "abliterate": [
+        {"name": "Remove · 1", "block": "all", "params": {"shape": "flat", "size": 0, "strength": 1.0},
+         "tip": "Takes the direction out at every block: the sound moves to the middle of that axis"},
+        {"name": "Mirror · 2", "block": "all", "params": {"shape": "flat", "size": 0, "strength": 2.0},
+         "tip": "Turns the direction round at every block: the sound goes as far the other way as it was"},
+        {"name": "Beyond · 4", "block": "all", "params": {"shape": "flat", "size": 0, "strength": 4.0},
+         "tip": "Three times as far the other way; on Deep techno, noisier and sharper in its attacks"},
+        {"name": "Far side · 6", "block": "all", "params": {"shape": "flat", "size": 0, "strength": 6.0},
+         "tip": "Five times as far the other way, the most this panel allows"},
+        {"name": "Late blocks · VAU", "block": "all", "params": {"shape": "linear", "peak": 0.7, "width": 0.4, "edge": 0.3, "share": 0.5,
+                                                                  "projected": 1, "size": 1, "bias": 1, "strength": 1.0},
+         "tip": "VAU's own settings, as language-model abliteration uses them: strongest around block 8, sizes kept; gentle here"},
+    ],
 }
 
 
@@ -94,8 +122,11 @@ def params(u) -> List[Dict[str, Any]]:
     out = []
     for q in u.m["params"]:
         q = {**q, "default": over[q["key"]]} if q["key"] in over else dict(q)
+        q.update(HOST_RANGES.get(u.id, {}).get(q["key"], {}))
         c = cal.get(f"unit:{u.id}:{q['key']}")
-        if c and c.get("safe"):
+        if "taper" in q:
+            pass                                       # this host's own range and travel replace the calibration's
+        elif c and c.get("safe"):
             q.update(default=c["default"], safe=c["safe"], measured=True, fragile=c["safe"][0] == c["safe"][1])
         elif c and c.get("broken_everywhere"):
             q.update(fragile=True)
@@ -183,7 +214,7 @@ def catalogue() -> List[Dict[str, Any]]:
         if u.m["category"] == "meter":
             continue                                            # meters need a host view this engine has not got yet
         out.append({"id": u.id, "title": title(u), "short": short(u), "vau_title": vau_name(u), "renamed": u.id in NAMES, "what": u.m["what"], "category": u.m["category"],
-                    "site": u.m["site"], **space_of(u), "params": params(u), **placement(u), "example": u.m.get("example"),
+                    "site": u.m["site"], **space_of(u), "params": params(u), **placement(u), "presets": HOST_PRESETS.get(u.id, []), "example": u.m.get("example"),
                     "available": not missing, "missing": missing, "latency": LATENCY if not missing else None,
                     "help": u.m.get("help"), "inspired_by": u.m.get("inspired_by"), "version": u.m.get("version"), "author": u.m.get("author"),
                     "file": u.path.name if getattr(u, "path", None) else None, "explain": _has_explainer(u)})
@@ -403,6 +434,8 @@ def param_info(kind: str, key: str):
     """A numeric knob of a unit, for modulation: (low, high, scale, default), or None."""
     u = registry().get(kind)
     p = u.param(key) if u else None
+    if p:
+        p = {**p, **HOST_RANGES.get(kind, {}).get(key, {})}
     if not p or p.get("kind") not in ("knob", "fader", "int") or "min" not in p or "max" not in p:
         return None
     return float(p["min"]), float(p["max"]), "int" if p.get("kind") == "int" else "lin", p.get("default", p["min"])

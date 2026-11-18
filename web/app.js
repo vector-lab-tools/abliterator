@@ -1422,6 +1422,17 @@ function stripEl(c, k) {
   const st = h(`<div class="strip ${c.on ? "" : "off"} ${c.fresh ? "fresh" : ""} ${wide ? "wide" : ""}"><div class="sh">
     <button class="led" aria-pressed="${c.on}" title="On or bypassed"></button><span class="st" title="${esc((u.short !== u.title ? `${u.title}. ` : "") + u.what + (u.note ? "\n" + u.note : ""))}">${esc(u.short || u.title)}</span><button class="x" title="Remove">✕</button></div></div>`);
   c.fresh = false;
+  if (u.presets?.length) {                                    // starting points: a small menu by the name
+    const sel = h(`<select class="spre" title="Presets: starting points for this unit; the direction is kept" aria-label="Presets"><option value="" selected>▾</option>${u.presets.map((q, i) => `<option value="${i}" title="${esc(q.tip || "")}">${esc(q.name)}</option>`).join("")}</select>`);
+    sel.addEventListener("change", () => {
+      const q = u.presets[+sel.value];
+      if (!q) return;
+      Object.assign(c.params, q.params);
+      if (q.block !== undefined) c.layer = q.block;
+      drawStrips(); sendChain();
+    });
+    st.querySelector(".st").after(sel);
+  }
   st.appendChild(h(`<div class="serr"></div>`));
   if (c.error) { st.classList.add("bad"); st.querySelector(".serr").textContent = c.error; }
   st.querySelector(".led").addEventListener("click", () => { c.on = !c.on; drawStrips(); sendChain(); });
@@ -1468,7 +1479,7 @@ function stripEl(c, k) {
       const k = U.chain.filter((x) => x.on).indexOf(c), tg = c.on && k >= 0 ? `unit:${k}:${p.key}` : null;
       if (tg) MODTGT[tg] = { label: `${u.short || u.title} ${p.label}`, min: +p.min, max: +p.max, log: false };
       krow.appendChild(knob({ label: p.label + (p.fragile ? " ⚠" : ""), min: +p.min, max: +p.max, step: p.step || (p.kind === "int" ? 1 : (p.max - p.min) / 200), int: p.kind === "int",
-        reset: +(p.default ?? p.min), get: () => +c.params[p.key], put: set, curve: `unit:${c.id}:${p.key}`, mod: tg || undefined,
+        reset: +(p.default ?? p.min), get: () => +c.params[p.key], put: set, curve: p.taper ? undefined : `unit:${c.id}:${p.key}`, taper: p.taper, mod: tg || undefined,
         fmt: (v) => (p.kind === "int" ? String(Math.round(v)) : Math.abs(v) >= 10 ? v.toFixed(0) : v.toFixed(2)),
         tip: (p.tip || "") + (p.fragile ? ". ⚠ Measured: away from this setting the sound breaks on at least one preset; listen in Tune" : "") }));
     }

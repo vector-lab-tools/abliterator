@@ -23,7 +23,7 @@
     <button class="tp rec" id="snapbtn" title="Save the last seconds the model played as a sound" aria-label="Save the last seconds" disabled>◉</button>
   </div>
   <div class="modelchip" id="modelchip">connecting…</div>
-  <div class="loads"><span title="CPU load: the share of this computer's processor (all its cores) that Abliterator, the server and the model's process, is using">CPU load <b id="om-cpu">–</b></span><span title="GPU load: the model's time to make a frame on the GPU (the slowest 5%) against the frame's length. Over 100% it falls behind and the buffer covers the gap; a longer Buffer, or fewer units, helps.">GPU load <b id="om-load">–</b></span></div>
+  <div class="loads"><span title="CPU load: the share of this computer's processor (all its cores) that Abliterator, the server and the model's process, is using">CPU load <b id="om-cpu">–</b></span><span title="GPU load: the model's time to make a frame against the frame's length, taking the slower of its slowest 5% over ten seconds and its slowest step in the last two. Over 100% a step ran longer than a frame lasts; the Buffer's frames in hand cover it, and the engine adds a frame or two by itself when other programs load the computer.">GPU load <b id="om-load">–</b></span></div>
   <button class="icon-btn" id="themebtn" title="Theme: the system's, light or dark">◐</button>
   <button class="icon-btn" id="setbtn" title="Settings: the model, and about Abliterator" aria-haspopup="dialog">⚙</button>
 </header>

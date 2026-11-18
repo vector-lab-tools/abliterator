@@ -627,7 +627,7 @@ const outToggles = [toggle("Bypass", () => !S.master.on, (v) => sendMaster({ on:
 outToggles[3].title = "De-click: redraws the few-sample bursts a unit can make the model write (Quantise at low bits makes them), across 1.3 ms of look-ahead; drum attacks are left as they are";
 outToggles[0].title = "Bypass: the model straight to Volume, skipping auto level, the effects, Dynamics, Width/Spread, the low-pass and the limiter";
 outToggles[1].title = "Auto level: holds the loudness steady (−20 dBFS) while the controls move, so a move is heard as a change of sound more than of level. Saved sounds keep it.";
-const leadKnob = knob({ label: "Buffer", min: 1, max: 12, int: true, reset: 2, get: () => +(S.status.lead || 2), put: (v) => { S.status.lead = v; api("/api/lead", { lead: v }).catch(fail); }, fmt: (v) => `${v * S.frameMs} ms`, tip: "frames made ahead of the sound card: shorter answers sooner and risks dropouts" });
+const leadKnob = knob({ label: "Buffer", min: 1, max: 12, int: true, reset: 2, get: () => +(S.status.lead || 2), put: (v) => { S.status.lead = v; api("/api/lead", { lead: v }).catch(fail); }, fmt: (v) => `${v * S.frameMs}${S.status.lead_boost ? ` +${S.status.lead_boost * S.frameMs}` : ""} ms`, tip: "frames made ahead of the sound card (+: frames the engine added by itself after a step ran long, given back one at a time after a quiet minute): shorter answers sooner and risks dropouts" });
 outKnobs.forEach((k) => $("#outknobs").appendChild(k));
 // the stereo field's knobs, beside its scope at the foot of the Engine panel
 const widenKnobs = [
@@ -2459,7 +2459,8 @@ const OM = (() => {
       $("#om-rms").textContent = on ? fmt(r) : "–";
       const c = on && s.field ? s.field.corr : null;
       $("#om-cor").textContent = c == null ? "–" : (c >= 0 ? "+" : "") + c.toFixed(2); $("#om-cor").className = c != null && c < 0 ? "bad" : "";
-      const load = on && s.step_ms_p95 != null ? Math.round((s.step_ms_p95 / (S.frameMs || 40)) * 100) : null;
+      // the larger of the 10-second 95th percentile and the slowest step of the last two seconds: a few long steps are what drop out
+      const load = on && s.step_ms_p95 != null ? Math.round((Math.max(s.step_ms_p95, s.step_ms_peak || 0) / (S.frameMs || 40)) * 100) : null;
       const cpu = s.cpu_pct;
       $("#om-cpu").textContent = cpu == null ? "–" : `${Math.round(cpu)}%`; $("#om-cpu").className = cpu != null && cpu >= 80 ? "bad" : "";
       $("#om-load").textContent = load == null ? "–" : `${load}%`; $("#om-load").className = load != null && load >= 100 ? "bad" : "";

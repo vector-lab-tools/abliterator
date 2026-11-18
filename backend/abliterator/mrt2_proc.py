@@ -71,6 +71,8 @@ READ_EVERY = 3                            # frames between the strips' readings:
 PROBE_N = 32                              # each strip reports this many of the stream's values in and out (status.probe)
 
 
+BOOST_MAX = 4                 # the automatic buffer: at most this many frames above the knob's
+BOOST_HOLD_S = 60.0           # and each kept this long after the last sign of trouble
 SCOPE_S = 3.2                 # the scope's history of the sound as played, in seconds
 
 
@@ -280,6 +282,11 @@ class Proc:
         self.master = Master(SR, CHANNELS)
         self.master.update({"declick": True, "fx_fade": True})            # live play repairs the bursts a unit can make the model write
         self.lead = 2
+        # The automatic buffer: extra frames held in hand, on top of the Buffer knob's, after a step runs long or the card
+        # runs dry; given back one at a time after BOOST_HOLD_S without trouble. Another program loading the CPU or GPU
+        # stretches a few steps past what two frames cover, and the 95th-percentile load figure does not show it.
+        self.boost = 0
+        self.boost_t = 0.0
         self.block = 512
         self.sampling = dict(DEFAULTS)
         self.vectors: Dict[str, np.ndarray] = {}         # unit directions at LAYER
@@ -296,6 +303,11 @@ class Proc:
         self.steer_on = True                              # the Steer panel's switch: off sets every dose to 0, keeping the knobs
         self.chain_report: List[Dict[str, Any]] = []
         self.in_status = False                                # a status reply is being built (reader thread)
+        self.phase = "idle"                                   # what the main thread is doing: idle, prep, step, read, task (for the callback trace)
+        self.gc_on = 0                                        # collections running now, any thread
+        self.cbt: "collections.deque" = collections.deque(maxlen=6000)   # the callback trace: one entry a callback (cb_trace)
+        self.ptr: "collections.deque" = collections.deque(maxlen=12000)  # the main thread's phases, timed
+        self.str_: "collections.deque" = collections.deque(maxlen=2000)  # status replies, timed (start, end)
         self.status_ms: "collections.deque" = collections.deque(maxlen=200)
         self.slow: "collections.deque" = collections.deque(maxlen=40)
         self.gcs: "collections.deque" = collections.deque(maxlen=40)    # garbage collections over 2 ms: (generation, ms, thread)
@@ -305,11 +317,12 @@ class Proc:
             import threading as th
             k = th.get_ident()
             if phase == "start":
-                self._gc0[k] = time.perf_counter()
+                self._gc0[k] = time.perf_counter(); self.gc_on += 1
             elif k in self._gc0:
+                self.gc_on = max(0, self.gc_on - 1)
                 ms = (time.perf_counter() - self._gc0.pop(k)) * 1000
                 if ms > 2:
-                    self.gcs.append({"gen": info["generation"], "ms": round(ms, 1), "thread": "main" if th.current_thread() is th.main_thread() else th.current_thread().name, "playing": self.playing})
+                    self.gcs.append({"t": time.perf_counter(), "gen": info["generation"], "ms": round(ms, 1), "thread": "main" if th.current_thread() is th.main_thread() else th.current_thread().name, "playing": self.playing})
         gc.callbacks.append(_gc)
         self.activity: Dict[int, float] = {}                 # each strip's change to the stream, by line (_read_activity)
         self.activity_now: Dict[int, float] = {}
@@ -657,6 +670,9 @@ class Proc:
         self.conceal = Conceal(SR)                     # dropouts covered without a click (dsp.Conceal)
         self.xruns = 0                                 # the card's own underflows: the callback ran late
         self.cb_ms: "collections.deque" = collections.deque(maxlen=500)
+        self.boost, self.boost_t = 0, 0.0                 # each take starts from the Buffer knob's frames
+        if hasattr(self, "cbt"):
+            self.cbt.clear(); self.ptr.clear(); self.str_.clear()
         self.clicks: "collections.deque" = collections.deque(maxlen=30)
         self.last_sample = None
         self.played = 0
@@ -719,6 +735,10 @@ class Proc:
     def run(self):
         """The main loop: tasks between steps, and one step whenever the lead allows."""
         interactive()
+        # The sound card's callback is Python and needs the interpreter lock; a thread running Python holds it for up to the
+        # switch interval (5 ms by default) before handing it over. At 1 ms the callback starts on time while the model's
+        # step runs its Python between MLX calls (measured with Smear: the longest wait between callbacks fell from 47 to 24 ms).
+        sys.setswitchinterval(0.001)
         while True:
             try:
                 while True:
@@ -733,7 +753,10 @@ class Proc:
                 except queue.Empty:
                     pass
                 continue
-            if self.gen - self.speed.consumed // HOP > self.lead:     # ahead of the model sound used (slower speed: fewer steps)
+            if self.boost and time.perf_counter() - self.boost_t > BOOST_HOLD_S:   # quiet long enough: give a frame back
+                self.boost -= 1
+                self.boost_t = time.perf_counter()
+            if self.gen - self.speed.consumed // HOP > self.lead_eff():   # ahead of the model sound used (slower speed: fewer steps)
                 time.sleep(0.0005)
                 continue
             try:
@@ -747,16 +770,37 @@ class Proc:
                 except Exception:
                     pass
 
+    def lead_eff(self) -> int:
+        """Frames kept ahead of the sound card: the Buffer knob's, plus the automatic buffer's."""
+        return min(12, self.lead + self.boost)
+
+    def _need_more(self, frames: int):
+        """Hold `frames` more in hand than now, up to BOOST_MAX above the knob's (any thread)."""
+        self.boost = max(self.boost, min(BOOST_MAX, frames))
+        self.boost_t = time.perf_counter()
+
+    def _ph(self, name: str):
+        self.phase = name
+        self.ptr.append((time.perf_counter(), name))
+
+    def cb_trace(self) -> Dict[str, Any]:
+        """The callback trace, the main thread's phases and the status replies, timed, for _tmp diagnostics."""
+        return {"cb": list(self.cbt), "phases": list(self.ptr), "status": list(self.str_), "gc": list(self.gcs), "block": self.block,
+                "now": time.perf_counter(), "slow": list(self.slow)}
+
     def _do(self, fn, rid):
+        self._ph("task")
         try:
             r = fn()
             send({"id": rid, "ok": True, **(r or {})})
         except Exception as e:
             traceback.print_exc()
             send({"id": rid, "ok": False, "error": f"{type(e).__name__}: {e}"})
+        finally:
+            self._ph("idle")
 
     def _generate_one(self):
-        ta = time.perf_counter(); st_seen = self.in_status
+        ta = time.perf_counter(); st_seen = self.in_status; self._ph("prep")
         with self.lock:                                        # MLX arrays are made here, on the main thread
             if self.chain_pending is not None:
                 self._use(self.chain_pending)
@@ -777,14 +821,18 @@ class Proc:
                 d = {k: 0.0 for k in d}
             self.eff = {"doses": dict(d), "sampling": dict(smp)}
             self.cond = self._apply(d, smp, self.prompt, self.memo)
-        t0 = time.perf_counter()
+        t0 = time.perf_counter(); self._ph("step")
         reading = self.gen % READ_EVERY == 0                    # the strips' readings, every third frame (120 ms)
         self.hooks.meas, self.hooks.probes, self.hooks.measuring = [], {}, reading
         try:
             a, self.state = self.step(self.state, self.cond)
         finally:
             self.hooks.measuring = False
-        self.step_ms.append((time.perf_counter() - t0) * 1000)
+        self.step_ms.append((time.perf_counter() - t0) * 1000); self._ph("read")
+        r = max(0.125, float(getattr(getattr(self, "speed", None), "ratio", 1.0) or 1.0))   # slower playback: each frame in hand lasts longer
+        cushion = self.lead * FRAME_MS / r - 20                       # what the knob's frames cover, less the card's own margin
+        if self.step_ms[-1] > 0.85 * cushion:                         # this step would have used most of it: hold enough for one like it
+            self._need_more(int(np.ceil((self.step_ms[-1] * 1.3 + 20) * r / FRAME_MS)) - self.lead)
         self._read_scopes(self.gen)
         tc = time.perf_counter()
         if reading:
@@ -797,12 +845,14 @@ class Proc:
         self.recorded.append(a)
         self.ring.append(a)
         self.gen += 1
+        self._ph("idle")
 
     def _callback(self, out, frames, t, status):
         """The sound card's callback, timed: the card's own underflows (the callback came too late, which
         the cover cannot catch), how long each callback takes, and any large jump in the sound at a
         block's edge, with what the block was, are kept for status's `clicks`."""
         t0 = time.perf_counter()
+        ent = (t0, (t.outputBufferDacTime - t.currentTime) * 1000, self.phase, self.in_status, self.gc_on, bool(status.output_underflow))
         if status.output_underflow:
             self.xruns += 1
             self._click("card underflow", 0.0)
@@ -815,6 +865,7 @@ class Proc:
                 self._click(kind, jump)
         self.last_sample = out[-1].astype(np.float64)
         self.cb_ms.append((time.perf_counter() - t0) * 1000)
+        self.cbt.append(ent + (self.cb_ms[-1], kind))
 
     def _click(self, kind: str, jump: float):
         self.clicks.append({"t": round(self.played / SR, 2), "kind": kind, "jump": round(jump, 3),
@@ -884,6 +935,7 @@ class Proc:
             out[:] = self.conceal.gap(frames, out.shape)              # the last block, mirrored and fading, not a click
             if self.played > 0:
                 self.underruns += 1
+                self._need_more(self.boost + 1)                       # it ran dry: one frame more in hand
             return "gap"
 
     # ------------------------------------------------------------------ controls (reader thread)
@@ -978,16 +1030,16 @@ class Proc:
     # ------------------------------------------------------------------ readings
     def latency(self) -> Dict[str, Any]:
         dev_ms = (self.stream.latency * 1000) if (self.playing and self.stream) else 22.0
-        parts = {"generation lead": self.lead * FRAME_MS, "codec (declared by the sampler; not yet checked by ear)": 0,
+        parts = {"generation lead": self.lead_eff() * FRAME_MS, "codec (declared by the sampler; not yet checked by ear)": 0,
                  "device": round(dev_ms, 1)}
-        first = self.lead * FRAME_MS + dev_ms
+        first = self.lead_eff() * FRAME_MS + dev_ms
         m = list(self.measured)
         return {"declared_first_ms": round(first, 1), "declared_full_ms": round(first, 1), "parts": parts,
                 "measured_ms": m[-5:], "measured_median_ms": float(np.median(m)) if m else None}
 
     def status(self) -> Dict[str, Any]:
         s = {"tool": TOOL, "version": VERSION, "state": self.status_text, "error": self.error, "playing": self.playing,
-             "model": self.info(), "lead": self.lead, "lead_range": [1, 12], "frame_ms": FRAME_MS, "block": self.block,
+             "model": self.info(), "lead": self.lead, "lead_boost": self.boost, "lead_range": [1, 12], "frame_ms": FRAME_MS, "block": self.block,
              "doses": dict(self.doses), "master": dict(self.master_base), "sampling": dict(self.sampling),
              "mod": self.mod_spec, "master_now": self.master.settings(), "scope": self.scope(), "scope_lr": getattr(self, "scope_lr", None), "field": self.field() if self.playing else None, "stages": self.master.readings() if self.playing else None,
              "steer_on": self.steer_on, "layers_on": self.layers_on, "scopes": list(self.meters.at), "meters": self.meters.payload(), "spec": self.spectro.payload(),
@@ -1004,7 +1056,7 @@ class Proc:
             heard = [d for d in self.dac if d[1] <= now]
             s.update({"preset": self.preset.get("id"), "seed": self.seed, "prompt": self.prompt,
                       "seconds": round(self.played / SR, 2), "frames_generated": self.gen, "reprimes": None,
-                      "step_ms_p50": round(float(np.median(sm)), 2), "step_ms_p95": round(float(np.percentile(sm, 95)), 2),
+                      "step_ms_p50": round(float(np.median(sm)), 2), "step_ms_p95": round(float(np.percentile(sm, 95)), 2), "step_ms_peak": round(float(max(list(self.step_ms)[-50:])), 2) if self.step_ms else None,
                       "underruns": self.underruns, "xruns": self.xruns, "clicks": list(self.clicks),
                       "cb_ms_p50": round(float(np.median(self.cb_ms)), 2) if self.cb_ms else None,
                       "cb_ms_max": round(float(max(self.cb_ms)), 2) if self.cb_ms else None, "level": heard[-1][2] if heard else 0.0, "level_lr": heard[-1][3] if heard else [0.0, 0.0], "peak_lr": [round(max(d[4][c] for d in heard[-12:]), 4) for c in range(len(heard[-1][4]))] if heard else [0.0, 0.0],
@@ -1245,7 +1297,9 @@ def reader(p: Proc):
                 try:
                     send({"id": rid, "ok": True, **p.status()})
                 finally:
-                    p.in_status = False; p.status_ms.append((time.perf_counter() - t0) * 1000)
+                    t1 = time.perf_counter(); p.in_status = False; p.status_ms.append((t1 - t0) * 1000); p.str_.append((t0, t1))
+            elif cmd == "cbtrace":
+                send({"id": rid, "ok": True, **p.cb_trace()})
             elif cmd == "control":
                 if p.status_text != "ready":
                     raise RuntimeError("not ready")

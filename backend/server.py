@@ -145,6 +145,13 @@ def about():
     return out
 
 
+@app.get("/api/diag/cbtrace")
+def diag_cbtrace():
+    """The engine's callback trace (each sound-card callback's lateness, length and what the other threads were doing),
+    for diagnosing dropouts."""
+    return mrt2.call("cbtrace", timeout=10)
+
+
 @app.get("/api/status")
 def status():
     s = active().status()

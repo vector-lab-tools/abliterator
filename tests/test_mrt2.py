@@ -262,3 +262,14 @@ def test_speed_off_plays_at_one():
     m = Master(48000, 2)
     m.update({"speed": 0.25, "speed_mode": "off"})
     assert (m.speed, m.speed_mode) == (0.25, "off")
+
+
+def test_automatic_buffer(p):
+    """A long step or a dry card adds frames in hand above the Buffer knob's, up to BOOST_MAX, and each take starts from the knob's."""
+    p.lead, p.boost = 2, 0
+    p._need_more(1)
+    assert p.lead_eff() == 3
+    p._need_more(9)
+    assert p.boost == M.BOOST_MAX and p.lead_eff() == 2 + M.BOOST_MAX
+    p._reset()
+    assert p.boost == 0 and p.lead_eff() == 2

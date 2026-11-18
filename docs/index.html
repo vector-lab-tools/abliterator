@@ -202,76 +202,76 @@
     <div class="table-wrap">
       <table>
         <thead><tr><th>Unit</th><th>What it does to the stream</th></tr></thead>
-        <tbody>
-          <tr><td>Lookback</td><td>Adds the stream from a few frames back, with feedback</td></tr>
-          <tr><td>Running Average</td><td>Adds a decaying average of the earlier frames</td></tr>
-          <tr><td>Frame Repeat</td><td>Replays the stream of the frames just before over the last few of each run</td></tr>
-          <tr><td>Tanh Squash</td><td>Soft-clips each dimension, harder as the drive rises</td></tr>
-          <tr><td>Norm Shrink</td><td>Above a threshold, reduces the stream's size by a ratio</td></tr>
+        <tbody>          <tr><td>Abliterate</td><td>Removes a direction from what attention and the MLPs write</td></tr>
           <tr><td>Band Shrink</td><td>The same, on three bands of principal directions separately</td></tr>
           <tr><td>Component Clamp</td><td>Clamps the largest components at a quantile ceiling</td></tr>
+          <tr><td>Frame Repeat</td><td>Replays the stream of the frames just before over the last few of each run</td></tr>
+
+          <tr><td>Lookback</td><td>Adds the stream from a few frames back, with feedback</td></tr>
+          <tr><td>Neuron</td><td>Edits named MLP neurons: scale, add, set, zero</td></tr>
+          <tr><td>Norm Shrink</td><td>Above a threshold, reduces the stream's size by a ratio</td></tr>
           <tr><td>Principal Bands</td><td>Scales three bands of the stream's principal directions</td></tr>
           <tr><td>Quantise</td><td>Rounds the stream to fewer levels</td></tr>
-          <tr><td>Sparsify</td><td>Keeps each position's largest components and zeroes the rest</td></tr>
           <tr><td>Rotate</td><td>Rotates the stream in the plane of two directions</td></tr>
-          <tr><td>Abliterate</td><td>Removes a direction from what attention and the MLPs write</td></tr>
-          <tr><td>Neuron</td><td>Edits named MLP neurons: scale, add, set, zero</td></tr>
+          <tr><td>Running Average</td><td>Adds a decaying average of the earlier frames</td></tr>
+          <tr><td>Sparsify</td><td>Keeps each position's largest components and zeroes the rest</td></tr>
+          <tr><td>Tanh Squash</td><td>Soft-clips each dimension, harder as the drive rises</td></tr>
         </tbody>
       </table>
     </div>
     <p class="unit-desk-note">Each unit as a card on the Model layers row, at the defaults measured on this engine, with the display it shows while the model plays. The displays here are drawn from simulated readings, so the page could be captured without the engine. Scroll along the row; a name opens the unit's card, with its whole sweep to listen to.</p>
     <div class="unit-desk" tabindex="0" aria-label="The thirteen units' strips; scroll sideways for more">
         <figure class="ucard">
-          <a class="shot" href="img/strips/delay.webp" data-cap="Lookback on the Model layers row, at the defaults measured on this engine. Its card on the Model layers page has its sweep to listen to."><img src="img/strips/delay.webp" width="288" height="516" loading="lazy" alt="The Lookback strip at its defaults."></a>
-          <figcaption><b><a href="units.html#u-delay">Lookback</a></b><span class="uwhat">Adds the stream from some positions back: an echo, with feedback</span></figcaption>
-        </figure>
-        <figure class="ucard">
-          <a class="shot" href="img/strips/reverb.webp" data-cap="Running Average on the Model layers row, at the defaults measured on this engine. Its card on the Model layers page has its sweep to listen to."><img src="img/strips/reverb.webp" width="288" height="516" loading="lazy" alt="The Running Average strip at its defaults."></a>
-          <figcaption><b><a href="units.html#u-reverb">Running Average</a></b><span class="uwhat">Adds a decaying average of the earlier positions</span></figcaption>
-        </figure>
-        <figure class="ucard">
-          <a class="shot" href="img/strips/beatrepeat.webp" data-cap="Frame Repeat on the Model layers row, at the defaults measured on this engine. Its card on the Model layers page has its sweep to listen to."><img src="img/strips/beatrepeat.webp" width="288" height="516" loading="lazy" alt="The Frame Repeat strip at its defaults."></a>
-          <figcaption><b><a href="units.html#u-beatrepeat">Frame Repeat</a></b><span class="uwhat">In every run of positions, replays the stream of the few positions before over the last few: a stutter</span></figcaption>
-        </figure>
-        <figure class="ucard">
-          <a class="shot" href="img/strips/compressor.webp" data-cap="Norm Shrink on the Model layers row, at the defaults measured on this engine. Its card on the Model layers page has its sweep to listen to."><img src="img/strips/compressor.webp" width="288" height="516" loading="lazy" alt="The Norm Shrink strip at its defaults."></a>
-          <figcaption><b><a href="units.html#u-compressor">Norm Shrink</a></b><span class="uwhat">Above a threshold, reduces the stream's size at each position by a ratio</span></figcaption>
-        </figure>
-        <figure class="ucard">
-          <a class="shot" href="img/strips/saturator.webp" data-cap="Tanh Squash on the Model layers row, at the defaults measured on this engine. Its card on the Model layers page has its sweep to listen to."><img src="img/strips/saturator.webp" width="288" height="516" loading="lazy" alt="The Tanh Squash strip at its defaults."></a>
-          <figcaption><b><a href="units.html#u-saturator">Tanh Squash</a></b><span class="uwhat">Soft-clips each dimension of the stream, harder as the drive rises</span></figcaption>
-        </figure>
-        <figure class="ucard">
-          <a class="shot" href="img/strips/erosion.webp" data-cap="Quantise on the Model layers row, at the defaults measured on this engine. Its card on the Model layers page has its sweep to listen to."><img src="img/strips/erosion.webp" width="288" height="516" loading="lazy" alt="The Quantise strip at its defaults."></a>
-          <figcaption><b><a href="units.html#u-erosion">Quantise</a></b><span class="uwhat">Quantises the stream to few levels, or holds it over several positions</span></figcaption>
-        </figure>
-        <figure class="ucard">
-          <a class="shot" href="img/strips/gate.webp" data-cap="Sparsify on the Model layers row, at the defaults measured on this engine. Its card on the Model layers page has its sweep to listen to."><img src="img/strips/gate.webp" width="288" height="516" loading="lazy" alt="The Sparsify strip at its defaults."></a>
-          <figcaption><b><a href="units.html#u-gate">Sparsify</a></b><span class="uwhat">Keeps only each position's largest components and zeroes the rest, making the stream sparse</span></figcaption>
-        </figure>
-        <figure class="ucard">
-          <a class="shot" href="img/strips/limiter.webp" data-cap="Component Clamp on the Model layers row, at the defaults measured on this engine. Its card on the Model layers page has its sweep to listen to."><img src="img/strips/limiter.webp" width="288" height="516" loading="lazy" alt="The Component Clamp strip at its defaults."></a>
-          <figcaption><b><a href="units.html#u-limiter">Component Clamp</a></b><span class="uwhat">Clamps each position's largest components at a ceiling set by a quantile of their sizes</span></figcaption>
-        </figure>
-        <figure class="ucard">
-          <a class="shot" href="img/strips/eq.webp" data-cap="Principal Bands on the Model layers row, at the defaults measured on this engine. Its card on the Model layers page has its sweep to listen to."><img src="img/strips/eq.webp" width="288" height="516" loading="lazy" alt="The Principal Bands strip at its defaults."></a>
-          <figcaption><b><a href="units.html#u-eq">Principal Bands</a></b><span class="uwhat">Scales three bands of the stream's principal directions: low, mid, high</span></figcaption>
+          <a class="shot" href="img/strips/abliterate.webp" data-cap="Abliterate on the Model layers row, at the defaults measured on this engine. Its card on the Model layers page has its sweep to listen to."><img src="img/strips/abliterate.webp" width="576" height="516" loading="lazy" alt="The Abliterate strip at its defaults."></a>
+          <figcaption><b><a href="units.html#u-abliterate">Abliterate</a></b><span class="uwhat">Removes a direction from what attention and MLPs write, with a strength that peaks at one block and tapers</span></figcaption>
         </figure>
         <figure class="ucard">
           <a class="shot" href="img/strips/multiband.webp" data-cap="Band Shrink on the Model layers row, at the defaults measured on this engine. Its card on the Model layers page has its sweep to listen to."><img src="img/strips/multiband.webp" width="288" height="516" loading="lazy" alt="The Band Shrink strip at its defaults."></a>
           <figcaption><b><a href="units.html#u-multiband">Band Shrink</a></b><span class="uwhat">Compresses the stream separately in three bands of its principal directions: low, mid, high</span></figcaption>
         </figure>
         <figure class="ucard">
-          <a class="shot" href="img/strips/shifter.webp" data-cap="Rotate on the Model layers row, at the defaults measured on this engine. Its card on the Model layers page has its sweep to listen to."><img src="img/strips/shifter.webp" width="288" height="516" loading="lazy" alt="The Rotate strip at its defaults."></a>
-          <figcaption><b><a href="units.html#u-shifter">Rotate</a></b><span class="uwhat">Rotates the stream in the plane of two directions</span></figcaption>
+          <a class="shot" href="img/strips/limiter.webp" data-cap="Component Clamp on the Model layers row, at the defaults measured on this engine. Its card on the Model layers page has its sweep to listen to."><img src="img/strips/limiter.webp" width="288" height="516" loading="lazy" alt="The Component Clamp strip at its defaults."></a>
+          <figcaption><b><a href="units.html#u-limiter">Component Clamp</a></b><span class="uwhat">Clamps each position's largest components at a ceiling set by a quantile of their sizes</span></figcaption>
         </figure>
         <figure class="ucard">
-          <a class="shot" href="img/strips/abliterate.webp" data-cap="Abliterate on the Model layers row, at the defaults measured on this engine. Its card on the Model layers page has its sweep to listen to."><img src="img/strips/abliterate.webp" width="576" height="516" loading="lazy" alt="The Abliterate strip at its defaults."></a>
-          <figcaption><b><a href="units.html#u-abliterate">Abliterate</a></b><span class="uwhat">Removes a direction from what attention and MLPs write, with a strength that peaks at one block and tapers</span></figcaption>
+          <a class="shot" href="img/strips/beatrepeat.webp" data-cap="Frame Repeat on the Model layers row, at the defaults measured on this engine. Its card on the Model layers page has its sweep to listen to."><img src="img/strips/beatrepeat.webp" width="288" height="516" loading="lazy" alt="The Frame Repeat strip at its defaults."></a>
+          <figcaption><b><a href="units.html#u-beatrepeat">Frame Repeat</a></b><span class="uwhat">In every run of positions, replays the stream of the few positions before over the last few: a stutter</span></figcaption>
+        </figure>
+        <figure class="ucard">
+          <a class="shot" href="img/strips/delay.webp" data-cap="Lookback on the Model layers row, at the defaults measured on this engine. Its card on the Model layers page has its sweep to listen to."><img src="img/strips/delay.webp" width="288" height="516" loading="lazy" alt="The Lookback strip at its defaults."></a>
+          <figcaption><b><a href="units.html#u-delay">Lookback</a></b><span class="uwhat">Adds the stream from some positions back: an echo, with feedback</span></figcaption>
         </figure>
         <figure class="ucard">
           <a class="shot" href="img/strips/neuron.webp" data-cap="Neuron on the Model layers row, at the defaults measured on this engine. Its card on the Model layers page has its sweep to listen to."><img src="img/strips/neuron.webp" width="576" height="516" loading="lazy" alt="The Neuron strip at its defaults."></a>
           <figcaption><b><a href="units.html#u-neuron">Neuron</a></b><span class="uwhat">Scales, adds to, sets, zeroes, flips or clamps single MLP neurons in one block</span></figcaption>
+        </figure>
+        <figure class="ucard">
+          <a class="shot" href="img/strips/compressor.webp" data-cap="Norm Shrink on the Model layers row, at the defaults measured on this engine. Its card on the Model layers page has its sweep to listen to."><img src="img/strips/compressor.webp" width="288" height="516" loading="lazy" alt="The Norm Shrink strip at its defaults."></a>
+          <figcaption><b><a href="units.html#u-compressor">Norm Shrink</a></b><span class="uwhat">Above a threshold, reduces the stream's size at each position by a ratio</span></figcaption>
+        </figure>
+        <figure class="ucard">
+          <a class="shot" href="img/strips/eq.webp" data-cap="Principal Bands on the Model layers row, at the defaults measured on this engine. Its card on the Model layers page has its sweep to listen to."><img src="img/strips/eq.webp" width="288" height="516" loading="lazy" alt="The Principal Bands strip at its defaults."></a>
+          <figcaption><b><a href="units.html#u-eq">Principal Bands</a></b><span class="uwhat">Scales three bands of the stream's principal directions: low, mid, high</span></figcaption>
+        </figure>
+        <figure class="ucard">
+          <a class="shot" href="img/strips/erosion.webp" data-cap="Quantise on the Model layers row, at the defaults measured on this engine. Its card on the Model layers page has its sweep to listen to."><img src="img/strips/erosion.webp" width="288" height="516" loading="lazy" alt="The Quantise strip at its defaults."></a>
+          <figcaption><b><a href="units.html#u-erosion">Quantise</a></b><span class="uwhat">Quantises the stream to few levels, or holds it over several positions</span></figcaption>
+        </figure>
+        <figure class="ucard">
+          <a class="shot" href="img/strips/shifter.webp" data-cap="Rotate on the Model layers row, at the defaults measured on this engine. Its card on the Model layers page has its sweep to listen to."><img src="img/strips/shifter.webp" width="288" height="516" loading="lazy" alt="The Rotate strip at its defaults."></a>
+          <figcaption><b><a href="units.html#u-shifter">Rotate</a></b><span class="uwhat">Rotates the stream in the plane of two directions</span></figcaption>
+        </figure>
+        <figure class="ucard">
+          <a class="shot" href="img/strips/reverb.webp" data-cap="Running Average on the Model layers row, at the defaults measured on this engine. Its card on the Model layers page has its sweep to listen to."><img src="img/strips/reverb.webp" width="288" height="516" loading="lazy" alt="The Running Average strip at its defaults."></a>
+          <figcaption><b><a href="units.html#u-reverb">Running Average</a></b><span class="uwhat">Adds a decaying average of the earlier positions</span></figcaption>
+        </figure>
+        <figure class="ucard">
+          <a class="shot" href="img/strips/gate.webp" data-cap="Sparsify on the Model layers row, at the defaults measured on this engine. Its card on the Model layers page has its sweep to listen to."><img src="img/strips/gate.webp" width="288" height="516" loading="lazy" alt="The Sparsify strip at its defaults."></a>
+          <figcaption><b><a href="units.html#u-gate">Sparsify</a></b><span class="uwhat">Keeps only each position's largest components and zeroes the rest, making the stream sparse</span></figcaption>
+        </figure>
+        <figure class="ucard">
+          <a class="shot" href="img/strips/saturator.webp" data-cap="Tanh Squash on the Model layers row, at the defaults measured on this engine. Its card on the Model layers page has its sweep to listen to."><img src="img/strips/saturator.webp" width="288" height="516" loading="lazy" alt="The Tanh Squash strip at its defaults."></a>
+          <figcaption><b><a href="units.html#u-saturator">Tanh Squash</a></b><span class="uwhat">Soft-clips each dimension of the stream, harder as the drive rises</span></figcaption>
         </figure>
     </div>
     <p>vMorph, the fourteenth VAU unit, needs texts to fit itself to and is not offered yet. The units' code is PyTorch and the model runs on MLX; a bridge hands each unit the stream at its layer for the one position being written, and hands back the change. Each crossing makes the GPU wait for the CPU, so Neuron and Quantise, which act value by value, run as MLX versions of the same arithmetic instead, checked against VAU's own units: Neuron in all twelve blocks now adds under a millisecond to a step, where the bridge added nine.</p>

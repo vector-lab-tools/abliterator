@@ -81,7 +81,7 @@ function esc(s) { return String(s == null ? "" : s).replace(/&/g, "&amp;").repla
     var svg = el.querySelector("svg"), ro = el.querySelector(".readout"), bar = document.getElementById("inside-pick"), vis = true;
     visible(el, function (v) { vis = v; });
     var pick = BYID.delay ? "delay" : (D.units[0] || {}).id;
-    D.units.forEach(function (u) {
+    D.units.slice().sort(function (a, b) { return a.title.localeCompare(b.title); }).forEach(function (u) {   // the picker in alphabetical order
       var b = document.createElement("button");
       b.type = "button"; b.textContent = u.title; b.setAttribute("aria-pressed", u.id === pick ? "true" : "false");
       b.addEventListener("click", function () { pick = u.id; bar.querySelectorAll("button").forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); }); draw(performance.now()); });
@@ -161,7 +161,8 @@ function esc(s) { return String(s == null ? "" : s).replace(/&/g, "&amp;").repla
   ];
   var gStrip = document.getElementById("group-strip"), host = document.getElementById("unit-groups"), cards = [];
   GROUPS.forEach(function (g) {
-    var us = D.units.filter(function (u) { return u.group === g[0]; });
+    var us = D.units.filter(function (u) { return u.group === g[0]; })
+      .sort(function (a, b) { return a.title.localeCompare(b.title); });      // alphabetical within each group
     if (!us.length || !host) return;
     if (gStrip) { var a = document.createElement("a"); a.href = "#g-" + g[0]; a.textContent = g[1]; gStrip.appendChild(a); }
     var sec = document.createElement("div");

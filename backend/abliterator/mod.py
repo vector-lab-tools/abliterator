@@ -67,6 +67,7 @@ PARAMS: Dict[str, Dict[str, Tuple]] = {
     "drift": {"rate_hz": (0.05, 0.005, 1.0), "rough": (0.4, 0.0, 1.0), "amount": (1.0, 0.0, 1.0), "seed": (1, 0, 9999)},
     "chaos": {"system": ("lorenz", CHAOS_SYSTEMS), "rate_hz": (0.2, 0.01, 4.0), "amount": (1.0, 0.0, 1.0), "seed": (1, 0, 9999)},
 }
+SOURCE_DEFAULTS = {"rand2": {"rate_hz": 0.25}}   # a source whose default differs from its kind's: RAND 2 slow beside RAND 1
 TARGETS = {"guidance": (0.0, 8.0), "temperature": (0.5, 2.0), "lowpass_hz": (1000.0, 16000.0), "volume": (0.0, 1.0), "width": (0.0, 2.0), "spread": (0.0, 1.0)}
 DOSE_SPAN = (-0.4, 0.4)
 LP_OCTAVES = 4.0
@@ -131,6 +132,7 @@ def clean(spec: Optional[Dict[str, Any]], directions: Optional[List[str]] = None
         given = (spec.get("sources") or {}).get(s) or {}
         out = {}
         for k, d in PARAMS[kind(s)].items():
+            d = (SOURCE_DEFAULTS.get(s, {}).get(k, d[0]),) + tuple(d[1:])
             v = given.get(k, d[0])
             if isinstance(d[0], str):
                 out[k] = v if d[1] is None or v in d[1] else d[0]

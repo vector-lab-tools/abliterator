@@ -1977,7 +1977,7 @@ function drawEditor() {
     }
     const kr = h(`<div class="krow"></div>`);
     for (const [k, label, min, max, o] of PARAM[s.kind]) {
-      const kn = knob({ label, min, max, reset: DEFK[s.kind]?.[k] ?? DEF[k], get: () => +MOD.spec.sources[id][k], put: (v) => { setSrc(id, k, v); drawGraphs(); }, ...o });
+      const kn = knob({ label, min, max, reset: (id === "rand2" && k === "rate_hz" ? 0.25 : undefined) ?? DEFK[s.kind]?.[k] ?? DEF[k], get: () => +MOD.spec.sources[id][k], put: (v) => { setSrc(id, k, v); drawGraphs(); }, ...o });
       kr.appendChild(kn); editorKnobs.push(kn);
       if (s.kind === "env" && (k === "hold_s" || k === "release_s")) dimKnob(kn, !p.loop);
     }

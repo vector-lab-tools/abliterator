@@ -489,6 +489,7 @@ details.more summary { cursor: pointer; color: var(--text-2); font-size: 12.5px;
 .knob.target .kbody { stroke: color-mix(in srgb, var(--assign, #d9aa3f) 40%, #3a3f4a); }
 .knob.target.linked svg { filter: drop-shadow(0 0 6px color-mix(in srgb, var(--assign, #d9aa3f) 90%, transparent)); }
 .knob.target.linked .kbody { stroke: var(--assign, #d9aa3f); stroke-width: 2; }
+.knob.target:not(.linked) .kv { color: color-mix(in srgb, var(--assign, #d9aa3f) 40%, #3a3f4a); }   /* its send text in the same dull colour as its rim */
 .strip .st small { display: block; margin-top: 2px; font: 500 9px var(--mono); color: #7d8290; letter-spacing: .02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* ---------------- compact: more of the panel on one screen (your request, 2026-11-16) */

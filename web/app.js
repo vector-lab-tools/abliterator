@@ -360,7 +360,7 @@ async function delMine(kind, id, q) {
 function presetItems(builtIn, mine, apply, del) {                    // the card's presets, then yours; long lists scroll, with a Find box
   const list = [];
   if (builtIn?.length) list.push({ head: "Presets" }, ...builtIn.map((q) => ({ label: q.name, title: q.tip || "", run: () => apply(q) })));
-  if (mine?.length) list.push({ head: "Yours" }, ...mine.map((q) => ({ label: q.name, title: `Saved ${q.made || ""}`, run: () => apply(q), del: () => del(q) })));
+  if (mine?.length) list.push({ head: "User Presets" }, ...mine.map((q) => ({ label: q.name, title: `Saved ${q.made || ""}`, run: () => apply(q), del: () => del(q) })));
   if (!list.length) return [];
   return [...((builtIn?.length || 0) + (mine?.length || 0) > 10 ? [{ filter: "Find a preset" }] : []), { scroll: list }];
 }

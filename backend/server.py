@@ -223,6 +223,37 @@ async def add_prompt(request: Request):
     return {"preset": p, "embedded": embedded}
 
 
+@app.get("/api/mypresets")
+def get_mypresets():
+    from abliterator import mypresets as mp
+    return mp.load()
+
+
+@app.post("/api/mypresets")
+async def add_mypreset(request: Request):
+    """A unit's or an effect's settings kept under a name of yours (data/my_presets.json)."""
+    from abliterator import mypresets as mp
+    b = await request.json()
+    try:
+        q = mp.add(b.get("kind", ""), b.get("id", ""), b.get("name", ""), b.get("params") or {}, b.get("block"))
+    except ValueError as e:
+        return err(str(e))
+    return {"preset": q, "all": mp.load()}
+
+
+@app.post("/api/mypresets/delete")
+async def delete_mypreset(request: Request):
+    from abliterator import mypresets as mp
+    b = await request.json()
+    try:
+        ok = mp.remove(b.get("kind", ""), b.get("id", ""), b.get("name", ""))
+    except ValueError as e:
+        return err(str(e))
+    if not ok:
+        return err("No such preset of yours.", 404)
+    return {"all": mp.load()}
+
+
 @app.post("/api/prompts/{pid}/delete")
 def delete_prompt(pid: str):
     from abliterator import presets as pr

@@ -39,4 +39,4 @@ def test_presets_name_real_settings_in_range():
         for k, v in d.items():
             assert next(p for p in cat[uid]["params"] if p["key"] == k)["default"] == v, (uid, k)
     if "neuron" in units.HOST_HEARD:
-        assert cat["neuron"]["place_default"] == 11
+        assert cat["neuron"]["place_default"] == 10

@@ -2,7 +2,237 @@
  "made": "2026-11-23",
  "how": "Chosen from a search of six seeds × 4 s of the Warm drone (Proc.render), none broken on any seed (calibrate.broken). Figures: median level-free timbre distance from the plain model on the same seed, mean change of centroid and level. A tiny Steer (0.001) gave 4.7 dB: the time units are heard in time, not in the spectrum. Each was then measured again on ten other seeds (21 to 30, 6 s): kept only if it broke on none; `held_out` gives those figures and which measures moved the same way beyond chance (sign-flip tests, Benjamini-Hochberg at 5%).",
  "units": {
+  "delay": [
+   {
+    "name": "Ghost Trail",
+    "block": 6,
+    "params": {
+     "time": 4,
+     "feedback": 0.3,
+     "mix": 0.2,
+     "keepnorm": 1
+    },
+    "tip": "An echo four frames (160 ms) back, at layer 6, with the stream kept to its size",
+    "line": "delay layer=6 time=4 feedback=0.3 mix=0.2 keepnorm=1",
+    "searched": null,
+    "held_out": {
+     "n": 10,
+     "broken": 0,
+     "timbre_median": 4.05,
+     "centroid_mean": -17.68,
+     "level_mean": -1.93,
+     "shape_db": 1.53,
+     "heard": []
+    }
+   },
+   {
+    "name": "Slapback",
+    "block": 6,
+    "params": {
+     "time": 2,
+     "feedback": 0.3,
+     "mix": 0.2,
+     "keepnorm": 1
+    },
+    "tip": "A short echo, two frames (80 ms) back, kept to size: a change of spectral shape",
+    "line": "delay layer=6 time=2 feedback=0.3 mix=0.2 keepnorm=1",
+    "searched": null,
+    "held_out": {
+     "n": 10,
+     "broken": 0,
+     "timbre_median": 5.04,
+     "centroid_mean": -25.85,
+     "level_mean": -1.17,
+     "shape_db": 2.09,
+     "heard": [
+      "shape"
+     ]
+    }
+   },
+   {
+    "name": "Long Echo",
+    "block": 6,
+    "params": {
+     "time": 12,
+     "feedback": 0.3,
+     "mix": 0.2,
+     "keepnorm": 1
+    },
+    "tip": "An echo twelve frames (480 ms) back, kept to size: quieter",
+    "line": "delay layer=6 time=12 feedback=0.3 mix=0.2 keepnorm=1",
+    "searched": null,
+    "held_out": {
+     "n": 10,
+     "broken": 0,
+     "timbre_median": 2.34,
+     "centroid_mean": -7.55,
+     "level_mean": -2.21,
+     "shape_db": 1.27,
+     "heard": [
+      "level"
+     ]
+    }
+   },
+   {
+    "name": "Deep Echo",
+    "block": 12,
+    "params": {
+     "time": 4,
+     "feedback": 0.3,
+     "mix": 0.2,
+     "keepnorm": 1
+    },
+    "tip": "An echo four frames back at the last layer, kept to size",
+    "line": "delay layer=12 time=4 feedback=0.3 mix=0.2 keepnorm=1",
+    "searched": null,
+    "held_out": {
+     "n": 10,
+     "broken": 0,
+     "timbre_median": 3.97,
+     "centroid_mean": -0.71,
+     "level_mean": -0.6,
+     "shape_db": 1.26,
+     "heard": []
+    }
+   },
+   {
+    "name": "Smear",
+    "block": 2,
+    "params": {
+     "time": 4,
+     "feedback": 0.3,
+     "mix": 0.3,
+     "keepnorm": 1
+    },
+    "tip": "An early echo, at layer 2, with the stream kept to its size: each frame more like the ones before it",
+    "line": "delay layer=2 time=4 feedback=0.3 mix=0.3 keepnorm=1",
+    "searched": {
+     "seeds": 6,
+     "broken": 0,
+     "timbre_db": 4.04,
+     "d_centroid_hz": 2,
+     "d_level_db": -1.0
+    },
+    "held_out": {
+     "n": 10,
+     "broken": 0,
+     "timbre_median": 4.81,
+     "centroid_mean": -24.17,
+     "level_mean": -0.96,
+     "shape_db": 1.84,
+     "heard": [
+      "time"
+     ]
+    }
+   },
+   {
+    "name": "Feedback Loop",
+    "block": 6,
+    "params": {
+     "time": 8,
+     "feedback": 0.7,
+     "mix": 0.8,
+     "keepnorm": 1
+    },
+    "tip": "A strong echo that feeds back on itself, kept to size: darker, quieter",
+    "line": "delay layer=6 time=8 feedback=0.7 mix=0.8 keepnorm=1",
+    "searched": {
+     "seeds": 6,
+     "broken": 0,
+     "timbre_db": 2.24,
+     "d_centroid_hz": -23,
+     "d_level_db": -0.8
+    },
+    "held_out": {
+     "n": 10,
+     "broken": 0,
+     "timbre_median": 3.96,
+     "centroid_mean": -19.49,
+     "level_mean": -1.99,
+     "shape_db": 2.01,
+     "heard": [
+      "centroid",
+      "level",
+      "shape"
+     ]
+    }
+   },
+   {
+    "name": "Late Repeats",
+    "block": 12,
+    "params": {
+     "time": 2,
+     "feedback": 0.6,
+     "mix": 0.6,
+     "keepnorm": 1
+    },
+    "tip": "Short repeats with feedback at the last layer, kept to size: darker",
+    "line": "delay layer=12 time=2 feedback=0.6 mix=0.6 keepnorm=1",
+    "searched": {
+     "seeds": 6,
+     "broken": 0,
+     "timbre_db": 3.81,
+     "d_centroid_hz": -17,
+     "d_level_db": -0.3
+    },
+    "held_out": {
+     "n": 10,
+     "broken": 0,
+     "timbre_median": 4.6,
+     "centroid_mean": -27.07,
+     "level_mean": -1.18,
+     "shape_db": 1.87,
+     "heard": [
+      "centroid"
+     ]
+    }
+   }
+  ],
   "reverb": [
+   {
+    "name": "Afterglow",
+    "block": 6,
+    "params": {
+     "decay": 0.8,
+     "mix": 0.2,
+     "keepnorm": 1
+    },
+    "tip": "A short tail of the stream's own past at layer 6, kept to size",
+    "line": "reverb layer=6 decay=0.8 mix=0.2 keepnorm=1",
+    "searched": null,
+    "held_out": {
+     "n": 10,
+     "broken": 0,
+     "timbre_median": 5.22,
+     "centroid_mean": -28.78,
+     "level_mean": -0.37,
+     "shape_db": 2.1,
+     "heard": []
+    }
+   },
+   {
+    "name": "Wash",
+    "block": 12,
+    "params": {
+     "decay": 0.9,
+     "mix": 0.3,
+     "keepnorm": 1
+    },
+    "tip": "A longer tail at the last layer, kept to size: darker",
+    "line": "reverb layer=12 decay=0.9 mix=0.3 keepnorm=1",
+    "searched": null,
+    "held_out": {
+     "n": 10,
+     "broken": 0,
+     "timbre_median": 3.99,
+     "centroid_mean": -21.48,
+     "level_mean": 0.0,
+     "shape_db": 1.48,
+     "heard": [
+      "centroid"
+     ]
+    }
+   },
    {
     "name": "Short Room",
     "block": 10,
@@ -57,8 +287,7 @@
      "level_mean": -3.4,
      "shape_db": 2.3,
      "heard": [
-      "level",
-      "shape"
+      "level"
      ]
     }
    },
@@ -1053,6 +1282,144 @@
     }
    }
   ],
+  "limiter": [
+   {
+    "name": "Tame",
+    "block": 10,
+    "params": {
+     "sink": 0,
+     "ceiling": 0.995
+    },
+    "tip": "Clamps the few largest coordinates a little, at layer 10",
+    "line": "limiter layer=10 sink=0 ceiling=0.995",
+    "searched": null,
+    "held_out": {
+     "n": 10,
+     "broken": 0,
+     "timbre_median": 7.78,
+     "centroid_mean": -17.97,
+     "level_mean": 0.05,
+     "shape_db": 3.08,
+     "heard": []
+    }
+   },
+   {
+    "name": "Lid",
+    "block": 10,
+    "params": {
+     "sink": 0,
+     "ceiling": 0.99
+    },
+    "tip": "The usual ceiling at layer 10: a change of spectral shape",
+    "line": "limiter layer=10 sink=0 ceiling=0.99",
+    "searched": null,
+    "held_out": {
+     "n": 10,
+     "broken": 0,
+     "timbre_median": 9.38,
+     "centroid_mean": 60.56,
+     "level_mean": 2.38,
+     "shape_db": 5.25,
+     "heard": [
+      "shape"
+     ]
+    }
+   },
+   {
+    "name": "Clamp Down",
+    "block": 12,
+    "params": {
+     "sink": 0,
+     "ceiling": 0.98
+    },
+    "tip": "A lower ceiling at the last layer: a change of spectral shape",
+    "line": "limiter layer=12 sink=0 ceiling=0.98",
+    "searched": null,
+    "held_out": {
+     "n": 10,
+     "broken": 0,
+     "timbre_median": 6.51,
+     "centroid_mean": 15.7,
+     "level_mean": 4.16,
+     "shape_db": 3.2,
+     "heard": [
+      "shape"
+     ]
+    }
+   },
+   {
+    "name": "Brickwall",
+    "block": 12,
+    "params": {
+     "sink": 0,
+     "ceiling": 0.95
+    },
+    "tip": "Lower still, at the last layer: louder",
+    "line": "limiter layer=12 sink=0 ceiling=0.95",
+    "searched": null,
+    "held_out": {
+     "n": 10,
+     "broken": 0,
+     "timbre_median": 7.48,
+     "centroid_mean": 22.32,
+     "level_mean": 7.62,
+     "shape_db": 2.77,
+     "heard": [
+      "level"
+     ]
+    }
+   },
+   {
+    "name": "Flat Top",
+    "block": 12,
+    "params": {
+     "sink": 0,
+     "ceiling": 0.9
+    },
+    "tip": "A ceiling at 0.9, at the last layer: louder",
+    "line": "limiter layer=12 sink=0 ceiling=0.9",
+    "searched": null,
+    "held_out": {
+     "n": 10,
+     "broken": 0,
+     "timbre_median": 7.71,
+     "centroid_mean": 14.13,
+     "level_mean": 9.23,
+     "shape_db": 3.58,
+     "heard": [
+      "level"
+     ]
+    }
+   },
+   {
+    "name": "Tail Clamp",
+    "block": 12,
+    "params": {
+     "sink": 0,
+     "ceiling": 0.99
+    },
+    "tip": "The default ceiling at the last layer: louder",
+    "line": "limiter layer=12 sink=0 ceiling=0.99",
+    "searched": {
+     "seeds": 6,
+     "broken": 0,
+     "timbre_db": 6.68,
+     "d_centroid_hz": -6,
+     "d_level_db": 4.4
+    },
+    "held_out": {
+     "n": 10,
+     "broken": 0,
+     "timbre_median": 6.75,
+     "centroid_mean": -21.52,
+     "level_mean": 4.14,
+     "shape_db": 1.74,
+     "heard": [
+      "level"
+     ]
+    }
+   }
+  ],
   "eq": [
    {
     "name": "Tilt Dark",
@@ -1081,6 +1448,29 @@
      "heard": [
       "centroid",
       "level",
+      "shape"
+     ]
+    }
+   },
+   {
+    "name": "Sky",
+    "block": 12,
+    "params": {
+     "low": 1,
+     "mid": 1,
+     "high": 1.25
+    },
+    "tip": "The minor directions up by a quarter at the last layer: a change of spectral shape",
+    "line": "eq layer=12 low=1 mid=1 high=1.25",
+    "searched": null,
+    "held_out": {
+     "n": 10,
+     "broken": 0,
+     "timbre_median": 8.26,
+     "centroid_mean": -38.72,
+     "level_mean": 1.64,
+     "shape_db": 4.87,
+     "heard": [
       "shape"
      ]
     }
@@ -1170,8 +1560,7 @@
      "level_mean": 0.98,
      "shape_db": 3.41,
      "heard": [
-      "centroid",
-      "shape"
+      "centroid"
      ]
     }
    },
@@ -1378,12 +1767,339 @@
      ]
     }
    }
+  ],
+  "shifter": [
+   {
+    "name": "Turn",
+    "block": 6,
+    "params": {
+     "angle": 45
+    },
+    "tip": "The default: 45 degrees in the plane of the two directions: quieter",
+    "line": "shifter layer=6 dir=brightness dir2=pulse angle=45",
+    "searched": {
+     "seeds": 6,
+     "broken": 0,
+     "timbre_db": 7.79,
+     "d_centroid_hz": 103,
+     "d_level_db": -6.6
+    },
+    "held_out": {
+     "n": 10,
+     "broken": 0,
+     "timbre_median": 7.73,
+     "centroid_mean": 32.11,
+     "level_mean": -4.09,
+     "shape_db": 5.02,
+     "heard": [
+      "level",
+      "shape"
+     ]
+    }
+   },
+   {
+    "name": "Quarter Turn",
+    "block": 6,
+    "params": {
+     "angle": 90
+    },
+    "tip": "90 degrees: the first direction becomes the second: a change of spectral shape",
+    "line": "shifter layer=6 dir=brightness dir2=pulse angle=90",
+    "searched": {
+     "seeds": 6,
+     "broken": 0,
+     "timbre_db": 9.51,
+     "d_centroid_hz": 148,
+     "d_level_db": -9.8
+    },
+    "held_out": {
+     "n": 10,
+     "broken": 0,
+     "timbre_median": 8.81,
+     "centroid_mean": 49.22,
+     "level_mean": -4.9,
+     "shape_db": 6.18,
+     "heard": [
+      "shape"
+     ]
+    }
+   },
+   {
+    "name": "Three-Eighths",
+    "block": 6,
+    "params": {
+     "angle": 135
+    },
+    "tip": "135 degrees: quieter",
+    "line": "shifter layer=6 dir=brightness dir2=pulse angle=135",
+    "searched": {
+     "seeds": 6,
+     "broken": 0,
+     "timbre_db": 11.41,
+     "d_centroid_hz": 171,
+     "d_level_db": -10.8
+    },
+    "held_out": {
+     "n": 10,
+     "broken": 0,
+     "timbre_median": 10.07,
+     "centroid_mean": 73.28,
+     "level_mean": -6.89,
+     "shape_db": 7.36,
+     "heard": [
+      "level",
+      "shape"
+     ]
+    }
+   },
+   {
+    "name": "Flip",
+    "block": 6,
+    "params": {
+     "angle": 180
+    },
+    "tip": "180 degrees: both directions reversed: quieter",
+    "line": "shifter layer=6 dir=brightness dir2=pulse angle=180",
+    "searched": {
+     "seeds": 6,
+     "broken": 0,
+     "timbre_db": 10.53,
+     "d_centroid_hz": 132,
+     "d_level_db": -12.0
+    },
+    "held_out": {
+     "n": 10,
+     "broken": 0,
+     "timbre_median": 9.68,
+     "centroid_mean": 84.62,
+     "level_mean": -10.01,
+     "shape_db": 7.19,
+     "heard": [
+      "level",
+      "shape"
+     ]
+    }
+   },
+   {
+    "name": "Counter Turn",
+    "block": 6,
+    "params": {
+     "angle": -45
+    },
+    "tip": "45 degrees the other way: quieter",
+    "line": "shifter layer=6 dir=brightness dir2=pulse angle=-45",
+    "searched": {
+     "seeds": 6,
+     "broken": 0,
+     "timbre_db": 10.98,
+     "d_centroid_hz": 84,
+     "d_level_db": -10.6
+    },
+    "held_out": {
+     "n": 10,
+     "broken": 0,
+     "timbre_median": 12.35,
+     "centroid_mean": 91.07,
+     "level_mean": -7.44,
+     "shape_db": 7.4,
+     "heard": [
+      "level",
+      "shape"
+     ]
+    }
+   },
+   {
+    "name": "Early Turn",
+    "block": 2,
+    "params": {
+     "angle": 45
+    },
+    "tip": "45 degrees at layer 2: a change of spectral shape",
+    "line": "shifter layer=2 dir=brightness dir2=pulse angle=45",
+    "searched": {
+     "seeds": 6,
+     "broken": 0,
+     "timbre_db": 11.46,
+     "d_centroid_hz": 132,
+     "d_level_db": -6.9
+    },
+    "held_out": {
+     "n": 10,
+     "broken": 0,
+     "timbre_median": 12.89,
+     "centroid_mean": 25.95,
+     "level_mean": -1.63,
+     "shape_db": 9.67,
+     "heard": [
+      "shape"
+     ]
+    }
+   }
+  ],
+  "neuron": [
+   {
+    "name": "Bright Push",
+    "block": "11",
+    "params": {
+     "n": "41,3511,3657,1644,3665,1886,3072,519,3494,3878,2048,1938,2451,400,2036,3326,2959,1877,16,3164,2773,3358,1656,2456,857,2221,891,1505,985,865,3214,2136",
+     "op": "add",
+     "value": 3
+    },
+    "tip": "Adds 3 to the 32 neurons of block 11 that write most along Brightness",
+    "line": "neuron block=11 n=41,3511,3657,1644,3665,1886,3072,519,3494,3878,2048,1938,2451,400,2036,3326,2959,1877,16,3164,2773,3358,1656,2456,857,2221,891,1505,985,865,3214,2136 op=add value=3",
+    "searched": null,
+    "held_out": {
+     "n": 10,
+     "broken": 0,
+     "timbre_median": 7.69,
+     "centroid_mean": -15.71,
+     "level_mean": 2.86,
+     "shape_db": 2.89,
+     "heard": []
+    }
+   },
+   {
+    "name": "Bright Cells",
+    "block": "11",
+    "params": {
+     "n": "41,3511,3657,1644,3665,1886,3072,519,3494,3878,2048,1938,2451,400,2036,3326,2959,1877,16,3164,2773,3358,1656,2456,857,2221,891,1505,985,865,3214,2136,3899,2872,1255,3496,1351,934,2014,3981,1231,1353,939,3078,3108,2450,441,4073,2056,8,617,658,1604,1081,1278,179,3583,3774,339,1465,1401,3450,2798,1926",
+     "op": "scale",
+     "value": 20
+    },
+    "tip": "The 64 neurons of block 11 that write most along Brightness, ×20",
+    "line": "neuron block=11 n=41,3511,3657,1644,3665,1886,3072,519,3494,3878,2048,1938,2451,400,2036,3326,2959,1877,16,3164,2773,3358,1656,2456,857,2221,891,1505,985,865,3214,2136,3899,2872,1255,3496,1351,934,2014,3981,1231,1353,939,3078,3108,2450,441,4073,2056,8,617,658,1604,1081,1278,179,3583,3774,339,1465,1401,3450,2798,1926 op=scale value=20",
+    "searched": {
+     "seeds": 6,
+     "broken": 0,
+     "timbre_db": 8.11,
+     "d_centroid_hz": 14,
+     "d_level_db": -2.7
+    },
+    "held_out": {
+     "n": 10,
+     "broken": 0,
+     "timbre_median": 7.16,
+     "centroid_mean": -27.14,
+     "level_mean": 1.28,
+     "shape_db": 5.14,
+     "heard": []
+    }
+   },
+   {
+    "name": "Dark Cells",
+    "block": "11",
+    "params": {
+     "n": "293,3870,3444,245,1954,2828,381,26,2619,2993,211,2885,3340,197,2481,1013,3592,1244,1635,3080,83,3056,309,4013,1562,1928,587,2817,1019,3864,2728,2812,1423,1729,271,1994,429,267,562,1216,638,652,119,674,1425,3837,999,1696,1020,3322,3691,1575,282,2484,971,3016,539,315,2278,4055,3095,3660,514,553",
+     "op": "scale",
+     "value": 20
+    },
+    "tip": "The 64 that write most against Brightness, ×20: a change of spectral shape",
+    "line": "neuron block=11 n=293,3870,3444,245,1954,2828,381,26,2619,2993,211,2885,3340,197,2481,1013,3592,1244,1635,3080,83,3056,309,4013,1562,1928,587,2817,1019,3864,2728,2812,1423,1729,271,1994,429,267,562,1216,638,652,119,674,1425,3837,999,1696,1020,3322,3691,1575,282,2484,971,3016,539,315,2278,4055,3095,3660,514,553 op=scale value=20",
+    "searched": {
+     "seeds": 6,
+     "broken": 0,
+     "timbre_db": 8.59,
+     "d_centroid_hz": 12,
+     "d_level_db": 3.1
+    },
+    "held_out": {
+     "n": 10,
+     "broken": 0,
+     "timbre_median": 8.05,
+     "centroid_mean": -22.74,
+     "level_mean": 2.6,
+     "shape_db": 4.94,
+     "heard": [
+      "shape"
+     ]
+    }
+   },
+   {
+    "name": "Pulse Cells",
+    "block": "11",
+    "params": {
+     "n": "1282,1216,154,670,1842,931,1160,516,438,2413,1930,3401,737,1793,4065,2370,3407,2651,1266,517,2543,1261,1546,1278,2538,1827,3059,92,3681,3256,2552,378,1399,1463,2145,166,2933,962,3485,640,1688,3159,1653,2129,712,2455,2695,293,1881,2418,3265,582,3163,2710,2367,322,3697,928,4006,2043,223,976,2348,83",
+     "op": "scale",
+     "value": 20
+    },
+    "tip": "The 64 that write most along Pulse, ×20: louder",
+    "line": "neuron block=11 n=1282,1216,154,670,1842,931,1160,516,438,2413,1930,3401,737,1793,4065,2370,3407,2651,1266,517,2543,1261,1546,1278,2538,1827,3059,92,3681,3256,2552,378,1399,1463,2145,166,2933,962,3485,640,1688,3159,1653,2129,712,2455,2695,293,1881,2418,3265,582,3163,2710,2367,322,3697,928,4006,2043,223,976,2348,83 op=scale value=20",
+    "searched": {
+     "seeds": 6,
+     "broken": 0,
+     "timbre_db": 6.71,
+     "d_centroid_hz": 3,
+     "d_level_db": 7.3
+    },
+    "held_out": {
+     "n": 10,
+     "broken": 0,
+     "timbre_median": 8.22,
+     "centroid_mean": -25.05,
+     "level_mean": 8.7,
+     "shape_db": 4.71,
+     "heard": [
+      "level",
+      "shape"
+     ]
+    }
+   },
+   {
+    "name": "Silence Cells",
+    "block": "11",
+    "params": {
+     "n": "41,3511,3657,1644,3665,1886,3072,519,3494,3878,2048,1938,2451,400,2036,3326,2959,1877,16,3164,2773,3358,1656,2456,857,2221,891,1505,985,865,3214,2136,3899,2872,1255,3496,1351,934,2014,3981,1231,1353,939,3078,3108,2450,441,4073,2056,8,617,658,1604,1081,1278,179,3583,3774,339,1465,1401,3450,2798,1926",
+     "op": "zero"
+    },
+    "tip": "The 64 Brightness neurons of block 11 switched off",
+    "line": "neuron block=11 n=41,3511,3657,1644,3665,1886,3072,519,3494,3878,2048,1938,2451,400,2036,3326,2959,1877,16,3164,2773,3358,1656,2456,857,2221,891,1505,985,865,3214,2136,3899,2872,1255,3496,1351,934,2014,3981,1231,1353,939,3078,3108,2450,441,4073,2056,8,617,658,1604,1081,1278,179,3583,3774,339,1465,1401,3450,2798,1926 op=zero",
+    "searched": {
+     "seeds": 6,
+     "broken": 0,
+     "timbre_db": 6.75,
+     "d_centroid_hz": 35,
+     "d_level_db": 0.5
+    },
+    "held_out": {
+     "n": 10,
+     "broken": 0,
+     "timbre_median": 5.81,
+     "centroid_mean": 7.11,
+     "level_mean": 0.41,
+     "shape_db": 1.78,
+     "heard": []
+    }
+   },
+   {
+    "name": "Ten Set",
+    "block": "10",
+    "params": {
+     "n": "2993,861,501,456,2633,2755,3898,1381,917,3303,2286,2724,2471,581,997,527,107,245,3561,3507,1903,232,1380,1572,618,1857,161,913,3409,1121,1166,1485",
+     "op": "set",
+     "value": 8
+    },
+    "tip": "The 32 Brightness neurons of block 10 held at 8: a change of spectral shape",
+    "line": "neuron block=10 n=2993,861,501,456,2633,2755,3898,1381,917,3303,2286,2724,2471,581,997,527,107,245,3561,3507,1903,232,1380,1572,618,1857,161,913,3409,1121,1166,1485 op=set value=8",
+    "searched": {
+     "seeds": 6,
+     "broken": 0,
+     "timbre_db": 8.73,
+     "d_centroid_hz": 91,
+     "d_level_db": -2.0
+    },
+    "held_out": {
+     "n": 10,
+     "broken": 0,
+     "timbre_median": 11.18,
+     "centroid_mean": 116.84,
+     "level_mean": -1.53,
+     "shape_db": 7.95,
+     "heard": [
+      "shape"
+     ]
+    }
+   }
   ]
  },
- "held_back": {
-  "delay": "3 of 7 hold, 0 not yet checked",
-  "limiter": "1 of 6 hold, 0 not yet checked",
-  "shifter": "3 of 8 hold, 5 not yet checked",
-  "neuron": "0 of 6 hold, 6 not yet checked"
- }
+ "held_back": {}
 }

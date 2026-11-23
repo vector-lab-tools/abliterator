@@ -314,9 +314,9 @@ function esc(s) { return String(s == null ? "" : s).replace(/&/g, "&amp;").repla
     },
     neuron: function (t) {
       var s = "", i;
-      for (i = 0; i < 14; i++) { var a = 0.3 + 0.5 * Math.abs(Math.sin(i * 1.3 + t / 400)), hot = i === 6; s += C(16 + i * 14.5, 50, hot ? 6 : 4, hot ? "f-acc" : "f-blue", ' opacity="' + (hot ? 0.95 : a) + '"' + (hot ? ' style="filter:drop-shadow(0 0 5px var(--accent))"' : "")); }
-      s += T(76, 30, "neuron 373 × 6", "f-acc t-xs");
-      s += T(8, 82, "one of each MLP's hidden units", "f-dim t-xs"); s += T(8, 94, "scaled, in every block", "f-dim t-xs");
+      for (i = 0; i < 14; i++) { var a = 0.3 + 0.5 * Math.abs(Math.sin(i * 1.3 + t / 400)), hot = i % 3 === 1; s += C(16 + i * 14.5, 50, hot ? 6 : 4, hot ? "f-acc" : "f-blue", ' opacity="' + (hot ? 0.95 : a) + '"' + (hot ? ' style="filter:drop-shadow(0 0 5px var(--accent))"' : "")); }
+      s += T(76, 30, "32 neurons set to 8", "f-acc t-xs");
+      s += T(8, 82, "those block 10's MLP writes", "f-dim t-xs"); s += T(8, 94, "most along brightness", "f-dim t-xs");
       return s + T(8, 112, "edits named MLP neurons", "f-dim t-xs");
     },
   };

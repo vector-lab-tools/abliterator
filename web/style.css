@@ -157,9 +157,7 @@ details.more summary { cursor: pointer; color: var(--text-2); font-size: 12.5px;
 .strip.narrow { width: 64px; }
 .strip.off > :not(.sh) { opacity: .38; }
 .strip .sh { display: flex; width: 100%; align-items: flex-start; gap: 6px; }
-.strip .snapb { flex: none; width: 16px; height: 16px; padding: 0; border: 0; background: none; color: #5d6472; font-size: 12px; line-height: 16px; cursor: pointer; }
-.strip .snapb[aria-pressed="true"] { color: var(--gold); }
-.strip .spre { flex: none; width: 18px; height: 16px; padding: 0; border: 1px solid #2c303a; border-radius: 4px; background: #14161b; color: var(--gold); font-size: 10px; line-height: 1; text-align: center; text-align-last: center; appearance: none; -webkit-appearance: none; cursor: pointer; }
+.strip .spre { flex: none; width: 18px; height: 16px; padding: 0; border: 1px solid #2c303a; border-radius: 4px; background: #14161b; color: var(--gold); font-size: 10px; line-height: 1; text-align: center; cursor: pointer; }
 .strip .spre:hover { border-color: var(--gold); }
 .strip .st { flex: 1; min-width: 0; font-size: 11px; font-weight: 650; line-height: 1.2; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .strip .sn { flex: none; font: 600 10.5px var(--mono); color: #7d8290; margin-top: 1px; }
@@ -1035,3 +1033,24 @@ html, body { overscroll-behavior-x: none; }
 
 /* a unit setting that has no effect while another is set as it is (units.HOST_WHEN) */
 .unit-inert { opacity: 0.32; }
+.addmenu .am-sep { height: 1px; margin: 4px 6px; background: #2c303a; }
+.addmenu .am-ck { display: inline-block; width: 14px; font-style: normal; color: var(--gold); }
+.addmenu button[role="menuitemcheckbox"] b { display: inline; }
+.addmenu button[role="menuitemcheckbox"] span { padding-left: 14px; }
+.addmenu button.am-danger b { color: #ff6b5a; }
+.fxh .spre { flex: none; width: 18px; height: 16px; padding: 0; border: 1px solid #2c303a; border-radius: 4px; background: #14161b; color: var(--gold); font-size: 10px; line-height: 1; text-align: center; cursor: pointer; }
+.fxh .spre:hover { border-color: var(--gold); }
+.selectable.sel { outline: 1px solid var(--gold); outline-offset: 1px; }
+.addmenu.cardmenu { width: 240px; }
+.addmenu.cardmenu button b { font-weight: 400; }
+.addmenu.cardmenu button span { font-weight: 300; }
+.addmenu .am-scroll { max-height: min(46vh, 360px); overflow-y: auto; margin: 0 -2px; padding: 0 2px; }
+.addmenu.cardmenu { overflow: hidden; max-height: none; display: flex; flex-direction: column; }
+.addmenu.cardmenu > * { flex: none; }
+.addmenu.cardmenu button { padding: 4px 8px; }
+.addmenu .am-find, .addmenu .am-in input { width: 100%; box-sizing: border-box; background: #14161b; color: inherit; border: 1px solid #2c303a; border-radius: 5px; padding: 4px 7px; font: 400 12px inherit; }
+.addmenu .am-find { margin: 2px 0 4px; }
+.addmenu .am-in { display: flex; gap: 6px; padding: 4px 6px; }
+.addmenu .am-in button { width: auto; flex: none; padding: 3px 9px; border: 1px solid #2c303a; border-radius: 5px; color: var(--gold); }
+.addmenu .am-in button:hover { border-color: var(--gold); }
+.addmenu button[role="menuitemcheckbox"] span { font-size: 9.5px; line-height: 1.3; }

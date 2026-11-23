@@ -274,27 +274,94 @@ function meter(label, cells = false) {
 }
 // a menu by a button, as Lens's add menu
 let openMenu = null;
-function menu(anchor, items) {
+function menu(anchor, items, cls = "") {
+  if (openMenu && openMenu._anchor === anchor) { closeMenu(); return; }   // its button again: close it
   closeMenu();
-  const m = h(`<div class="addmenu" role="menu"></div>`);
-  for (const it of items) {
-    if (it.where) { m.appendChild(h(`<div class="am-where">${esc(it.where)}</div>`)); continue; }
-    if (it.head) { m.appendChild(h(`<div class="am-h">${esc(it.head)}</div>`)); continue; }
-    const b = h(`<button role="menuitem"><b>${esc(it.label)}</b>${it.sub ? `<span>${esc(it.sub)}</span>` : ""}</button>`);
+  const m = h(`<div class="addmenu ${cls}" role="menu"></div>`);
+  m._anchor = anchor;
+  let list = null, focus = null;                                    // the scrolled list a Find box filters
+  const put = (box, it) => {
+    if (it.where) return box.appendChild(h(`<div class="am-where">${esc(it.where)}</div>`));
+    if (it.head) return box.appendChild(h(`<div class="am-h">${esc(it.head)}</div>`));
+    if (it.sep) return box.appendChild(h(`<div class="am-sep" role="separator"></div>`));
+    if (it.scroll) {                                                // a long list scrolls on its own; what follows stays in view
+      list = box.appendChild(h(`<div class="am-scroll"></div>`));
+      it.scroll.forEach((x) => put(list, x)); return;
+    }
+    if (it.filter) {                                                // a Find box over the scrolled list
+      const f = box.appendChild(h(`<input class="am-find" type="search" placeholder="${esc(it.filter)}" aria-label="${esc(it.filter)}">`));
+      f.addEventListener("input", () => {
+        const q = f.value.trim().toLowerCase(); let head = null, any = false;
+        for (const el of list?.children || []) {
+          if (el.classList.contains("am-h")) { if (head) head.hidden = !any; head = el; any = false; continue; }
+          const show = !q || el.textContent.toLowerCase().includes(q); el.hidden = !show; any ||= show;
+        }
+        if (head) head.hidden = !any;
+      });
+      focus = f; return;
+    }
+    if (it.input) {                                                 // a name and a button: Enter or the button runs it
+      const row = box.appendChild(h(`<div class="am-in"><input type="text" maxlength="40" placeholder="${esc(it.input)}" aria-label="${esc(it.input)}"><button type="button">${esc(it.button || "OK")}</button></div>`));
+      const inp = row.querySelector("input"), go = () => { const v = inp.value.trim(); if (v) { closeMenu(); it.run(v); } };
+      row.querySelector("button").addEventListener("click", go);
+      inp.addEventListener("keydown", (e) => { if (e.key === "Enter") go(); e.stopPropagation(); });
+      return;
+    }
+    const ck = "check" in it;                                       // an on/off item: a tick when on
+    const b = h(`<button role="${ck ? "menuitemcheckbox" : "menuitem"}"${ck ? ` aria-checked="${!!it.check}"` : ""}>${ck ? `<i class="am-ck">${it.check ? "✓" : ""}</i>` : ""}<b>${esc(it.label)}</b>${it.sub ? `<span>${esc(it.sub)}</span>` : ""}</button>`);
+    if (it.title) b.title = it.title;
+    if (it.danger) b.classList.add("am-danger");
     b.disabled = !!it.disabled;
     b.addEventListener("click", () => { closeMenu(); it.run(); });
-    m.appendChild(b);
-  }
+    box.appendChild(b);
+  };
+  for (const it of items) put(m, it);
   document.body.appendChild(m);
+  if (focus) setTimeout(() => focus.focus(), 0);
   const r = anchor.getBoundingClientRect(), mh = m.offsetHeight, mw = m.offsetWidth;
   m.style.left = `${Math.max(8, Math.min(window.innerWidth - mw - 8, r.left))}px`;
   m.style.top = `${r.bottom + mh + 8 < window.innerHeight ? r.bottom + 4 : Math.max(8, r.top - mh - 4)}px`;
   openMenu = m;
   setTimeout(() => document.addEventListener("pointerdown", outside), 0);
 }
-function outside(e) { if (openMenu && !openMenu.contains(e.target)) closeMenu(); }
+// A card clicked is selected (outlined); Delete or Backspace then removes it, unless a text field has the keys.
+let SELECTED = null;                                            // {key: the unit's or effect's own object, el, remove}
+function select(s) { SELECTED?.el?.classList.remove("sel"); SELECTED = s; s?.el?.classList.add("sel"); }
+function selectable(el, key, remove) {
+  el.classList.add("selectable");
+  if (SELECTED?.key === key) { SELECTED = { key, el, remove }; el.classList.add("sel"); }   // kept across a redraw
+  el.addEventListener("pointerdown", (e) => { if (!e.target.closest(".spre")) select({ key, el, remove }); });
+}
+document.addEventListener("pointerdown", (e) => { if (SELECTED && !e.target.closest(".selectable, .addmenu")) select(null); }, true);
+document.addEventListener("keydown", (e) => {
+  if ((e.key === "Delete" || e.key === "Backspace") && SELECTED && !e.target.closest?.("input, textarea, select, [contenteditable]")) {
+    e.preventDefault(); const s = SELECTED; select(null); s.remove();
+  }
+});
+function removeUnit(c) { const k = U.chain.indexOf(c); if (k >= 0) { U.chain.splice(k, 1); drawStrips(); sendChain(); } }
+function removeFx(sl, i) { let k = PFX.slots.indexOf(sl); if (k < 0 && PFX.slots[i]?.type === sl.type) k = i; if (k >= 0) { PFX.slots.splice(k, 1); PFX.touched = Date.now(); flushFx(); drawFx(); } }
+// Presets of your own (mypresets.py): a card's settings kept under a name, on every card of that unit or effect.
+const MY = { units: {}, fx: {} };
+async function loadMine() { try { Object.assign(MY, await api("/api/mypresets")); } catch (e) { /* tried again when one is saved */ } }
+function presetItems(builtIn, mine, apply) {                    // the card's presets, then yours; long lists scroll, with a Find box
+  const list = [];
+  if (builtIn?.length) list.push({ head: "Presets" }, ...builtIn.map((q) => ({ label: q.name, title: q.tip || "", run: () => apply(q) })));
+  if (mine?.length) list.push({ head: "Yours" }, ...mine.map((q) => ({ label: q.name, title: `Saved ${q.made || ""}`, run: () => apply(q) })));
+  if (!list.length) return [];
+  return [...((builtIn?.length || 0) + (mine?.length || 0) > 10 ? [{ filter: "Find a preset" }] : []), { scroll: list }];
+}
+function mineItems(kind, id, params, block, anchor) {
+  const mine = MY[kind][id] || [];
+  return [{ input: "Name these settings", button: "Save", run: async (name) => {
+      try { const j = await api("/api/mypresets", { kind, id, name, params: params(), block: block() }); Object.assign(MY, j.all); info(`saved as ${name}`, "ok"); } catch (e) { fail(e); }
+    } },
+    ...(mine.length ? [{ label: "Delete one of yours…", run: () => menu(anchor, [{ head: "Delete" }, { scroll: mine.map((q) => ({ label: q.name, danger: true, run: async () => {
+      try { const j = await api("/api/mypresets/delete", { kind, id, name: q.name }); Object.assign(MY, j.all); info(`deleted ${q.name}`, "ok"); } catch (e) { fail(e); }
+    } })) }], "cardmenu") }] : [])];
+}
+function outside(e) { if (openMenu && !openMenu.contains(e.target) && !openMenu._anchor?.contains(e.target)) closeMenu(); }
 function closeMenu() { if (openMenu) { openMenu.remove(); openMenu = null; document.removeEventListener("pointerdown", outside); } }
-document.addEventListener("keydown", (e) => { if (e.key === "Escape") { closeMenu(); if (MOD.assign) assign(null); } });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") { closeMenu(); select(null); if (MOD.assign) assign(null); } });
 
 // ------------------------------------------------------------- modulation (mod.py, drawn here)
 // The engine computes modulation at each frame; this copy of the sources' shapes draws them,
@@ -891,10 +958,16 @@ function drawFx() {
     if (!T) return;
     if (!full) row.appendChild(gapAdd(i, i === 0 ? "Add an effect before effect 1" : `Add an effect between effects ${i} and ${i + 1}`, fxMenu));
     const el = h(`<div class="fxs ${sl.on ? "" : "off"} ${FX_SPACE.has(sl.type) ? "space" : "tone"} ${FX_NARROW.has(sl.type) ? "narrow" : ""} ${FX_ZIG.has(sl.type) ? "zig" : ""}"><div class="fxh"><button class="pw ${sl.on ? "on" : ""}" title="On or bypassed"></button>
-      <b class="fxn" title="Drag to move it in the chain">${esc(T.label)}</b><span class="fxi">${i + 1}</span><button class="x" title="Remove">✕</button></div>
+      <b class="fxn" title="Drag to move it in the chain">${esc(T.label)}</b><span class="fxi">${i + 1}</span><button class="spre" title="This effect's menu" aria-label="Effect menu" aria-haspopup="menu">▾</button></div>
       ${FX_GRAPH.has(sl.type) ? `<div class="fxg"><svg viewBox="0 0 ${GW} ${GH}" preserveAspectRatio="none" aria-hidden="true"></svg></div>` : ""}<div class="fxk"></div><div class="fxb"></div><button class="qhelp" type="button" aria-label="Help: ${esc(T.label)}" title="What ${esc(T.label)} does: how it works and its controls">?</button></div>`);
     el.querySelector(".pw").addEventListener("click", () => { fxSet(i, { on: !sl.on }); drawFx(); });
-    el.querySelector(".x").addEventListener("click", () => { PFX.slots.splice(i, 1); PFX.touched = Date.now(); flushFx(); drawFx(); });
+    const fm = el.querySelector(".spre");                         // the effect's menu: Remove for now, presets to come
+    fm.addEventListener("click", () => menu(fm, [
+      ...presetItems(T.presets, MY.fx[sl.type], (q) => { fxSet(i, { params: { ...PFX.slots[i].params, ...q.params } }); drawFx(); }),
+      ...mineItems("fx", sl.type, () => ({ ...PFX.slots[i].params }), () => undefined, fm),
+      { sep: true },
+      { label: "Remove", danger: true, title: "Or select the card and press Delete", run: () => removeFx(sl, i) }], "cardmenu"));
+    selectable(el, `fx${i}:${sl.type}`, () => removeFx(sl, i));     // by place: the slots are rebuilt from the engine's state
     el.querySelector(".qhelp").addEventListener("click", (e) => { e.stopPropagation(); fxHelp(sl.type, e.currentTarget); });
     sortable(el, el.querySelector(".fxn"), row, i, (from, to) => { moved(PFX.slots, from, to); PFX.touched = Date.now(); flushFx(); drawFx(); });
     const svg = el.querySelector(".fxg svg");
@@ -1478,28 +1551,28 @@ function stripEl(c, k) {
   const nonKnob = u.params.filter((p) => p.kind === "toggle" && !p.hidden).length, knobs = 1 + u.params.filter((p) => p.kind !== "toggle" && p.kind !== "text" && !p.hidden).length;
   const wide = nonKnob >= 3 || knobs > 6 || WIDE_UNITS.has(c.id);           // menus and switches in two columns, or room for a display
   const st = h(`<div class="strip ${c.on ? "" : "off"} ${wide ? "wide" : ""}"><div class="sh">
-    <button class="led" aria-pressed="${c.on}" title="On or bypassed"></button><span class="st" title="${esc((u.short !== u.title ? `${u.title}. ` : "") + u.what + (u.note ? "\n" + u.note : ""))}">${esc(u.short || u.title)}</span><button class="x" title="Remove">✕</button></div></div>`);
+    <button class="led" aria-pressed="${c.on}" title="On or bypassed"></button><span class="st" title="${esc((u.short !== u.title ? `${u.title}. ` : "") + u.what + (u.note ? "\n" + u.note : ""))}">${esc(u.short || u.title)}</span></div></div>`);
   c.fresh = false;
-  if (u.presets?.length) {                                    // starting points: a small menu by the name
-    const sel = h(`<select class="spre" title="Presets: starting points for this unit; the direction is kept" aria-label="Presets"><option value="" selected>▾</option>${u.presets.map((q, i) => `<option value="${i}" title="${esc(q.tip || "")}">${esc(q.name)}</option>`).join("")}</select>`);
-    sel.addEventListener("change", () => {
-      const q = u.presets[+sel.value];
-      if (!q) return;
-      Object.assign(c.params, q.params);
-      if (q.block !== undefined) c.layer = q.block;
-      drawStrips(); sendChain();
-    });
-    st.querySelector(".st").after(sel);
+  const uid = (c.uid ??= ++U.uid);
+  {                                                            // the card's menu, by its name: presets, then the card's own switches
+    const mb = h(`<button class="spre" title="Presets and settings for this card" aria-label="Card menu" aria-haspopup="menu">▾</button>`);
+    const apply = (q) => { Object.assign(c.params, q.params); if (q.block !== undefined) c.layer = q.block; drawStrips(); sendChain(); };
+    mb.addEventListener("click", () => menu(mb, [
+      ...presetItems(u.presets, MY.units[c.id], apply),
+      ...mineItems("units", c.id, () => ({ ...c.params }), () => c.layer, mb),
+      { head: "Card" },
+      { label: "Snap-back", check: !U.noSnap.has(uid), sub: "Return the model to its pre-unit state immediately when the unit is switched off",
+        title: "On: switching this unit off or removing it returns the model to the state it had when the unit went on, at the next frame. Off: the unit's sound lingers for a while, since the model reads back about 20 s of its own frames.",
+        run: () => { U.noSnap.has(uid) ? U.noSnap.delete(uid) : U.noSnap.add(uid); } },
+      { sep: true },
+      { label: "Remove", danger: true, title: "Or select the card and press Delete", run: () => removeUnit(c) },
+    ], "cardmenu"));
+    st.querySelector(".st").after(mb);
   }
+  selectable(st, c, () => removeUnit(c));
   st.appendChild(h(`<div class="serr"></div>`));
   if (c.error) { st.classList.add("bad"); st.querySelector(".serr").textContent = c.error; }
   st.querySelector(".led").addEventListener("click", () => { c.on = !c.on; drawStrips(); sendChain(); });
-  {                                                              // snap-back, by the ✕: on unless switched off here
-    const uid = (c.uid ??= ++U.uid), sb = h(`<button class="snapb" aria-pressed="${!U.noSnap.has(uid)}" aria-label="Snap-back" title="SNAPBACK: This sets the model frame when this unit is turned on or off. ON instantly restores the sound to default, OFF leaves a temporary trace in the model generated sound.">↺</button>`);
-    sb.addEventListener("click", () => { U.noSnap.has(uid) ? U.noSnap.delete(uid) : U.noSnap.add(uid); sb.setAttribute("aria-pressed", String(!U.noSnap.has(uid))); });
-    st.querySelector(".x").before(sb);
-  }
-  st.querySelector(".x").addEventListener("click", () => { U.chain.splice(k, 1); drawStrips(); sendChain(); });
   st.querySelector(".st").title += "\nDrag to move it along the row: units at the same layer act in this order.";
   sortable(st, st.querySelector(".st"), $("#stripdesk"), k, (from, to) => { moved(U.chain, from, to); drawStrips(); sendChain(); });
   const opts = c.tk === "block" ? ["all", ...Array.from({ length: 12 }, (_, j) => String(j))] : Array.from({ length: 12 }, (_, j) => String(j + 1));
@@ -1563,7 +1636,7 @@ function stripEl(c, k) {
   else if (c.on && UNIT_VIEW[c.id]) c._view = UNIT_VIEW[c.id](c, st);
   else if (c.on) {                                              // no display of its own: a light in the header that breathes while it acts
     const led = h(`<i class="sled" title="Breathes while this unit changes the model's stream: quicker the more it changes it"></i>`);
-    st.querySelector(".sh .x").before(led);
+    st.querySelector(".sh").appendChild(led);
     c._act = { dot: led, bars: [] };
     paintAct(c);
   }
@@ -1781,11 +1854,12 @@ function addScope() {
 }
 function scopeEl(L, k) {
   const mode = SC.mode[L] || (SC.mode[L] = "trace");
-  const st = h(`<div class="strip scopestrip"><div class="sh"><span class="st" title="Reads the model's stream at its layer, after the Steer and the units there, once a frame; changes nothing and is not saved with sounds">Scope<span class="meterbadge">meter</span></span><button class="x" title="Remove">✕</button></div>
+  const st = h(`<div class="strip scopestrip"><div class="sh"><span class="st" title="Reads the model's stream at its layer, after the Steer and the units there, once a frame; changes nothing and is not saved with sounds">Scope<span class="meterbadge">meter</span></span><button class="spre" title="This scope's menu" aria-label="Scope menu" aria-haspopup="menu">▾</button></div>
     <div class="scopebar"><label class="sl"><span>Layer</span><select class="sel">${Array.from({ length: 12 }, (_, j) => `<option ${j + 1 === L ? "selected" : ""}>${j + 1}</option>`).join("")}</select></label>
     <div class="seg">${[["trace", "Trace", "the stream along its principal directions, the largest first; 0 is the ordinary stream, ±1 a typical swing"], ["bands", "Bands", "how far the stream swings in bands of its principal directions; the line is its ordinary level"], ["time", "Time", "the last 5 s: size against typical (white), the reading along each direction on the Steer's dose scale (colours), and how far the stream turns each frame (green)"]].map(([m, l, t]) => `<button data-m="${m}" aria-pressed="${m === mode}" title="${t}">${l}</button>`).join("")}</div></div>
     <canvas class="scopecv" width="464" height="256"></canvas><div class="scoperead"></div></div>`);
-  st.querySelector(".x").addEventListener("click", () => { SC.layers.splice(k, 1); drawStrips(); sendScopes(); });
+  const sm = st.querySelector(".spre");
+  sm.addEventListener("click", () => menu(sm, [{ head: "Scope" }, { label: "Remove", danger: true, run: () => { SC.layers.splice(k, 1); drawStrips(); sendScopes(); } }], "cardmenu"));
   st.querySelector("select").addEventListener("change", (e) => {
     const v = +e.target.value;
     if (SC.layers.includes(v)) { info(`a scope already reads layer ${v}`, "bad", 3000); e.target.value = L; return; }
@@ -2566,6 +2640,7 @@ $("#tuneclear").addEventListener("click", async () => {
 setView(view);
 drawTiles(); drawEditor();
 loadPresets().catch(() => {});
+loadMine();
 poll(); pollDesk(); pollSounds(); listExports();
 requestAnimationFrame(animate);
 

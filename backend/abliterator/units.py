@@ -122,11 +122,20 @@ def _preset(uid: str, name: str) -> Dict[str, Any]:
 # the sound consistently across twenty seeds (Neuron's single neuron 373 ×6, Quantise's 6 bits, Band Shrink on all bands
 # at 4:1). Each new default is one of the unit's presets, and HOST_PLACE its placement.
 HOST_HEARD = {k: v for k, v in {
-    "neuron": _preset("neuron", "Bright Push"),
+    "delay": _preset("delay", "Feedback Loop"),
+    "reverb": _preset("reverb", "Long Tail"),
+    "limiter": _preset("limiter", "Lid"),
+    "neuron": _preset("neuron", "Ten Set"),
     "erosion": _preset("erosion", "Bitcrush"),
     "multiband": _preset("multiband", "Low Squeeze"),
 }.items() if v}                                       # a default whose preset has not passed the held-out check waits
-HOST_PLACE = {"neuron": "11"} if "neuron" in HOST_HEARD else {}
+HOST_PLACE = {k: v for k, v in {"neuron": "10", "limiter": 10}.items() if k in HOST_HEARD}
+
+# VAU host settings shown on a unit's card: Keep size on Lookback and Running Average, whose old defaults (Keep size off)
+# fell near silent on some held-out seeds while every Keep size preset held.
+KEEP_SIZE = {"key": "keepnorm", "label": "Keep size", "kind": "toggle", "default": 0, "host": True,
+             "tip": "h' ← h' · ‖h‖ / ‖h'‖ at each position: after the change, the stream is scaled back to the size it had"}
+HOST_EXTRA = {"delay": [KEEP_SIZE], "reverb": [KEEP_SIZE]}
 
 
 # What a unit does differently on this instrument, for its help box (beside VAU's own help)
@@ -174,7 +183,7 @@ def params(u) -> List[Dict[str, Any]]:
     over = HOST_DEFAULTS.get(u.id, {})
     cal = calibrated()
     out = []
-    for q in u.m["params"]:
+    for q in list(u.m["params"]) + HOST_EXTRA.get(u.id, []):
         q = {**q, "default": over[q["key"]]} if q["key"] in over else dict(q)
         q.update(HOST_RANGES.get(u.id, {}).get(q["key"], {}))
         c = cal.get(f"unit:{u.id}:{q['key']}")

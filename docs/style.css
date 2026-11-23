@@ -167,7 +167,7 @@ a:hover { color: var(--bright); text-shadow: var(--glow); }
 /* the hero shot */
 .hero-shot { position: relative; margin: 2.4rem 0 0; }
 .screen { position: relative; display: block; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; box-shadow: var(--shot-shadow); background: var(--desk); }
-.screen img { display: block; width: 100%; height: auto; }
+.screen img, .screen video { display: block; width: 100%; height: auto; }
 
 /* the figures row */
 .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(128px, 1fr)); gap: 0.9rem 1.2rem; margin-top: 2.2rem; padding-top: 1.2rem; border-top: 1px solid var(--line-soft); }

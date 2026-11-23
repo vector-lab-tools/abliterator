@@ -11,6 +11,9 @@
 
   function css(name) { return getComputedStyle(root).getPropertyValue(name).trim(); }
 
+  // the hero's recording stays on its first frame for visitors who ask for less motion
+  if (reduced) [].forEach.call(document.querySelectorAll(".hero-shot video"), function (v) { v.removeAttribute("autoplay"); v.pause(); });
+
   /* ---------- theme ---------- */
   function currentTheme() {
     var a = root.getAttribute("data-theme");

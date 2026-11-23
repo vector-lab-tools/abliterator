@@ -195,6 +195,9 @@ def params(u) -> List[Dict[str, Any]]:
             q.update(fragile=True)
         if q["key"] in HOST_HEARD.get(u.id, {}):
             q["default"] = HOST_HEARD[u.id][q["key"]]
+            sf = q.get("safe")                         # measured at the old default (Keep size off): its range and ⚠ no longer apply
+            if sf and isinstance(q["default"], (int, float)) and not sf[0] <= q["default"] <= sf[1]:
+                q.pop("safe"); q.pop("measured", None); q["fragile"] = False
         if q["key"] in HOST_HIDDEN.get(u.id, ()):
             q["hidden"] = True
         if q["key"] in HOST_WHEN.get(u.id, {}):

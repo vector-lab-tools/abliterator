@@ -34,7 +34,7 @@
      "mix": 0.2,
      "keepnorm": 1
     },
-    "tip": "A short echo, two frames (80 ms) back, kept to size: a change of spectral shape",
+    "tip": "A short echo, two frames (80 ms) back, kept to size: spectral shape changed",
     "line": "delay layer=6 time=2 feedback=0.3 mix=0.2 keepnorm=1",
     "searched": null,
     "held_out": {
@@ -134,7 +134,7 @@
      "mix": 0.8,
      "keepnorm": 1
     },
-    "tip": "A strong echo that feeds back on itself, kept to size: darker, quieter",
+    "tip": "A strong echo that feeds back on itself, kept to size: darker, quieter, spectral shape changed",
     "line": "delay layer=6 time=8 feedback=0.7 mix=0.8 keepnorm=1",
     "searched": {
      "seeds": 6,
@@ -241,7 +241,7 @@
      "mix": 0.5,
      "keepnorm": 1
     },
-    "tip": "A short tail mixed in strongly at layer 10, kept to size: a change of spectral shape",
+    "tip": "A short tail mixed in strongly at layer 10, kept to size: spectral shape changed",
     "line": "reverb layer=10 decay=0.6 mix=0.5 keepnorm=1",
     "searched": {
      "seeds": 6,
@@ -299,7 +299,7 @@
      "mix": 0.8,
      "keepnorm": 1
     },
-    "tip": "A tail of about a hundred frames (four seconds), kept to size: darker, each frame less like the one before it",
+    "tip": "A tail of about a hundred frames (four seconds), kept to size: darker, each frame less like the one before it, spectral shape changed",
     "line": "reverb layer=6 decay=0.99 mix=0.8 keepnorm=1",
     "searched": {
      "seeds": 6,
@@ -330,7 +330,7 @@
      "mix": 1,
      "keepnorm": 1
     },
-    "tip": "A tail that hardly fades, all of it mixed in, kept to size: darker",
+    "tip": "A tail that hardly fades, all of it mixed in, kept to size: darker, spectral shape changed",
     "line": "reverb layer=6 decay=0.999 mix=1 keepnorm=1",
     "searched": {
      "seeds": 6,
@@ -360,7 +360,7 @@
      "mix": 0.8,
      "keepnorm": 1
     },
-    "tip": "A long tail at the last layer, kept to size: darker, each frame less like the one before it",
+    "tip": "A long tail at the last layer, kept to size: darker, each frame less like the one before it, spectral shape changed",
     "line": "reverb layer=12 decay=0.98 mix=0.8 keepnorm=1",
     "searched": {
      "seeds": 6,
@@ -562,7 +562,7 @@
      "makeup": 1,
      "thresh": 1
     },
-    "tip": "The default: positions larger than usual pulled back at 4:1: a change of spectral shape",
+    "tip": "The default: positions larger than usual pulled back at 4:1: spectral shape changed",
     "line": "compressor layer=6 ratio=4 makeup=1 thresh=1",
     "searched": {
      "seeds": 6,
@@ -591,7 +591,7 @@
      "makeup": 1,
      "thresh": 0.8
     },
-    "tip": "8:1 from a little below the usual size: louder",
+    "tip": "8:1 from a little below the usual size: louder, spectral shape changed",
     "line": "compressor layer=6 ratio=8 makeup=1 thresh=0.8",
     "searched": {
      "seeds": 6,
@@ -621,7 +621,7 @@
      "makeup": 1,
      "thresh": 0.3
     },
-    "tip": "4:1 from a third of the usual size: louder",
+    "tip": "4:1 from a third of the usual size: louder, spectral shape changed",
     "line": "compressor layer=6 ratio=4 makeup=1 thresh=0.3",
     "searched": {
      "seeds": 6,
@@ -651,7 +651,7 @@
      "makeup": 0.5,
      "thresh": 1
     },
-    "tip": "The default, then halved: louder",
+    "tip": "The default, then halved: louder, spectral shape changed",
     "line": "compressor layer=6 ratio=4 makeup=0.5 thresh=1",
     "searched": {
      "seeds": 6,
@@ -681,7 +681,7 @@
      "makeup": 1,
      "thresh": 0.5
     },
-    "tip": "20:1 from half the usual size: louder",
+    "tip": "20:1 from half the usual size: louder, spectral shape changed",
     "line": "compressor layer=6 ratio=20 makeup=1 thresh=0.5",
     "searched": {
      "seeds": 6,
@@ -767,7 +767,7 @@
      "mix": 1,
      "drive": 1
     },
-    "tip": "The default: louder",
+    "tip": "The default: louder, spectral shape changed",
     "line": "saturator layer=6 mix=1 drive=1",
     "searched": {
      "seeds": 6,
@@ -796,7 +796,7 @@
      "mix": 0.5,
      "drive": 4
     },
-    "tip": "Drive 4, half of it mixed in: darker, louder",
+    "tip": "Drive 4, half of it mixed in: darker, louder, spectral shape changed",
     "line": "saturator layer=6 mix=0.5 drive=4",
     "searched": {
      "seeds": 6,
@@ -826,7 +826,7 @@
      "mix": 1,
      "drive": 4
     },
-    "tip": "Drive 4: a change of spectral shape",
+    "tip": "Drive 4: spectral shape changed",
     "line": "saturator layer=6 mix=1 drive=4",
     "searched": {
      "seeds": 6,
@@ -854,7 +854,7 @@
      "mix": 1,
      "drive": 8
     },
-    "tip": "Drive 8: louder",
+    "tip": "Drive 8: louder, spectral shape changed",
     "line": "saturator layer=6 mix=1 drive=8",
     "searched": {
      "seeds": 6,
@@ -883,7 +883,7 @@
      "mix": 1,
      "drive": 4
     },
-    "tip": "Drive 4 at the last layer: louder",
+    "tip": "Drive 4 at the last layer: louder, spectral shape changed",
     "line": "saturator layer=12 mix=1 drive=4",
     "searched": {
      "seeds": 6,
@@ -914,7 +914,7 @@
      "bits": 1,
      "hold": 1
     },
-    "tip": "One bit: each coordinate rounded to a few steps: darker",
+    "tip": "One bit: each coordinate rounded to a few steps: darker, spectral shape changed",
     "line": "erosion layer=6 bits=1 hold=1",
     "searched": {
      "seeds": 6,
@@ -969,7 +969,7 @@
      "bits": 1,
      "hold": 4
     },
-    "tip": "One bit at the last layer, each position held for four frames: darker, each frame more like the ones before it",
+    "tip": "One bit at the last layer, each position held for four frames: darker, each frame more like the ones before it, spectral shape changed",
     "line": "erosion layer=12 bits=1 hold=4",
     "searched": {
      "seeds": 6,
@@ -1114,7 +1114,7 @@
      "sink": 0,
      "keep": 0.1
     },
-    "tip": "Keeps the largest tenth of the coordinates: louder",
+    "tip": "Keeps the largest tenth of the coordinates: louder, spectral shape changed",
     "line": "gate layer=6 sink=0 keep=0.1",
     "searched": {
      "seeds": 6,
@@ -1143,7 +1143,7 @@
      "sink": 0,
      "keep": 0.02
     },
-    "tip": "Keeps the largest 2%: louder",
+    "tip": "Keeps the largest 2%: louder, spectral shape changed",
     "line": "gate layer=6 sink=0 keep=0.02",
     "searched": {
      "seeds": 6,
@@ -1172,7 +1172,7 @@
      "sink": 0,
      "keep": 0.05
     },
-    "tip": "Keeps the largest 5% at layer 10: a change of spectral shape",
+    "tip": "Keeps the largest 5% at layer 10: spectral shape changed",
     "line": "gate layer=10 sink=0 keep=0.05",
     "searched": {
      "seeds": 6,
@@ -1200,7 +1200,7 @@
      "sink": 0,
      "keep": 0.05
     },
-    "tip": "Keeps the largest 5% at layer 11: brighter",
+    "tip": "Keeps the largest 5% at layer 11: brighter, spectral shape changed",
     "line": "gate layer=11 sink=0 keep=0.05",
     "searched": {
      "seeds": 6,
@@ -1229,7 +1229,7 @@
      "sink": 0,
      "keep": 0.1
     },
-    "tip": "Keeps the largest tenth at the last layer: brighter",
+    "tip": "Keeps the largest tenth at the last layer: brighter, spectral shape changed",
     "line": "gate layer=12 sink=0 keep=0.1",
     "searched": {
      "seeds": 6,
@@ -1258,7 +1258,7 @@
      "sink": 0,
      "keep": 0.03
     },
-    "tip": "Keeps the largest 3% at the last layer: brighter, louder",
+    "tip": "Keeps the largest 3% at the last layer: brighter, louder, spectral shape changed",
     "line": "gate layer=12 sink=0 keep=0.03",
     "searched": {
      "seeds": 6,
@@ -1310,7 +1310,7 @@
      "sink": 0,
      "ceiling": 0.99
     },
-    "tip": "The usual ceiling at layer 10: a change of spectral shape",
+    "tip": "The usual ceiling at layer 10: spectral shape changed",
     "line": "limiter layer=10 sink=0 ceiling=0.99",
     "searched": null,
     "held_out": {
@@ -1332,7 +1332,7 @@
      "sink": 0,
      "ceiling": 0.98
     },
-    "tip": "A lower ceiling at the last layer: a change of spectral shape",
+    "tip": "A lower ceiling at the last layer: spectral shape changed",
     "line": "limiter layer=12 sink=0 ceiling=0.98",
     "searched": null,
     "held_out": {
@@ -1429,7 +1429,7 @@
      "mid": 1,
      "high": 0.7
     },
-    "tip": "The default: the main directions up, the minor ones down: darker, louder",
+    "tip": "The default: the main directions up, the minor ones down: darker, louder, spectral shape changed",
     "line": "eq layer=8 low=1.3 mid=1 high=0.7",
     "searched": {
      "seeds": 6,
@@ -1460,7 +1460,7 @@
      "mid": 1,
      "high": 1.25
     },
-    "tip": "The minor directions up by a quarter at the last layer: a change of spectral shape",
+    "tip": "The minor directions up by a quarter at the last layer: spectral shape changed",
     "line": "eq layer=12 low=1 mid=1 high=1.25",
     "searched": null,
     "held_out": {
@@ -1483,7 +1483,7 @@
      "mid": 1,
      "high": 1
     },
-    "tip": "The eight main directions taken out: quieter",
+    "tip": "The eight main directions taken out: quieter, spectral shape changed",
     "line": "eq layer=8 low=0 mid=1 high=1",
     "searched": {
      "seeds": 6,
@@ -1513,7 +1513,7 @@
      "mid": 2,
      "high": 1
     },
-    "tip": "The middle directions doubled: louder",
+    "tip": "The middle directions doubled: louder, spectral shape changed",
     "line": "eq layer=8 low=1 mid=2 high=1",
     "searched": {
      "seeds": 6,
@@ -1572,7 +1572,7 @@
      "mid": 0.5,
      "high": 0.5
     },
-    "tip": "Every band halved: a change of spectral shape",
+    "tip": "Every band halved: spectral shape changed",
     "line": "eq layer=8 low=0.5 mid=0.5 high=0.5",
     "searched": {
      "seeds": 6,
@@ -1603,7 +1603,7 @@
      "band": "low",
      "thresh": 0.5
     },
-    "tip": "The eight main directions compressed hard: a change of spectral shape",
+    "tip": "The eight main directions compressed hard: spectral shape changed",
     "line": "multiband layer=6 ratio=20 band=low thresh=0.5",
     "searched": {
      "seeds": 6,
@@ -1632,7 +1632,7 @@
      "band": "low",
      "thresh": 0.5
     },
-    "tip": "The same at layer 2: quieter",
+    "tip": "The same at layer 2: quieter, spectral shape changed",
     "line": "multiband layer=2 ratio=20 band=low thresh=0.5",
     "searched": {
      "seeds": 6,
@@ -1689,7 +1689,7 @@
      "band": "low",
      "thresh": 0.3
     },
-    "tip": "The main directions hard from a third of their size, layer 10: quieter",
+    "tip": "The main directions hard from a third of their size, layer 10: quieter, spectral shape changed",
     "line": "multiband layer=10 ratio=20 band=low thresh=0.3",
     "searched": {
      "seeds": 6,
@@ -1746,7 +1746,7 @@
      "band": "all",
      "thresh": 0.3
     },
-    "tip": "Every band at 8:1 from a third of its size: a change of spectral shape",
+    "tip": "Every band at 8:1 from a third of its size: spectral shape changed",
     "line": "multiband layer=6 ratio=8 band=all thresh=0.3",
     "searched": {
      "seeds": 6,
@@ -1775,7 +1775,7 @@
     "params": {
      "angle": 45
     },
-    "tip": "The default: 45 degrees in the plane of the two directions: quieter",
+    "tip": "The default: 45 degrees in the plane of the two directions: quieter, spectral shape changed",
     "line": "shifter layer=6 dir=brightness dir2=pulse angle=45",
     "searched": {
      "seeds": 6,
@@ -1803,7 +1803,7 @@
     "params": {
      "angle": 90
     },
-    "tip": "90 degrees: the first direction becomes the second: a change of spectral shape",
+    "tip": "90 degrees: the first direction becomes the second: spectral shape changed",
     "line": "shifter layer=6 dir=brightness dir2=pulse angle=90",
     "searched": {
      "seeds": 6,
@@ -1830,7 +1830,7 @@
     "params": {
      "angle": 135
     },
-    "tip": "135 degrees: quieter",
+    "tip": "135 degrees: quieter, spectral shape changed",
     "line": "shifter layer=6 dir=brightness dir2=pulse angle=135",
     "searched": {
      "seeds": 6,
@@ -1858,7 +1858,7 @@
     "params": {
      "angle": 180
     },
-    "tip": "180 degrees: both directions reversed: quieter",
+    "tip": "180 degrees: both directions reversed: quieter, spectral shape changed",
     "line": "shifter layer=6 dir=brightness dir2=pulse angle=180",
     "searched": {
      "seeds": 6,
@@ -1886,7 +1886,7 @@
     "params": {
      "angle": -45
     },
-    "tip": "45 degrees the other way: quieter",
+    "tip": "45 degrees the other way: quieter, spectral shape changed",
     "line": "shifter layer=6 dir=brightness dir2=pulse angle=-45",
     "searched": {
      "seeds": 6,
@@ -1914,7 +1914,7 @@
     "params": {
      "angle": 45
     },
-    "tip": "45 degrees at layer 2: a change of spectral shape",
+    "tip": "45 degrees at layer 2: spectral shape changed",
     "line": "shifter layer=2 dir=brightness dir2=pulse angle=45",
     "searched": {
      "seeds": 6,
@@ -1993,7 +1993,7 @@
      "op": "scale",
      "value": 20
     },
-    "tip": "The 64 that write most against Brightness, ×20: a change of spectral shape",
+    "tip": "The 64 that write most against Brightness, ×20: spectral shape changed",
     "line": "neuron block=11 n=293,3870,3444,245,1954,2828,381,26,2619,2993,211,2885,3340,197,2481,1013,3592,1244,1635,3080,83,3056,309,4013,1562,1928,587,2817,1019,3864,2728,2812,1423,1729,271,1994,429,267,562,1216,638,652,119,674,1425,3837,999,1696,1020,3322,3691,1575,282,2484,971,3016,539,315,2278,4055,3095,3660,514,553 op=scale value=20",
     "searched": {
      "seeds": 6,
@@ -2022,7 +2022,7 @@
      "op": "scale",
      "value": 20
     },
-    "tip": "The 64 that write most along Pulse, ×20: louder",
+    "tip": "The 64 that write most along Pulse, ×20: louder, spectral shape changed",
     "line": "neuron block=11 n=1282,1216,154,670,1842,931,1160,516,438,2413,1930,3401,737,1793,4065,2370,3407,2651,1266,517,2543,1261,1546,1278,2538,1827,3059,92,3681,3256,2552,378,1399,1463,2145,166,2933,962,3485,640,1688,3159,1653,2129,712,2455,2695,293,1881,2418,3265,582,3163,2710,2367,322,3697,928,4006,2043,223,976,2348,83 op=scale value=20",
     "searched": {
      "seeds": 6,
@@ -2078,7 +2078,7 @@
      "op": "set",
      "value": 8
     },
-    "tip": "The 32 Brightness neurons of block 10 held at 8: a change of spectral shape",
+    "tip": "The 32 Brightness neurons of block 10 held at 8: spectral shape changed",
     "line": "neuron block=10 n=2993,861,501,456,2633,2755,3898,1381,917,3303,2286,2724,2471,581,997,527,107,245,3561,3507,1903,232,1380,1572,618,1857,161,913,3409,1121,1166,1485 op=set value=8",
     "searched": {
      "seeds": 6,

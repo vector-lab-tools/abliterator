@@ -470,3 +470,24 @@ def test_abliterated_keeps_the_level_and_any_block_size(p):
     db = lambda a: 20 * np.log10(np.sqrt((a[48000:] ** 2).mean()))
     assert abs(db(outs[0]) - db(x)) < 1.5
     assert not np.allclose(outs[0], x, atol=1e-3)
+
+
+def test_presets_fit_their_types():
+    """Every type has at least five presets from data/presets/fx.json, named uniquely within the type (16 characters at
+    most), and every preset's params are keys of its type and within their ranges; the catalogue serves them."""
+    assert fx.PRESETS_FILE.exists()
+    cat = fx.catalogue()
+    for t, spec in fx.TYPES.items():
+        ps = fx.PRESETS.get(t, [])
+        assert len(ps) >= 5, t
+        names = [p["name"] for p in ps]
+        assert len(set(names)) == len(names), t
+        assert all(0 < len(n) <= 16 and "—" not in n for n in names), t
+        rng = {k: (lo, hi) for k, _, lo, hi, _, _, _ in spec["params"]}
+        for p in ps:
+            assert p["params"] and p.get("tip"), (t, p["name"])
+            for k, v in p["params"].items():
+                assert k in rng, (t, p["name"], k)
+                assert rng[k][0] <= v <= rng[k][1], (t, p["name"], k, v)
+            assert fx.clean_slot({"type": t, "params": p["params"]}, 0)["params"] == {**fx.clean_slot({"type": t}, 0)["params"], **p["params"]}
+        assert cat[t]["presets"] == ps

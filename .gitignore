@@ -11,3 +11,4 @@ PLAN.md
 !data/presets/
 data/presets/*
 !data/presets/mrt2_small.json
+!data/presets/fx.json

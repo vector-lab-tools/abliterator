@@ -38,11 +38,14 @@ effect then runs the 0.1.5 code path (linear reads, _flush), bit for bit.
 """
 from __future__ import annotations
 
+import json
 import math
 from typing import Any, Dict, List, NamedTuple, Optional
 
 import numpy as np
 from scipy.signal import ellip, lfilter, sosfilt
+
+from . import ROOT
 
 SR = 48000
 CHUNK = 240                     # 5 ms: no loop here is shorter
@@ -122,9 +125,26 @@ def clean(slots: Optional[List[Dict[str, Any]]]) -> List[Dict[str, Any]]:
     return [clean_slot(s, i) for i, s in enumerate(slots)]
 
 
+# Named presets for each type, measured offline (2026-11-23) with the figures each was kept on: data/presets/fx.json.
+# Applying one merges its params into the slot's. Read once; a type has none if the file is missing.
+PRESETS_FILE = ROOT / "data" / "presets" / "fx.json"
+
+
+def _file_presets() -> Dict[str, List[Dict[str, Any]]]:
+    try:
+        types = json.loads(PRESETS_FILE.read_text())["types"]
+    except (OSError, ValueError, KeyError):
+        return {}
+    return {t: [{k: q[k] for k in ("name", "params", "tip") if k in q} for q in qs] for t, qs in types.items() if t in TYPES}
+
+
+PRESETS = _file_presets()
+
+
 def catalogue() -> Dict[str, Any]:
     return {t: {"label": v["label"], "params": [{"key": k, "label": l, "min": lo, "max": hi, "default": d, "scale": sc, "unit": u}
-                                                  for k, l, lo, hi, d, sc, u in v["params"]]} for t, v in TYPES.items()}
+                                                  for k, l, lo, hi, d, sc, u in v["params"]],
+                "presets": PRESETS.get(t, [])} for t, v in TYPES.items()}
 
 
 class Line:

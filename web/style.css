@@ -1054,3 +1054,6 @@ html, body { overscroll-behavior-x: none; }
 .addmenu .am-in button { width: auto; flex: none; padding: 3px 9px; border: 1px solid #2c303a; border-radius: 5px; color: var(--gold); }
 .addmenu .am-in button:hover { border-color: var(--gold); }
 .addmenu button[role="menuitemcheckbox"] span { font-size: 9.5px; line-height: 1.3; }
+.addmenu button.am-has-x { position: relative; padding-right: 24px; }
+.addmenu .am-x { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; border-radius: 4px; font-style: normal; font-size: 12px; line-height: 16px; text-align: center; color: #6f7480; }
+.addmenu .am-x:hover { color: #ff6b5a; background: #2a1d1d; }

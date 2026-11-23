@@ -312,6 +312,16 @@ function menu(anchor, items, cls = "") {
     if (it.title) b.title = it.title;
     if (it.danger) b.classList.add("am-danger");
     b.disabled = !!it.disabled;
+    if (it.del) {                                                   // a small × deletes the item, and the menu stays open
+      const x = h(`<i class="am-x" role="button" aria-label="Delete ${esc(it.label)}" title="Delete">×</i>`);
+      x.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        if (await it.del() === false) return;
+        const head = b.previousElementSibling?.classList.contains("am-h") && !b.nextElementSibling?.matches("button") ? b.previousElementSibling : null;
+        b.remove(); head?.remove();
+      });
+      b.appendChild(x); b.classList.add("am-has-x");
+    }
     b.addEventListener("click", () => { closeMenu(); it.run(); });
     box.appendChild(b);
   };
@@ -343,21 +353,22 @@ function removeFx(sl, i) { let k = PFX.slots.indexOf(sl); if (k < 0 && PFX.slots
 // Presets of your own (mypresets.py): a card's settings kept under a name, on every card of that unit or effect.
 const MY = { units: {}, fx: {} };
 async function loadMine() { try { Object.assign(MY, await api("/api/mypresets")); } catch (e) { /* tried again when one is saved */ } }
-function presetItems(builtIn, mine, apply) {                    // the card's presets, then yours; long lists scroll, with a Find box
+async function delMine(kind, id, q) {
+  try { const j = await api("/api/mypresets/delete", { kind, id, name: q.name }); Object.assign(MY, j.all); info(`deleted ${q.name}`, "ok"); return true; }
+  catch (e) { fail(e); return false; }
+}
+function presetItems(builtIn, mine, apply, del) {                    // the card's presets, then yours; long lists scroll, with a Find box
   const list = [];
   if (builtIn?.length) list.push({ head: "Presets" }, ...builtIn.map((q) => ({ label: q.name, title: q.tip || "", run: () => apply(q) })));
-  if (mine?.length) list.push({ head: "Yours" }, ...mine.map((q) => ({ label: q.name, title: `Saved ${q.made || ""}`, run: () => apply(q) })));
+  if (mine?.length) list.push({ head: "Yours" }, ...mine.map((q) => ({ label: q.name, title: `Saved ${q.made || ""}`, run: () => apply(q), del: () => del(q) })));
   if (!list.length) return [];
   return [...((builtIn?.length || 0) + (mine?.length || 0) > 10 ? [{ filter: "Find a preset" }] : []), { scroll: list }];
 }
-function mineItems(kind, id, params, block, anchor) {
-  const mine = MY[kind][id] || [];
+function mineItems(kind, id, params, block) {
   return [{ input: "Name these settings", button: "Save", run: async (name) => {
       try { const j = await api("/api/mypresets", { kind, id, name, params: params(), block: block() }); Object.assign(MY, j.all); info(`saved as ${name}`, "ok"); } catch (e) { fail(e); }
     } },
-    ...(mine.length ? [{ label: "Delete one of yours…", run: () => menu(anchor, [{ head: "Delete" }, { scroll: mine.map((q) => ({ label: q.name, danger: true, run: async () => {
-      try { const j = await api("/api/mypresets/delete", { kind, id, name: q.name }); Object.assign(MY, j.all); info(`deleted ${q.name}`, "ok"); } catch (e) { fail(e); }
-    } })) }], "cardmenu") }] : [])];
+ ];
 }
 function outside(e) { if (openMenu && !openMenu.contains(e.target) && !openMenu._anchor?.contains(e.target)) closeMenu(); }
 function closeMenu() { if (openMenu) { openMenu.remove(); openMenu = null; document.removeEventListener("pointerdown", outside); } }
@@ -963,8 +974,8 @@ function drawFx() {
     el.querySelector(".pw").addEventListener("click", () => { fxSet(i, { on: !sl.on }); drawFx(); });
     const fm = el.querySelector(".spre");                         // the effect's menu: Remove for now, presets to come
     fm.addEventListener("click", () => menu(fm, [
-      ...presetItems(T.presets, MY.fx[sl.type], (q) => { fxSet(i, { params: { ...PFX.slots[i].params, ...q.params } }); drawFx(); }),
-      ...mineItems("fx", sl.type, () => ({ ...PFX.slots[i].params }), () => undefined, fm),
+      ...presetItems(T.presets, MY.fx[sl.type], (q) => { fxSet(i, { params: { ...PFX.slots[i].params, ...q.params } }); drawFx(); }, (q) => delMine("fx", sl.type, q)),
+      ...mineItems("fx", sl.type, () => ({ ...PFX.slots[i].params }), () => undefined),
       { sep: true },
       { label: "Remove", danger: true, title: "Or select the card and press Delete", run: () => removeFx(sl, i) }], "cardmenu"));
     selectable(el, `fx${i}:${sl.type}`, () => removeFx(sl, i));     // by place: the slots are rebuilt from the engine's state
@@ -1558,8 +1569,8 @@ function stripEl(c, k) {
     const mb = h(`<button class="spre" title="Presets and settings for this card" aria-label="Card menu" aria-haspopup="menu">▾</button>`);
     const apply = (q) => { Object.assign(c.params, q.params); if (q.block !== undefined) c.layer = q.block; drawStrips(); sendChain(); };
     mb.addEventListener("click", () => menu(mb, [
-      ...presetItems(u.presets, MY.units[c.id], apply),
-      ...mineItems("units", c.id, () => ({ ...c.params }), () => c.layer, mb),
+      ...presetItems(u.presets, MY.units[c.id], apply, (q) => delMine("units", c.id, q)),
+      ...mineItems("units", c.id, () => ({ ...c.params }), () => c.layer),
       { head: "Card" },
       { label: "Snap-back", check: !U.noSnap.has(uid), sub: "Return the model to its pre-unit state immediately when the unit is switched off",
         title: "On: switching this unit off or removing it returns the model to the state it had when the unit went on, at the next frame. Off: the unit's sound lingers for a while, since the model reads back about 20 s of its own frames.",

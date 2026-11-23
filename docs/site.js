@@ -221,15 +221,16 @@
     if (!hero || !heroVis) return;
     var c = fitCanvas(hero), g = c.g, W = c.w, H = c.h, acc = css("--accent"), blue = css("--blue"), dim = css("--fig-dim");
     g.clearRect(0, 0, W, H);
-    var ps = partials(t), mid = H * 0.42, amp = Math.min(120, H * 0.24), part = W * 0.55, n = Math.min(900, Math.round(W / 1.6));
-    // spectrum bars along the foot
+    var B = Math.min(H, 560);                     // the scope keeps to the band behind the name; the canvas covers the whole hero
+    var ps = partials(t), mid = B * 0.42, amp = Math.min(120, B * 0.24), part = W * 0.55, n = Math.min(900, Math.round(W / 1.6));
+    // spectrum bars along the hero's foot, below the recording
     var nb = 64, bw = W / nb;
     g.globalAlpha = 0.16; g.fillStyle = acc;
     for (var b = 0; b < nb; b++) {
       var f = b / nb, lvl = 0;
       ps.forEach(function (p) { lvl += p[1] * Math.exp(-Math.pow((f - Math.log(p[0]) / Math.log(30)) * 9, 2)); });
       lvl += 0.04 + 0.03 * Math.sin(t / 300 + b);
-      var hgt = Math.min(H * 0.4, lvl * H * 0.36);
+      var hgt = Math.min(B * 0.25, lvl * B * 0.24);
       g.fillRect(b * bw + 1, H - hgt, bw - 2, hgt);
     }
     g.globalAlpha = 1;

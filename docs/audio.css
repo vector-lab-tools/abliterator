@@ -1,8 +1,8 @@
 /* Abliterator: the site's own styles, over style.css.
    Copyright (C) 2026 David M. Berry. SPDX-License-Identifier: GPL-3.0-or-later */
 
-/* the hero: a phosphor oscilloscope and a spectrum behind the name */
-.hero-scope { position: absolute; left: 0; right: 0; top: 0; z-index: -1; width: 100%; height: 560px; pointer-events: none; opacity: 0.9;
+/* the hero: a phosphor oscilloscope behind the name, and a spectrum along the foot, under the recording */
+.hero-scope { position: absolute; left: 0; right: 0; top: 0; bottom: 0; z-index: -1; width: 100%; height: 100%; pointer-events: none; opacity: 0.9;
   -webkit-mask-image: linear-gradient(to right, transparent 52%, #000 82%); mask-image: linear-gradient(to right, transparent 52%, #000 82%); }
 @media (prefers-reduced-motion: reduce) { .hero-scope { opacity: 0.4; } }
 

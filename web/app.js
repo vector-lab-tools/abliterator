@@ -365,7 +365,7 @@ function presetItems(builtIn, mine, apply, del) {                    // the card
   return [...((builtIn?.length || 0) + (mine?.length || 0) > 10 ? [{ filter: "Find a preset" }] : []), { scroll: list }];
 }
 function mineItems(kind, id, params, block) {
-  return [{ input: "Name these settings", button: "Save", run: async (name) => {
+  return [{ input: "Save preset…", button: "Save", run: async (name) => {
       try { const j = await api("/api/mypresets", { kind, id, name, params: params(), block: block() }); Object.assign(MY, j.all); info(`saved as ${name}`, "ok"); } catch (e) { fail(e); }
     } },
  ];

@@ -8,3 +8,6 @@ data/*
 data/calibration/*
 !data/calibration/mrt2_small.json
 PLAN.md
+!data/presets/
+data/presets/*
+!data/presets/mrt2_small.json

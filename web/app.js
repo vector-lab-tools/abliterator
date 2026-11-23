@@ -1475,7 +1475,7 @@ function paintActivity(s) {
 }
 function stripEl(c, k) {
   const u = U.units.find((x) => x.id === c.id);
-  const nonKnob = u.params.filter((p) => p.kind === "toggle").length, knobs = 1 + u.params.filter((p) => p.kind !== "toggle" && p.kind !== "text").length;
+  const nonKnob = u.params.filter((p) => p.kind === "toggle" && !p.hidden).length, knobs = 1 + u.params.filter((p) => p.kind !== "toggle" && p.kind !== "text" && !p.hidden).length;
   const wide = nonKnob >= 3 || knobs > 6 || WIDE_UNITS.has(c.id);           // menus and switches in two columns, or room for a display
   const st = h(`<div class="strip ${c.on ? "" : "off"} ${wide ? "wide" : ""}"><div class="sh">
     <button class="led" aria-pressed="${c.on}" title="On or bypassed"></button><span class="st" title="${esc((u.short !== u.title ? `${u.title}. ` : "") + u.what + (u.note ? "\n" + u.note : ""))}">${esc(u.short || u.title)}</span><button class="x" title="Remove">✕</button></div></div>`);
@@ -1515,7 +1515,10 @@ function stripEl(c, k) {
   const krow = h(`<div class="krow"></div>`);
   krow.appendChild(place);
   for (const p of u.params) {
-    const set = (v) => { c.params[p.key] = v; sendChain(); };
+    if (p.hidden) continue;                                       // cannot change the sound on this model (units.HOST_HIDDEN)
+    const redraw = u.params.some((q) => q.when?.key === p.key);   // another setting's dimming depends on this one
+    const set = (v) => { c.params[p.key] = v; sendChain(); if (redraw) drawStrips(); };
+    const k0 = krow.children.length, b0 = box.children.length;
     const words = p.kind === "choice" ? p.choices.map(String) : p.kind === "direction" && S.dirs.length ? S.dirs.map((d) => d.name) : null;
     if (words) {                                                  // a list of words: a stepped knob that reads the word
       const ch = words, at = () => Math.max(0, ch.indexOf(String(c.params[p.key])));
@@ -1545,6 +1548,10 @@ function stripEl(c, k) {
         reset: +(p.default ?? p.min), get: () => +c.params[p.key], put: set, curve: p.taper ? undefined : `unit:${c.id}:${p.key}`, taper: p.taper, mod: tg || undefined,
         fmt: (v) => (p.kind === "int" ? String(Math.round(v)) : Math.abs(v) >= 10 ? v.toFixed(0) : v.toFixed(2)),
         tip: (p.tip || "") + (p.fragile ? ". ⚠ Measured: away from this setting the sound breaks on at least one preset; listen in Tune" : "") }));
+    }
+    if (p.when && !p.when.in.includes(String(c.params[p.when.key]))) {   // dimmed: acts only for some values of another setting
+      const el = krow.children.length > k0 ? krow.lastElementChild : box.children.length > b0 ? box.lastElementChild : null;
+      if (el) { el.classList.add("unit-inert"); el.title = `${el.title ? el.title + ". " : ""}${p.when.why}`; }
     }
   }
   if (wide && krow.children.length > 6) { krow.classList.add("two"); krow.style.maxWidth = `${Math.ceil(krow.children.length / 2) * 46}px`; }

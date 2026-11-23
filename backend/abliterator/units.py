@@ -97,6 +97,38 @@ HOST_PRESETS = {
 }
 
 
+# The other units' presets, chosen in the unit review (2026-11-23) from a search over six seeds and measured again on ten
+# others: data/presets/<model>.json, with the figures each was chosen on. A preset sets every setting it names.
+PRESETS_FILE = ROOT / "data" / "presets" / "mrt2_small.json"
+
+
+def _file_presets() -> Dict[str, List[Dict[str, Any]]]:
+    try:
+        import json
+        units = json.loads(PRESETS_FILE.read_text())["units"]
+    except (OSError, ValueError, KeyError):
+        return {}
+    return {u: [{k: q[k] for k in ("name", "block", "params", "tip") if k in q} for q in qs] for u, qs in units.items()}
+
+
+HOST_PRESETS = {**_file_presets(), **HOST_PRESETS}
+
+
+def _preset(uid: str, name: str) -> Dict[str, Any]:
+    return next((q["params"] for q in HOST_PRESETS.get(uid, []) if q["name"] == name), {})
+
+
+# Defaults from the unit review, applied after the calibration's: at their old defaults these units changed no measure of
+# the sound consistently across twenty seeds (Neuron's single neuron 373 ×6, Quantise's 6 bits, Band Shrink on all bands
+# at 4:1). Each new default is one of the unit's presets, and HOST_PLACE its placement.
+HOST_HEARD = {k: v for k, v in {
+    "neuron": _preset("neuron", "Bright Push"),
+    "erosion": _preset("erosion", "Bitcrush"),
+    "multiband": _preset("multiband", "Low Squeeze"),
+}.items() if v}                                       # a default whose preset has not passed the held-out check waits
+HOST_PLACE = {"neuron": "11"} if "neuron" in HOST_HEARD else {}
+
+
 # What a unit does differently on this instrument, for its help box (beside VAU's own help)
 HOST_NOTES = {
     "abliterate": "Strength runs to 6 here; VAU stops at 1.5. Up to 1 the direction is taken out, from 1 to 2 it is turned round, "
@@ -126,6 +158,16 @@ def calibrated() -> Dict[str, Any]:
     return _cal["controls"]
 
 
+# Settings that cannot change the sound on this model, so the card does not show them (the line keeps their value):
+# Abliterate's Bias too (the host's components carry no separate bias: VAU projects the whole output either way), and
+# the Sink too switches of Sparsify and Component Clamp (they only reach position 0, the first 40 ms frame of a take).
+HOST_HIDDEN = {"abliterate": {"bias"}, "gate": {"sink"}, "limiter": {"sink"}}
+
+# Settings that only act while another setting has one of some values: the card dims them otherwise.
+HOST_WHEN = {"abliterate": {k: {"key": "shape", "in": ["linear", "bell"], "why": "no effect while Shape is flat"}
+                            for k in ("peak", "width", "edge")}}
+
+
 def params(u) -> List[Dict[str, Any]]:
     """The unit's settings with this host's defaults: measured ones where the calibration has them
     (a setting whose own default breaks the sound gets the nearest that holds), else HOST_DEFAULTS."""
@@ -142,6 +184,12 @@ def params(u) -> List[Dict[str, Any]]:
             q.update(default=c["default"], safe=c["safe"], measured=True, fragile=c["safe"][0] == c["safe"][1])
         elif c and c.get("broken_everywhere"):
             q.update(fragile=True)
+        if q["key"] in HOST_HEARD.get(u.id, {}):
+            q["default"] = HOST_HEARD[u.id][q["key"]]
+        if q["key"] in HOST_HIDDEN.get(u.id, ()):
+            q["hidden"] = True
+        if q["key"] in HOST_WHEN.get(u.id, {}):
+            q["when"] = HOST_WHEN[u.id][q["key"]]
         out.append(q)
     return out
 
@@ -150,7 +198,8 @@ def placement(u) -> Dict[str, Any]:
     c = calibrated().get(f"unit:{u.id}:at")
     if not c:
         return {}
-    return {"places": c["safe_places"], "place_default": c["default"]}
+    pd = HOST_PLACE.get(u.id, c["default"])
+    return {"places": c["safe_places"], "place_default": int(pd) if isinstance(pd, str) and pd.isdigit() else pd}
 
 
 def title(u) -> str:

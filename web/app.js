@@ -2351,6 +2351,7 @@ async function poll() {
       $("#ver").textContent = s.version || "";
       if (s.engines) {
         drawEngine(s);
+        refreshSettings(s);
       }
       const sl = s.model?.steer_layer;
       if (sl != null && $("#steercard .sat").textContent !== `layer ${sl} · fixed`) {
@@ -2781,8 +2782,19 @@ function drawSettings() {
 async function openSettings(tab) {
   if (tab) SET.tab = tab;
   $("#setpanel").hidden = false; drawSettings();
+  SET.key = engineKey(S.status);
   try { SET.data = await api("/api/about"); } catch (e) { SET.data = null; $("#setbody").innerHTML = `<p>${esc(e.message)}</p>`; return; }
   drawSettings();
+}
+// the model in use and its state: when either changes while Settings is open, its data is read again
+function engineKey(s) { return s ? `${s.engine}:${(s.engines || []).find((e) => e.id === s.engine)?.state || ""}` : ""; }
+async function refreshSettings(s) {
+  const k = engineKey(s);
+  if ($("#setpanel").hidden || SET.reading || k === SET.key) return;
+  SET.key = k; SET.reading = true;
+  try { SET.data = await api("/api/about"); } catch (e) { /* the next status tries again */ SET.key = ""; }
+  SET.reading = false;
+  if (!$("#setpanel").hidden && SET.tab === "model") drawSettings();
 }
 $("#setbtn").addEventListener("click", () => openSettings());
 $("#setclose").addEventListener("click", () => { $("#setpanel").hidden = true; });

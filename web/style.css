@@ -1025,6 +1025,9 @@ html, body { overscroll-behavior-x: none; }
 #outknobs .knob .kv { font-size: 8.5px; margin-top: -3px; }
 #outknobs .knob .kl { font-size: 7.5px; color: #8a8f9b; }
 #pn-out .outtg .tg { white-space: nowrap; min-width: 0; overflow: hidden; text-overflow: ellipsis; }   /* De-click on one line */
+.tg i { flex: none; }                                            /* the light keeps its size when a label is long for its button */
+#pn-out .outtg { container: outtg / inline-size; }
+@container outtg (max-width: 139.9px) { #pn-out .outtg .tg { padding: 2px 4px; gap: 4px; font-size: 10px; } #pn-out .outtg .tg i { width: 6px; height: 6px; } }
 
 /* the ? at an effect card's foot, right, as on the unit cards: its help box */
 .fxs { position: relative; }

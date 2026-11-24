@@ -45,7 +45,7 @@ Abliterator plays a music model on your own machine and changes how it runs whil
 - **Sounds and Session.** **Save last** keeps the last 4 to 60 seconds as heard, with a recipe from which the engine renders it again sample for sample. Session has eight tracks of saved sounds that loop or play once, each a channel strip with pan, mute, solo, effects, and a fader with a ladder of LEDs and Hold reading the track's peak; a limiter on the mix, and exports of a track or the mix.
 - **Two engines.** Magenta RT 2 small (MLX, Apple silicon) is the live engine. MusicGen small (PyTorch) is kept as a second engine with Steer and no model-layer units; it answers in about 285 ms. The model is chosen in Settings (⚙), Model, which the model's name in the Engine panel's header also opens.
 
-<p align="center"><img src="docs/img/c-scopes.webp" alt="Two scopes on the Model layers row: layer 6 in Trace, a cyan waveform of the stream; layer 9 in Time, with the brightness reading stepping up when a Brightness dose was set" width="80%"></p>
+<p align="center"><img src="docs/img/c-scopes.webp" alt="Two scopes on the Model layers row: layer 6 in Trace, a cyan waveform of the stream; layer 9 in Time, with the stream's size and its readings along Brightness and Pulse" width="80%"></p>
 
 The [Model layers page](https://vector-lab-tools.github.io/abliterator/units.html) shows where the units' code lives (the PyTorch units in the VAU package; the host and MLX versions of three units in this repository), where each acts inside the model, and for each unit a drawing of what it does and its whole measured sweep to listen to.
 

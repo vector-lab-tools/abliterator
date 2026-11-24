@@ -70,7 +70,7 @@
     <h2>The model</h2>
     <p class="lede">The default engine is <a href="https://github.com/magenta/magenta-realtime">Magenta RealTime 2</a> small, in 8-bit on Apple's MLX. It is an autoregressive transformer over audio tokens: each step it writes the tokens of one 40 ms frame, reading the frames it has written and a style embedding of the prompt, and its codec, SpectroStream, turns the tokens into 1,920 samples of 48 kHz stereo. The transformer has twelve layers, and the stream of numbers that runs through them is 1,024 wide; that stream is where <a href="units.html#steer">Steer</a> and the <a href="units.html">Model layers</a> act.</p>
     <figure>
-      <a class="shot" href="img/c-engine.webp" data-cap="The Engine panel. On the left, what generates: the engine, the preset and its prompt, the Prompt box for a style of your own with Strength beside it, Seed with its die, Temperature and Top-k under SAMPLING, and Save last. On the right, what is heard: the scope of the last three seconds; Mode and Speed under SPEED CONTROL and Width and Spread under STEREO; the channel meters with peak, RMS and correlation; and the stereo field."><img src="img/c-engine.webp" width="750" height="341" loading="lazy" alt="The Engine panel: on the left the engine menu reading Magenta RT 2 small, the Warm drone preset and its prompt, a Prompt box with a small Strength knob, and knobs for Seed, Temperature and Top-k above a Save last button; on the right a blue waveform scope, knobs for Mode, Speed, Width and Spread under two small brackets, left and right meters, and a round stereo field."><span class="zoom">Zoom</span></a>
+      <a class="shot" href="img/c-engine.webp" data-cap="The Engine panel. On the left, what generates: the engine, the preset and its prompt, the Prompt box for a style of your own with Strength beside it, Seed with its die, Temperature and Top-k under SAMPLING, and Save last. On the right, what is heard: the scope of the last three seconds; Mode and Speed under SPEED CONTROL and Width and Spread under STEREO; the channel meters with peak, RMS and correlation; and the stereo field."><img src="img/c-engine.webp" width="1380" height="631" loading="lazy" alt="The Engine panel: on the left the engine menu reading Magenta RT 2 small, the Warm drone preset and its prompt, a Prompt box with a small Strength knob, and knobs for Seed, Temperature and Top-k above a Save last button; on the right a blue waveform scope, knobs for Mode, Speed, Width and Spread under two small brackets, left and right meters, and a round stereo field."><span class="zoom">Zoom</span></a>
       <figcaption><b>The Engine panel.</b> What generates on the left, what is heard on the right.</figcaption>
     </figure>
     <p>A preset is a prompt with a name: twenty-five of them in six groups (ambient, electronic, beats, acoustic, orchestral, experimental). A style typed in the Prompt box is made into the model's style tokens in about 90 ms and played, or switched to while playing, and kept under Your prompts. On an Apple M5 a step takes about 25 ms against the 40 ms the frame lasts.</p>
@@ -89,11 +89,11 @@
       </div>
       <div>
         <figure class="clip blue" style="--w:260px;--mw:340px">
-          <a class="shot" href="img/chain/eng-prompt.webp" data-cap="The Prompt box, its return key, and Strength as a small knob beside them."><img src="img/chain/eng-prompt.webp" width="264" height="60" loading="lazy" alt="A text box reading Prompt: dusty jazz trio, a return key, and a small knob labelled Strength reading 3.8."></a>
+          <a class="shot" href="img/chain/eng-prompt.webp" data-cap="The Prompt box, its return key, and Strength as a small knob beside them."><img src="img/chain/eng-prompt.webp" width="508" height="137" loading="lazy" alt="A text box reading Prompt: dusty jazz trio, a return key, and a small knob labelled Strength reading 3.8."></a>
           <figcaption><span class="tag">Prompt</span>A style of your own, and how strongly it pulls.</figcaption>
         </figure>
         <figure class="clip" style="--w:260px;--mw:340px">
-          <a class="shot" href="img/chain/eng-knobs.webp" data-cap="Seed with its die, and Temperature and Top-k under the SAMPLING bracket."><img src="img/chain/eng-knobs.webp" width="268" height="96" loading="lazy" alt="Three knobs: Seed 1 with a die button at its shoulder, then Temperature 1.30 and Top-k 40 under a bracket labelled SAMPLING."></a>
+          <a class="shot" href="img/chain/eng-knobs.webp" data-cap="Seed with its die, and Temperature and Top-k under the SAMPLING bracket."><img src="img/chain/eng-knobs.webp" width="492" height="185" loading="lazy" alt="Three knobs: Seed 1 with a die button at its shoulder, then Temperature 1.30 and Top-k 40 under a bracket labelled SAMPLING."></a>
           <figcaption><span class="tag">Sampler</span>Seed, then Temperature and Top-k.</figcaption>
         </figure>
       </div>
@@ -146,7 +146,7 @@
       </div>
       <div>
         <figure class="clip" style="--w:400px;--mw:480px">
-          <a class="shot" href="img/chain/eng-post.webp" data-cap="Mode and Speed under the SPEED CONTROL bracket, then Width and Spread under STEREO, in a row under the Engine's scope: here Stretch at half speed."><img src="img/chain/eng-post.webp" width="373" height="84" loading="lazy" alt="Four knobs in a row: Mode reading Stretch and Speed reading one half under a small bracket labelled SPEED CONTROL, then Width and Spread under a bracket labelled STEREO."></a>
+          <a class="shot" href="img/chain/eng-post.webp" data-cap="Mode and Speed under the SPEED CONTROL bracket, then Width and Spread under STEREO, in a row under the Engine's scope: here Stretch at half speed."><img src="img/chain/eng-post.webp" width="654" height="161" loading="lazy" alt="Four knobs in a row: Mode reading Stretch and Speed reading one half under a small bracket labelled SPEED CONTROL, then Width and Spread under a bracket labelled STEREO."></a>
           <figcaption><span class="tag">Speed</span>Mode and Speed beside Width and Spread.</figcaption>
         </figure>
       </div>
@@ -171,15 +171,15 @@
     <p>The right side of the Engine panel shows what is heard. The <b>scope</b> draws the last three seconds: as a waveform (Wave), the model's sound as played, after Speed and before the output section; as a spectrogram (Spectrum), what reaches the sound card, in the colours of the Listen view. The <b>channel meters</b>, like the stereo field, read what reaches the sound card: left and right with a tick at each one's peak, and below them the peak, the RMS level and the correlation between the channels. <b>Mono</b> and <b>Stereo</b> choose whether the scope draws one trace or two. The round <b>stereo field</b> plots left against right: a vertical line is mono, a cloud is wide, and the bar under it is the correlation, green toward +1, red toward −1, where the channels cancel in mono.</p>
     <div class="clips">
       <figure class="clip blue" style="--w:420px;--mw:520px">
-        <a class="shot" href="img/chain/eng-scope.webp" data-cap="The scope: the last three seconds as a waveform, the newest on the right."><img src="img/chain/eng-scope.webp" width="459" height="126" loading="lazy" alt="A wide blue waveform with time marks from −3.0 s to now, and Wave and Spectrum switches."></a>
+        <a class="shot" href="img/chain/eng-scope.webp" data-cap="The scope: the last three seconds as a waveform, the newest on the right."><img src="img/chain/eng-scope.webp" width="834" height="252" loading="lazy" alt="A wide blue waveform with time marks from −3.0 s to now, and Wave and Spectrum switches."></a>
         <figcaption><span class="tag">Scope</span>Three seconds, waveform or spectrogram.</figcaption>
       </figure>
       <figure class="clip green" style="--w:260px;--mw:300px">
-        <a class="shot" href="img/chain/eng-meters.webp" data-cap="The channel meters while it plays: left and right with their peak ticks, and the peak, RMS and correlation."><img src="img/chain/eng-meters.webp" width="369" height="81" loading="lazy" alt="Two horizontal green meters labelled L and R on a scale from −60 to 0 dB, with peak, RMS and correlation figures below."></a>
+        <a class="shot" href="img/chain/eng-meters.webp" data-cap="The channel meters while it plays: left and right with their peak ticks, and the peak, RMS and correlation."><img src="img/chain/eng-meters.webp" width="646" height="154" loading="lazy" alt="Two horizontal green meters labelled L and R on a scale from −60 to 0 dB, with peak, RMS and correlation figures below."></a>
         <figcaption><span class="tag">Meters</span>Left, right, peak, RMS, correlation.</figcaption>
       </figure>
       <figure class="clip red" style="--w:110px;--mw:130px">
-        <a class="shot" href="img/chain/eng-gonio.webp" data-cap="The stereo field: left against right, with the correlation bar below."><img src="img/chain/eng-gonio.webp" width="96" height="105" loading="lazy" alt="A round plot with L and R marks and a narrow vertical trace, above a bar running from red to green."></a>
+        <a class="shot" href="img/chain/eng-gonio.webp" data-cap="The stereo field: left against right, with the correlation bar below."><img src="img/chain/eng-gonio.webp" width="192" height="210" loading="lazy" alt="A round plot with L and R marks and a narrow vertical trace, above a bar running from red to green."></a>
         <figcaption><span class="tag">Field</span>Left against right.</figcaption>
       </figure>
     </div>

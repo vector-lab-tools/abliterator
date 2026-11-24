@@ -1604,7 +1604,16 @@ function stripEl(c, k) {
     const set = (v) => { c.params[p.key] = v; sendChain(); if (redraw) drawStrips(); };
     const k0 = krow.children.length, b0 = box.children.length;
     const words = p.kind === "choice" ? p.choices.map(String) : p.kind === "direction" && S.dirs.length ? S.dirs.map((d) => d.name) : null;
-    if (words) {                                                  // a list of words: a stepped knob that reads the word
+    if (p.kind === "direction" && words && words.length >= 2 && words.length <= 4) {   // a few directions: one button each, the chosen one lit
+      const g = h(`<div class="dseg" role="group" aria-label="${esc(p.label)}" title="${esc(p.tip || "")}"><span class="dsl">${esc(p.label)}</span><div class="dsb">${words.map((x) =>
+        `<button type="button" data-v="${esc(x)}" title="${esc(x)}" aria-pressed="${x === String(c.params[p.key])}">${esc(x.charAt(0).toUpperCase() + x.slice(1))}</button>`).join("")}</div></div>`);
+      g.querySelectorAll("button").forEach((btn) => btn.addEventListener("click", () => {
+        if (btn.dataset.v === String(c.params[p.key])) return;
+        g.querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", String(x === btn)));
+        set(btn.dataset.v);
+      }));
+      box.appendChild(g);
+    } else if (words) {                                                  // a list of words: a stepped knob that reads the word
       const ch = words, at = () => Math.max(0, ch.indexOf(String(c.params[p.key])));
       krow.appendChild(knob({ label: p.label, min: 0, max: Math.max(1, ch.length - 1), step: 1, int: true, reset: Math.max(0, ch.indexOf(String(p.default ?? ch[0]))),
         get: at, put: (v) => { const x = ch[Math.min(ch.length - 1, Math.round(v))]; if (x !== String(c.params[p.key])) set(x); }, fmt: (v) => shortWord(ch[Math.min(ch.length - 1, Math.round(v))]), tip: p.tip || "" }));

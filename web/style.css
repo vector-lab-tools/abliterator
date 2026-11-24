@@ -1070,3 +1070,17 @@ html, body { overscroll-behavior-x: none; }
   .engfoot { grid-template-areas: "knobs knobs" "levels field"; }
   .engfoot .gonio { align-self: start; }
 }
+/* a unit's direction when there are only a few: one button each, the chosen one lit (gold, like a switch that is on) */
+.strip .dseg { display: flex; flex-direction: column; gap: 3px; width: 100%; }
+.strip .sgrid .dseg { grid-column: 1 / -1; }
+.strip .dseg .dsl { font-size: 10px; color: #8a8f9b; text-align: center; }
+.strip .dseg .dsb { display: flex; border: 1px solid #3a3f4a; border-radius: 6px; overflow: hidden; background: var(--k); }
+.strip .dseg button { flex: 1; min-width: 0; padding: 4px 2px; border: 0; background: none; color: #a9adb7; font: 500 11px inherit; cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.strip .dseg button + button { border-left: 1px solid #3a3f4a; }
+.strip .dseg button:hover { color: #e9eaee; }
+.strip .dseg button[aria-pressed="true"] { background: rgba(217,170,63,.18); color: var(--gold); }
+.strip .dseg button:focus-visible { outline: 1px solid var(--gold); outline-offset: -1px; }
+/* with a direction row first, the switches after it pair up as they would without it */
+.strip .sgrid > .dseg ~ :last-child:nth-child(odd) { grid-column: auto; justify-self: stretch; width: auto; }
+.strip .sgrid > .dseg ~ :last-child:nth-child(even) { grid-column: 1 / -1; justify-self: center; width: calc(50% - 4px); }
+.strip:not(.wide) .dseg button { font-size: 10px; padding: 4px 1px; letter-spacing: -0.1px; }

@@ -9,7 +9,7 @@ measures and waveform peaks to docs/media.js and docs/units-media.js, which the 
 read. The renders are raised by a fixed 12 dB and the saved sounds to about −20 dBFS, each through
 a limiter, since the model writes quietly. Needs ffmpeg.
 
-    .venv-mrt2/bin/python bench/site_media.py [--sounds id,id,...]
+    .venv-mrt2/bin/python bench/site_media.py [--sounds id,id,...] [--params-only]
 """
 from __future__ import annotations
 
@@ -261,13 +261,37 @@ def spectrograms():
     print(f"{len(index)} spectrograms", file=sys.stderr)
 
 
+def units_params_only():
+    """Refreshes each unit's settings in docs/units-media.js (example line, placements, parameters with this host's
+    defaults, measured ranges and ⚠ marks) from the instrument's catalogue, keeping the sweeps and their clips."""
+    from abliterator import units as U
+    f = DOCS / "units-media.js"
+    t = f.read_text()
+    out = json.loads(t[t.index("{"):t.rindex("}") + 1])
+    cat = {u["id"]: u for u in U.catalogue() if u["available"]}
+    for x in out["units"]:
+        u = cat.get(x["id"])
+        if not u:
+            continue
+        x.update({"example": u.get("example"), "places": u.get("places"), "place_default": u.get("place_default"),
+                  "params": [{k: q.get(k) for k in ("key", "label", "tip", "kind", "min", "max", "default", "safe", "fragile", "choices")}
+                             for q in u["params"]]})
+    f.write_text("// Made by bench/site_media.py from this machine's unit sweep. Do not edit by hand.\n"
+                 "window.UNITS = " + json.dumps(out, ensure_ascii=False, separators=(",", ":")) + ";\n")
+    print(f"{len(out['units'])} units' settings refreshed", file=sys.stderr)
+
+
 def main():
     a = argparse.ArgumentParser()
     a.add_argument("--sounds", default="")
     a.add_argument("--units-only", action="store_true")
     a.add_argument("--design-only", action="store_true")
     a.add_argument("--spectrograms-only", action="store_true")
+    a.add_argument("--params-only", action="store_true", help="refresh the units' settings in units-media.js, keeping the sweeps")
     args = a.parse_args()
+    if args.params_only:
+        units_params_only()
+        return
     AUDIO.mkdir(parents=True, exist_ok=True)
     if args.spectrograms_only:
         spectrograms()

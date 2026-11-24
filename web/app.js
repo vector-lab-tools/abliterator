@@ -1686,9 +1686,11 @@ async function unitHelp(u, opener) {
     ${u.explain ? `<div class="uh-fig"><p class="uh-dim">Drawing the figure…</p></div>` : ""}
     ${u.group_title ? `<p class="uh-where"><b>${esc(u.group_title)}.</b> ${u.note ? esc(u.note) : ""}</p>` : ""}
     ${u.host_note ? `<h4>On this instrument</h4><p class="uh-help">${esc(u.host_note)}</p>` : ""}
-    ${u.presets?.length ? `<h4>Presets (▾ by its name)</h4><ul class="uh-presets">${u.presets.map((q) => `<li><b>${esc(q.name)}</b>: ${esc(q.tip || "")}</li>`).join("")}</ul><p class="uh-dim">Each keeps the direction you chose.</p>` : ""}
-    <h4>Snap-back (↺ by the ✕)</h4>
-    <p class="uh-help">On by default. The model writes each frame by reading back about 20 seconds of the frames it made, so a unit's sound would linger after it goes off. With snap-back, the model's state is kept when you switch the unit on; when you switch it off or remove it, the model returns to that state, crossfaded over one 40 ms frame, and goes on as if the unit had never played. Off: its sound fades over up to 20 seconds. A saved sound replays it as heard.</p>
+    <h4>The ▾ menu by its name</h4>
+    <p class="uh-help">The unit's presets, then your own under User Presets: type a name in Save preset… to keep the card's settings, and × deletes one. Then Snap-back, on or off, and Remove. A card clicked is selected, and Delete or Backspace removes it.</p>
+    ${u.presets?.length ? `<h4>Presets</h4><ul class="uh-presets">${u.presets.map((q) => `<li><b>${esc(q.name)}</b>: ${esc(q.tip || "")}</li>`).join("")}</ul><p class="uh-dim">${u.id === "abliterate" ? "Each keeps the direction you chose." : "Each was kept only if it broke the sound on none of ten seeds the search did not use. Its tip names what moved on those seeds beyond chance."}</p>` : ""}
+    <h4>Snap-back (on the ▾ menu)</h4>
+    <p class="uh-help">On by default. The model writes each frame by reading back about 20 seconds of the frames it made, so a unit's sound would linger after it goes off. With snap-back, the model's state is kept when you switch the unit on. When you switch it off or remove it, the model returns to that state, crossfaded over one 40 ms frame, and goes on as if the unit had never played. With snap-back off, its sound fades over up to 20 seconds. A saved sound replays it as heard.</p>
     <h4>Parameters</h4>
     ${rows ? `<table class="uh-params"><thead><tr><th>Parameter</th><th>Range</th><th>What it does</th></tr></thead><tbody>${rows}</tbody></table>` : `<p class="uh-dim">None.</p>`}
     ${u.example ? `<p class="uh-ex">Example line: <code>${esc(u.example)}</code></p>` : ""}
@@ -1756,7 +1758,7 @@ function fxHelp(type, opener) {
     ${H.how ? `<h4>How it works</h4><p class="uh-help">${esc(H.how)}</p>` : ""}
     <h4>Parameters</h4>
     <table class="uh-params"><thead><tr><th>Parameter</th><th>Range</th><th>What it does</th></tr></thead><tbody>${rows}</tbody></table>
-    <p class="uh-help">Every effect here is written for this instrument in numpy and scipy, and gives the same output whatever block size the sound card asks for, so a saved sound renders as it was heard. Switching it on or off crossfades it; the light on its card bypasses it, ✕ removes it, and its name drags it to another place. Each knob takes modulation.</p>
+    <p class="uh-help">Every effect here is written for this instrument in numpy and scipy, and gives the same output whatever block size the sound card asks for, so a saved sound renders as it was heard. Switching it on or off crossfades it; the light on its card bypasses it, and its name drags it to another place. The ▾ menu by its name lists its presets and your own (Save preset… keeps the card's settings, × deletes one) and removes it; a card clicked is selected, and Delete or Backspace removes it too. Each knob takes modulation.</p>
     <p class="uh-links"><a href="${SITE}effects.html#${H.at || "each"}" target="_blank" rel="noopener">More on the Effects page ↗</a></p>`;
   box.hidden = false;
   box._opener = opener;

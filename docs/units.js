@@ -226,10 +226,10 @@ function esc(s) { return String(s == null ? "" : s).replace(/&/g, "&amp;").repla
   var rnd = function (i) { var r = Math.sin(i * 12.9898) * 43758.5453; return r - Math.floor(r); };
   var MINI = {
     delay: function (t) {
-      var s = "", p = 4 + Math.floor(t / 600) % 8, i;
+      var s = "", p = 8 + Math.floor(t / 600) % 4, i;
       for (i = 0; i < 12; i++) s += R(8 + i * 17, 70, 14, 22, i === p ? "f-acc" : "f-panel", ' rx="2" style="stroke:var(--fig-line)"');
-      [[p - 4, 1], [p - 8, 0.4]].forEach(function (a) { if (a[0] >= 0) { var x0 = 15 + a[0] * 17, x1 = 15 + p * 17; s += P("M" + x0 + " 68 Q" + (x0 + x1) / 2 + " " + (68 - 40 * a[1]) + " " + x1 + " 68", "s-acc", ' stroke-width="' + (1 + a[1]) + '" opacity="' + a[1] + '"'); } });
-      return s + T(8, 112, "frames → · time 4, feedback 0.3", "f-dim t-xs");
+      [[p - 8, 1]].forEach(function (a) { if (a[0] >= 0) { var x0 = 15 + a[0] * 17, x1 = 15 + p * 17; s += P("M" + x0 + " 68 Q" + (x0 + x1) / 2 + " " + (68 - 40 * a[1]) + " " + x1 + " 68", "s-acc", ' stroke-width="' + (1 + a[1]) + '" opacity="' + a[1] + '"'); } });
+      return s + T(8, 112, "frames → · time 8, feedback 0.7", "f-dim t-xs");
     },
     reverb: function (t) {
       var s = "", p = 11, i, ph = (t / 900) % 1;

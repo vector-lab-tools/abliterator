@@ -1111,3 +1111,8 @@ html, body { overscroll-behavior-x: none; }
 .strip:not(.wide) .dseg { flex-direction: column; }
 .strip:not(.wide) .dseg .dsl { justify-content: center; padding: 2px 0; border-right: 0; border-bottom: 1px solid #2c303a; }
 .strip:not(.wide) .dseg button { padding: 3px 4px; }
+/* smaller type in a unit card's switches and direction segments, so the names fit; both switches the same size treatment */
+.strip .sgrid .tg, .strip .sgrid > .tg:last-child { justify-self: center; width: auto; grid-column: auto; padding: 1px 7px; font-size: 9.5px; gap: 5px; }
+.strip .sgrid .tg i { width: 6px; height: 6px; }
+.strip .dseg button, .strip:not(.wide) .dseg button { font-size: 8.5px; padding: 2px 6px; }
+.strip .dseg .dsl { font-size: 7px; }

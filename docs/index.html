@@ -363,13 +363,13 @@
       <div class="card hole"><h3>Lookback at VAU's own mix</h3>
         <span class="chain">delay layer=6 time=4 feedback=0.3 mix=0.5</span>
         <div class="lookback" id="lookback"></div>
-        <p>Lookback at VAU's default mix of 0.5, on layer 6, silences the music model: the Warm drone falls from −28 to −49 dBFS with 96% of its 40 ms frames silent. At 0.4 it reaches −60, and the Shimmering pad goes entirely silent. Above 0.2 every mix measured stayed mostly silent, so Lookback starts at 0.2.</p></div>
+        <p>Lookback at VAU's default mix of 0.5, on layer 6, silences the music model: the Warm drone falls from −28 to −49 dBFS with 96% of its 40 ms frames silent. At 0.4 it reaches −60, and the Shimmering pad goes entirely silent. Above 0.2 every mix measured stayed mostly silent. These sweeps had Keep size off. With Keep size on, which scales the stream back to its size before the echo was added, Lookback now starts at a mix of 0.8 (the Feedback Loop preset), and that setting broke on none of ten seeds the preset search never used.</p></div>
       <div class="card hole"><h3>A dose of −1</h3>
         <p>Brightness at −1 on the Warm drone clips 0.4% of its samples at −8 dBFS RMS, where the model's own level runs from −28 to −41. On the dark side the sound gets louder, not darker: from 0 to −0.2 the level rises 15 dB and the centroid stays between 80 and 140 Hz. The knob stops at −0.2.</p></div>
       <div class="card hole"><h3>As far as a seed</h3>
         <p>Strength, Temperature and Top-k each move the spectrum about as far as changing the seed does. They change the music without moving its timbre in one direction, which is why they are not on the Steer pad.</p></div>
-      <div class="card hole"><h3>A unit fixed at one setting</h3>
-        <p>Lookback's time and feedback held up on both presets only at their defaults, 4 frames and 0.3. Every other value broke one of them. The knobs still turn, marked ⚠.</p></div>
+      <div class="card hole"><h3>Lookback with and without Keep size</h3>
+        <p>With Keep size off, Lookback's time and feedback held up on both presets only at 4 frames and 0.3, its old defaults; every other value broke one of them. With Keep size on, it starts at a time of 8 frames, feedback 0.7 and mix 0.8, which held on all ten held-out seeds. The old ranges and their ⚠ marks were measured with Keep size off, so its knobs now turn over their whole range without them. <a href="tech-specs.html#presets-and-held-out-seeds">Tech specs</a> has the figures.</p></div>
       <div class="card hole"><h3>Principal Bands at layer 8</h3>
         <p>Principal Bands breaks the sound at layers 2 to 6 and holds at 8. The placement menu marks the layers that broke.</p></div>
       <div class="card hole"><h3>Brightness by numbers</h3>

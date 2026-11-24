@@ -48,13 +48,11 @@ const fail = (e) => info(e.message || String(e), "bad");
 const THEMES = ["system", "light", "dark"];
 function setTheme(t) {
   if (t === "system") delete document.documentElement.dataset.theme; else document.documentElement.dataset.theme = t;
-  $("#themebtn").title = `Theme: ${t} (click to change)`;
   try { localStorage.setItem("aa-theme", t); } catch (e) { /* private window */ }
 }
 let theme = "system";
 try { theme = localStorage.getItem("aa-theme") || "system"; } catch (e) { /* private window */ }
 setTheme(theme);
-$("#themebtn").addEventListener("click", () => { theme = THEMES[(THEMES.indexOf(theme) + 1) % 3]; setTheme(theme); drawXY(); });
 
 // ------------------------------------------------------------- controls: knob and fader
 // p: {label, min, max, step, int, log, reset, get(), put(v), fmt(v), mod}. Each returns an element
@@ -832,7 +830,7 @@ hdrVol = knob({ label: "Volume", min: 0, max: 1, step: 0.01, reset: 0.5, get: ()
   put: (v) => { sendMaster({ volume: v }); outKnobs.find((k) => k.getAttribute("aria-label") === "Volume")?.paint(); }, fmt: (v) => v.toFixed(2), mod: "volume",
   tip: "the output's volume, the same as Volume in the Output panel" });
 hdrVol.classList.add("kmini");
-$("#hdrout").append(hdrMeter, hdrVol);
+$("#hdrout").append(hdrVol, hdrMeter);
 
 // Drag to reorder: an item is picked up by its handle and dropped before or after another item in
 // the same row; move(from, to) gets the item's old place and its new one.
@@ -2390,7 +2388,8 @@ async function poll() {
       }
       if (s.frame_ms) S.frameMs = s.frame_ms;
       const name = s.model?.model_id || (s.engines || []).find((e) => e.id === s.engine)?.label || "";
-      $("#modelchip").innerHTML = `<b>${esc(name)}</b> · ` + (s.error ? `<span class="busy">${esc(s.error)}</span>` : s.freezing ? `<span class="busy">freezing ${s.freezing[0]} / ${s.freezing[1]} frames</span>` : s.playing ? `playing ${esc(s.preset)} · seed ${s.seed}` : `<span class="${s.state === "ready" ? "" : "busy"}">${esc(s.state)}</span>`);
+      // the top bar says something only when it needs attention (an error, freezing, loading); the Engine panel names the model
+      $("#modelchip").innerHTML = s.error ? `<span class="busy">${esc(s.error)}</span>` : s.freezing ? `<span class="busy">freezing ${s.freezing[0]} / ${s.freezing[1]} frames</span>` : (s.playing || s.state === "ready") ? "" : `<span class="busy">${esc(name)}: ${esc(s.state)}</span>`;
       if (s.model) $("#modelinfo").textContent = `${s.model.dtype} · ${s.model.sample_rate / 1000} kHz ${s.model.channels === 2 ? "stereo" : "mono"}`;
       const L = s.latency || { measured_ms: [] };
       // the line under the waveform says one or two words; the figures are in its tip and in Settings
@@ -2724,6 +2723,12 @@ function sparkline(vals) {
 function drawSettings() {
   document.querySelectorAll("#setpanel .settabs button").forEach((b) => b.setAttribute("aria-selected", b.dataset.t === SET.tab));
   const box = $("#setbody"), d = SET.data;
+  if (SET.tab === "display") {                                  // the theme, set once and kept in this browser
+    box.innerHTML = `<h4>Theme</h4><div class="setseg" role="group" aria-label="Theme">${THEMES.map((t) => `<button type="button" data-th="${t}" aria-pressed="${t === theme}">${t === "system" ? "System" : t === "light" ? "Light" : "Dark"}</button>`).join("")}</div>
+      <p class="setnote">System follows this computer's light or dark setting. The choice is kept in this browser.</p>`;
+    box.querySelectorAll("[data-th]").forEach((b) => b.addEventListener("click", () => { theme = b.dataset.th; setTheme(theme); drawXY(); drawSettings(); }));
+    return;
+  }
   if (!d) { box.innerHTML = `<p>Reading…</p>`; return; }
   const sw = d.software;
   if (SET.tab === "about") {

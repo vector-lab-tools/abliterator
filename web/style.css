@@ -1126,3 +1126,14 @@ html, body { overscroll-behavior-x: none; }
 .hdrmeter.master .mm { flex: none; width: 8px; height: 30px; min-height: 0; }
 .hdrmeter.master .mi { font-size: 9px; min-width: 30px; text-align: right; color: #9aa0ab; }
 .hdrout .knob.kmini { transform: translateY(3px); }
+.hdrout .knob.kmini .kl { display: none; }                       /* plain in the top bar; its tooltip names it */
+.hdrout .knob.kmini { transform: translateY(2px); }
+.hdrmeter.master .mi { display: none; }                          /* in the top bar it is an indicator; the figure is on the Output panel's OUT meter */
+.hdrout .knob.kmini .kv { display: none; }                       /* the dial alone in the top bar; its tooltip and the Output panel give the value */
+.hdrout .knob.kmini { transform: none; }
+/* Settings, Display: the theme as a compact segmented switch (as the effect cards' .fxseg) */
+.setseg { display: inline-flex; border: 1px solid #2c303a; border-radius: 5px; overflow: hidden; background: rgba(13,15,19,.6); margin: 2px 0 6px; }
+.setseg button { padding: 3px 12px; border: 0; background: none; color: #8a8f9b; font: 600 11px var(--mono); cursor: pointer; }
+.setseg button + button { border-left: 1px solid #2c303a; }
+.setseg button:hover { color: #e9eaee; }
+.setseg button[aria-pressed="true"] { color: var(--gold); background: rgba(217,170,63,.14); }

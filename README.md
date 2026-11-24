@@ -5,7 +5,7 @@
 >
 > **Units:** [Vector Abliteration Units](https://vector-lab-tools.github.io/vector-abliteration-units/) (VAU).
 >
-> **Site:** [vector-lab-tools.github.io/abliterator](https://vector-lab-tools.github.io/abliterator/): sounds to listen to, how it works, and the knob that plays the real sweep. [Model layers](https://vector-lab-tools.github.io/abliterator/units.html): where the VAU units live and act, unit by unit. [Tech specs](https://vector-lab-tools.github.io/abliterator/tech-specs.html): how it is built, and every unit checked for what reaches the sound.
+> **Site:** [vector-lab-tools.github.io/abliterator](https://vector-lab-tools.github.io/abliterator/): sounds to listen to, how it works, and the knob that plays the real sweep. [Model layers](https://vector-lab-tools.github.io/abliterator/units.html): where the VAU units live and act, unit by unit. [Tech specs](https://vector-lab-tools.github.io/abliterator/tech-specs.html): how it is built, and a deep dive into every unit and what it does to the sound.
 
 <p align="center"><img src="web/mark.svg" alt="" width="88"></p>
 

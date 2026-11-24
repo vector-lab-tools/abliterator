@@ -1138,3 +1138,8 @@ html, body { overscroll-behavior-x: none; }
 /* the Compressor's gain reduction: the drive meter's cells, all amber, and the reduction in dB in place of CLIP */
 .fxmeter.grm .cells i.on { background: #c08a2c; }
 .fxmeter.grm b { min-width: 26px; text-align: right; border: 0; padding: 0; color: #9aa0ab; letter-spacing: 0; font-size: 8px; }
+/* gain reduction in three bands, on the Compressor card and in Dynamics alike: cells 1-4 (up to 4 dB) green, 5-7 (6-10 dB) yellow,
+   8-10 (12-20 dB) red */
+.fxmeter.grm .cells i.on, .dled.c i.on { background: #4d9f5a; }
+.fxmeter.grm .cells i.on:nth-child(n+5), .dled.c i.on:nth-child(n+5) { background: #d4b13a; }
+.fxmeter.grm .cells i.on:nth-child(n+8), .dled.c i.on:nth-child(n+8) { background: #c84a38; }

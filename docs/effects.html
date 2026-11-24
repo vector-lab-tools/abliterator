@@ -41,6 +41,7 @@
         <a href="#eq8">EQ 8</a>
         <a href="#tape">Tape</a>
         <a href="#pan">Pan</a>
+        <a href="#trim">Trim</a>
         <a href="faq.html">FAQ</a>
         <span class="nav-sep" aria-hidden="true"></span>
         <a class="ext" href="https://github.com/vector-lab-tools/abliterator">GitHub</a>
@@ -113,6 +114,7 @@
         <tr><td>Crush</td><td>Fewer bits and a lower sample rate.</td><td>Bits (2 to 16), Rate ÷ (1 to 32), Mix</td></tr>
         <tr><td><a href="#abliterated">Abliterated</a></td><td>Heavy distortion: a resonant boost where it bites, two lopsided clipping stages, a wavefolder, an octave and a ring modulator, a cabinet low-pass, and a make-up gain that holds the level.</td><td>Crunch, Edge, Complicate, Steer (150 Hz to 5 kHz), Tone (1.5 to 12 kHz), Level (−24 to +6 dB), Mix</td></tr>
         <tr><td>Pan</td><td>An equal-power balance, with an auto-pan whose phase carries on from block to block. A dot shows where the sound sits.</td><td>Pan, Auto rate (0.02 to 8 Hz), Auto depth</td></tr>
+        <tr><td><a href="#trim">Trim</a></td><td>Gain and the stereo field, with no sound of its own: a phase flip on each side, one side on both or the two swapped, width from mono to 400%, bass mono, a DC filter, then gain, balance and mute.</td><td>Width (0 to 400%), Gain (−36 to +24 dB), Balance, Bass below (50 to 500 Hz), In, Ø L, Ø R, Mono, Bass mono, Hear bass, DC, Mute</td></tr>
         <tr><td>De-click</td><td>The Output section's de-click as an effect, so it can sit where you want it, before a reverb for example. It counts the bursts it has redrawn.</td><td>Sensitivity, Longest (0.2 to 4 ms)</td></tr>
       </tbody>
     </table></div>
@@ -175,8 +177,24 @@
   </section>
 
   <!-- 06 -->
-  <section class="section wrap reveal" id="abliterated">
+  <section class="section wrap reveal" id="trim">
     <span class="num">06</span>
+    <h2>Trim</h2>
+    <p>Trim has no sound of its own. It sets the level and the stereo field before the next effect, and checks how the sound holds up in mono. It works in this order:</p>
+    <ul>
+      <li><b>In</b> plays Stereo, the left side on both sides (L), the right side on both (R), or the two swapped (Swap).</li>
+      <li><b>Ø L</b> and <b>Ø R</b> flip each side's phase. A side flipped against the other cancels what they share when the sound is summed to mono.</li>
+      <li><b>Width</b> scales the side against the mid: 0% is mono, 100% the sound as it came, 400% four times as wide. <b>Mono</b> sets it to 0%, to hear what the sound loses in mono.</li>
+      <li><b>Bass mono</b> takes the side out below <b>Bass below</b> (50 to 500 Hz) with a 24 dB-an-octave high-pass, so the low end is the same on both sides. <b>Hear bass</b> plays only the mid below that frequency, to hear what Bass mono keeps.</li>
+      <li><b>DC</b> is a 5 Hz high-pass that takes out a constant offset.</li>
+      <li><b>Gain</b> (−36 to +24 dB), <b>Balance</b>, which turns the far side down and keeps the near side at unity, and <b>Mute</b>.</li>
+    </ul>
+    <p>Every switch and knob moves over 10 ms, so flipping a phase or swapping the sides does not click, and the output is the same at any block size. Its six presets were measured like the other effects' on eleven inputs, and each changed every input measurably and broke none.</p>
+  </section>
+
+  <!-- 07 -->
+  <section class="section wrap reveal" id="abliterated">
+    <span class="num">07</span>
     <h2>Abliterated</h2>
     <figure class="clip" style="--w:240px;--mw:280px;float:right;margin:0 0 12px 18px">
       <a class="shot" href="img/chain/fx-abliterated.webp" data-cap="Abliterated in a chain while it plays: Crunch 0.60, Edge 0.35, Complicate 0.30, Steer 1.2 kHz moved by Steps, Tone 6 kHz, Level 0 dB and Mix 0.55."><img src="img/chain/fx-abliterated.webp" width="240" height="232" loading="lazy" alt="The Abliterated card with seven knobs."></a>

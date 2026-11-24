@@ -93,6 +93,12 @@ TYPES: Dict[str, Dict[str, Any]] = {
                                                        ("steer", "Steer", 150.0, 5000.0, 900.0, "log", "Hz"), ("complicate", "Complicate", 0.0, 1.0, 0.0, "lin", ""),
                                                        ("tone", "Tone", 1500.0, 12000.0, 5500.0, "log", "Hz"), ("mix", "Mix", 0.0, 1.0, 1.0, "lin", ""),
                                                        ("level", "Level", -24.0, 6.0, 0.0, "lin", "dB")]},
+    "trim": {"label": "Trim", "params": [("gain", "Gain", -36.0, 24.0, 0.0, "lin", "dB"), ("balance", "Balance", -1.0, 1.0, 0.0, "lin", ""),
+                                       ("width", "Width", 0.0, 400.0, 100.0, "int", "%"), ("chans", "In", 0.0, 3.0, 0.0, "choice:Stereo,L,R,Swap", ""),
+                                       ("phl", "Ø L", 0.0, 1.0, 0.0, "toggle", ""), ("phr", "Ø R", 0.0, 1.0, 0.0, "toggle", ""),
+                                       ("mono", "Mono", 0.0, 1.0, 0.0, "toggle", ""), ("bass", "Bass mono", 0.0, 1.0, 0.0, "toggle", ""),
+                                       ("bassf", "Bass below", 50.0, 500.0, 120.0, "log", "Hz"), ("solo", "Hear bass", 0.0, 1.0, 0.0, "toggle", ""),
+                                       ("dc", "DC", 0.0, 1.0, 0.0, "toggle", ""), ("mute", "Mute", 0.0, 1.0, 0.0, "toggle", "")]},
     "declick": {"label": "De-click", "params": [("sens", "Sensitivity", 0.0, 1.0, 0.5, "lin", ""), ("longest", "Longest", 0.2, 4.0, 1.0, "log", "ms")]}
 }
 DEFAULT_SLOTS = [{"type": t, "on": False, "params": {}} for t in ("drive", "chorus", "delay", "reverb")]
@@ -949,7 +955,82 @@ class Abliterated(Effect):
         return x * (1 - m) + y * m
 
 
-CLASSES = {"reverb": Reverb, "plate": Plate, "hall": Hall, "delay": Delay, "chorus": Chorus, "drive": Drive, "eq": EQ, "eq8": EQ8, "pan": Pan, "tape": Tape, "filter": Filter, "crush": Crush, "abliterated": Abliterated}
+class Trim(Effect):
+    """Gain staging and the stereo field, with no sound of its own. In order: In (Stereo, L or R on both
+    sides, or Swap), a phase flip on each side, Width on the mid/side split (0% is mono, 100% as it came, up to 400%;
+    Mono sets it to 0), Bass mono (the side below Bass below taken out with a 4th-order high-pass, so the low end is
+    the same on both sides), Hear bass (only the mid below that frequency, to hear what Bass mono keeps), DC (a 5 Hz
+    high-pass), then Gain, Balance (the far side turned down, the near side kept at unity) and Mute. Every switch and
+    knob moves over 10 ms, so none of them clicks, and the output is the same at any block size. A mono signal takes
+    the phase flip on L, DC, Gain and Mute."""
+    SMOOTH = math.exp(-1.0 / (0.010 * SR))
+    MATS = {0: (1.0, 0.0, 0.0, 1.0), 1: (1.0, 0.0, 1.0, 0.0), 2: (0.0, 1.0, 0.0, 1.0), 3: (0.0, 1.0, 1.0, 0.0)}   # L' = a L + b R, R' = c L + d R
+
+    def __init__(self, ch):
+        super().__init__(ch)
+        self.z: Dict[str, Any] = {}
+        self.sf = None                                              # Bass below, as the filters were last made for
+        self.zs = self.zl = None
+        self.zdc = np.zeros((1, 2, ch))
+        self.dc = np.array(_sos("hp", 5.0, 1))
+
+    def _sm(self, key: str, target: float, n: int) -> np.ndarray:
+        a = self.SMOOTH
+        if key not in self.z:
+            self.z[key] = np.array([target * a])
+        y, self.z[key] = lfilter([1 - a], [1, -a], np.full(n, target), zi=self.z[key])
+        return y
+
+    def _filters(self):
+        f = float(self.p["bassf"])
+        if f != self.sf:
+            self.hp, self.lp, self.sf = _sos("hp", f, 2), _sos("lp", f, 2), f
+            if self.zs is None:
+                self.zs, self.zl = np.zeros((2, 2)), np.zeros((2, 2))
+
+    def chunk(self, x):
+        p, n = self.p, len(x)
+        x = x.astype(np.float64, copy=True)
+        if x.shape[1] >= 2:
+            self._filters()
+            m = self.MATS[int(p["chans"])]
+            a, b, c, d = (self._sm(k, m[j], n) for j, k in enumerate(("ma", "mb", "mc", "md")))
+            L, R = x[:, 0].copy(), x[:, 1].copy()
+            L, R = a * L + b * R, c * L + d * R
+            L *= self._sm("pl", -1.0 if p["phl"] else 1.0, n)
+            R *= self._sm("pr", -1.0 if p["phr"] else 1.0, n)
+            mid, side = (L + R) * 0.5, (L - R) * 0.5
+            side = side * self._sm("w", 0.0 if p["mono"] else p["width"] / 100.0, n)
+            hs, self.zs = sosfilt(self.hp, side, zi=self.zs)
+            kb = self._sm("bass", 1.0 if p["bass"] else 0.0, n)
+            side = side * (1 - kb) + hs * kb
+            lm, self.zl = sosfilt(self.lp, mid, zi=self.zl)
+            ks = self._sm("solo", 1.0 if p["solo"] else 0.0, n)
+            L = (mid + side) * (1 - ks) + lm * ks
+            R = (mid - side) * (1 - ks) + lm * ks
+            x[:, 0], x[:, 1] = L, R
+        else:
+            x[:, 0] *= self._sm("pl", -1.0 if p["phl"] else 1.0, n)
+        hd, self.zdc = sosfilt(self.dc, x, axis=0, zi=self.zdc)
+        kd = self._sm("dc", 1.0 if p["dc"] else 0.0, n)[:, None]
+        x = x * (1 - kd) + hd * kd
+        g = self._sm("g", 0.0 if p["mute"] else 10 ** (p["gain"] / 20.0), n)
+        if x.shape[1] >= 2:
+            bal = self._sm("bal", p["balance"], n)
+            x[:, 0] *= g * np.minimum(1.0, 1.0 - bal)
+            x[:, 1] *= g * np.minimum(1.0, 1.0 + bal)
+        else:
+            x[:, 0] *= g
+        return x
+
+
+def _sos(kind: str, f: float, order2: int) -> np.ndarray:
+    """`order2` cascaded 2nd-order Butterworth sections at `f` (kind "hp" or "lp"), as sos rows."""
+    from scipy.signal import butter
+    return np.vstack([butter(2, f, btype="highpass" if kind == "hp" else "lowpass", fs=SR, output="sos")] * order2)
+
+
+CLASSES = {"reverb": Reverb, "plate": Plate, "hall": Hall, "delay": Delay, "chorus": Chorus, "drive": Drive, "eq": EQ, "eq8": EQ8, "pan": Pan, "tape": Tape, "filter": Filter, "crush": Crush, "abliterated": Abliterated, "trim": Trim}
 
 
 # Params whose change jumps a delay line's read point. With fades on, the effect's wet signal is

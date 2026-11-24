@@ -2431,6 +2431,135 @@
      }
     }
    }
+  ],
+  "trim": [
+   {
+    "name": "Mono Check",
+    "params": {
+     "mono": 1
+    },
+    "tip": "Width at 0%: the sound folded to mono, to hear what it loses",
+    "measured": {
+     "inputs": 11,
+     "timbre_median": 0.0,
+     "level_mean": 0.0,
+     "centroid_mean_pct": 0.0,
+     "side_mid_mean": -94.47,
+     "lr_mean": -0.1,
+     "swing_mean": -0.31,
+     "gap_mean": 0.0,
+     "rms_max": -20.0,
+     "peak_max": 0.523,
+     "heard_on": 11,
+     "broken": 0
+    }
+   },
+   {
+    "name": "Narrow",
+    "params": {
+     "width": 50
+    },
+    "tip": "Half the width: the sides pulled in toward the middle",
+    "measured": {
+     "inputs": 11,
+     "timbre_median": 0.0,
+     "level_mean": 0.0,
+     "centroid_mean_pct": 0.0,
+     "side_mid_mean": -6.02,
+     "lr_mean": -0.05,
+     "swing_mean": -0.13,
+     "gap_mean": 0.0,
+     "rms_max": -20.0,
+     "peak_max": 0.527,
+     "heard_on": 11,
+     "broken": 0
+    }
+   },
+   {
+    "name": "Wide",
+    "params": {
+     "width": 170
+    },
+    "tip": "The sides widened to 170% of the mid",
+    "measured": {
+     "inputs": 11,
+     "timbre_median": 0.0,
+     "level_mean": 0.0,
+     "centroid_mean_pct": 0.0,
+     "side_mid_mean": 4.61,
+     "lr_mean": 0.07,
+     "swing_mean": 0.15,
+     "gap_mean": 0.0,
+     "rms_max": -20.0,
+     "peak_max": 0.538,
+     "heard_on": 11,
+     "broken": 0
+    }
+   },
+   {
+    "name": "Hear Bass",
+    "params": {
+     "solo": 1,
+     "bassf": 200
+    },
+    "tip": "Only what is below 200 Hz, in the middle",
+    "measured": {
+     "inputs": 11,
+     "timbre_median": 24.67,
+     "level_mean": -2.05,
+     "centroid_mean_pct": -34.1,
+     "side_mid_mean": -94.47,
+     "lr_mean": -0.1,
+     "swing_mean": -0.31,
+     "gap_mean": -1.49,
+     "rms_max": -20.5,
+     "peak_max": 0.399,
+     "heard_on": 11,
+     "broken": 0
+    }
+   },
+   {
+    "name": "Down 6 dB",
+    "params": {
+     "gain": -6
+    },
+    "tip": "Six decibels down before the next effect",
+    "measured": {
+     "inputs": 11,
+     "timbre_median": 0.0,
+     "level_mean": -6.0,
+     "centroid_mean_pct": 0.0,
+     "side_mid_mean": 0.0,
+     "lr_mean": 0.0,
+     "swing_mean": 0.0,
+     "gap_mean": 0.0,
+     "rms_max": -26.0,
+     "peak_max": 0.267,
+     "heard_on": 11,
+     "broken": 0
+    }
+   },
+   {
+    "name": "Lean Right",
+    "params": {
+     "balance": 0.5
+    },
+    "tip": "The left side turned down 6 dB",
+    "measured": {
+     "inputs": 11,
+     "timbre_median": 0.16,
+     "level_mean": -2.51,
+     "centroid_mean_pct": 0.1,
+     "side_mid_mean": 16.02,
+     "lr_mean": -6.02,
+     "swing_mean": 0.0,
+     "gap_mean": -0.01,
+     "rms_max": -22.5,
+     "peak_max": 0.532,
+     "heard_on": 11,
+     "broken": 0
+    }
+   }
   ]
  }
 }

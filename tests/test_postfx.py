@@ -15,7 +15,7 @@ def noise(s=2.0):
 @pytest.mark.parametrize("kind", list(fx.TYPES))
 def test_blocks_equal_whole(kind):
     x = noise()
-    on = [{"type": kind, "on": True, "params": {"mix": 0.7, "feedback": 0.6, "size": 3.0, "amount": 6, "low": 6, "high": -6, "mode": 1, "res": 4, "bits": 5, "hold": 7, "pos": 0.4, "depth": 0.5, "rate": 1.3}}]
+    on = [{"type": kind, "on": True, "params": {"mix": 0.7, "feedback": 0.6, "size": 3.0, "amount": 6, "low": 6, "high": -6, "mode": 1, "res": 4, "bits": 5, "hold": 7, "pos": 0.4, "depth": 0.5, "rate": 1.3, "width": 250, "gain": -3, "bass": 1}}]
     outs = []
     for block in (len(x), 512, 1920, 333):
         r = fx.Rack(2)
@@ -491,3 +491,60 @@ def test_presets_fit_their_types():
                 assert rng[k][0] <= v <= rng[k][1], (t, p["name"], k, v)
             assert fx.clean_slot({"type": t, "params": p["params"]}, 0)["params"] == {**fx.clean_slot({"type": t}, 0)["params"], **p["params"]}
         assert cat[t]["presets"] == ps
+
+
+def _trim(params, x, block=512):
+    e = fx.Trim(x.shape[1])
+    e.set(fx.clean_slot({"type": "trim", "params": params}, 0)["params"])
+    return np.concatenate([e.process(x[i:i + block]) for i in range(0, len(x), block)])
+
+
+def _st(seconds=1.0, seed=4):
+    t = np.arange(int(fx.SR * seconds)) / fx.SR
+    r = np.random.default_rng(seed)
+    return np.stack([0.3 * np.sin(2 * np.pi * 60 * t) + 0.1 * r.standard_normal(len(t)),
+                     0.2 * np.sin(2 * np.pi * 60 * t + 1.0) + 0.1 * r.standard_normal(len(t))], 1)
+
+
+def test_trim_neutral_and_block_size():
+    """At its defaults Trim passes the sound unchanged; with everything on, its output is the same at any block size."""
+    x = _st()
+    assert np.max(np.abs(_trim({}, x) - x)) < 1e-12
+    p = {"width": 230, "bass": 1, "bassf": 180, "dc": 1, "gain": -6, "balance": 0.3, "chans": 3, "phr": 1}
+    assert np.max(np.abs(_trim(p, x, 512) - _trim(p, x, 97))) < 1e-12
+
+
+def test_trim_controls():
+    """Each control does what its card says, once its 10 ms move has settled."""
+    x = _st(); s = slice(fx.SR // 4, None); xs = x[s]
+    y = _trim({"mono": 1}, x)[s]; assert np.max(np.abs(y[:, 0] - y[:, 1])) < 1e-12
+    y = _trim({"chans": 3}, x)[s]; assert np.allclose(y[:, 0], xs[:, 1]) and np.allclose(y[:, 1], xs[:, 0])
+    y = _trim({"chans": 1}, x)[s]; assert np.allclose(y[:, 0], xs[:, 0]) and np.allclose(y[:, 1], xs[:, 0])
+    y = _trim({"phl": 1}, x)[s]; assert np.allclose(y[:, 0], -xs[:, 0]) and np.allclose(y[:, 1], xs[:, 1])
+    y = _trim({"gain": 6}, x)[s]; assert abs(np.std(y) / np.std(xs) - 10 ** (6 / 20)) < 1e-6
+    y = _trim({"balance": 1.0}, x)[s]; assert np.max(np.abs(y[:, 0])) < 1e-9 and np.allclose(y[:, 1], xs[:, 1])
+    y = _trim({"mute": 1}, x)[s]; assert np.max(np.abs(y)) < 1e-9
+    y = _trim({"width": 200}, x)[s]
+    side, side0 = (y[:, 0] - y[:, 1]) / 2, (xs[:, 0] - xs[:, 1]) / 2
+    assert np.allclose(side, 2 * side0) and np.allclose(y[:, 0] + y[:, 1], xs[:, 0] + xs[:, 1])
+    y = _trim({"bass": 1, "bassf": 200}, x)[s]                     # the side's 60 Hz is taken out; the mid is untouched
+    f = np.fft.rfftfreq(len(y), 1 / fx.SR); k = np.argmin(np.abs(f - 60))
+    side, side0 = (y[:, 0] - y[:, 1]) / 2, (xs[:, 0] - xs[:, 1]) / 2
+    assert np.abs(np.fft.rfft(side))[k] < 0.03 * np.abs(np.fft.rfft(side0))[k]
+    assert np.allclose(y[:, 0] + y[:, 1], xs[:, 0] + xs[:, 1])
+    d = _trim({"dc": 1}, np.full((fx.SR, 2), 0.05))[-fx.SR // 4:]; assert abs(float(d.mean())) < 1e-3
+
+
+def test_trim_switches_do_not_click():
+    """A switch flipped while it plays moves over about 10 ms: no sample-to-sample jump larger than the signal's own."""
+    x = _st(); e = fx.Trim(2); base = fx.clean_slot({"type": "trim"}, 0)["params"]
+    e.set(base); a = e.process(x[:fx.SR // 2])
+    e.set({**base, "phl": 1, "chans": 3, "mute": 0, "mono": 1}); b = e.process(x[fx.SR // 2:])
+    y = np.concatenate([a, b])
+    assert np.max(np.abs(np.diff(y, axis=0))) < 1.5 * np.max(np.abs(np.diff(x, axis=0)))
+
+
+def test_trim_mono_input():
+    x = _st()[:, :1]
+    y = _trim({"phl": 1, "gain": -6, "width": 300, "chans": 3}, x)[fx.SR // 4:]
+    assert np.allclose(y[:, 0], -x[fx.SR // 4:, 0] * 10 ** (-6 / 20))

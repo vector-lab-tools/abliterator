@@ -898,8 +898,8 @@ function followFx() {
   }
   if (changed) { MOD.spec.routes = routes; sendMod(); drawTiles(); }
 }
-const FX_GROUPS = [["Space", ["reverb", "plate", "hall", "delay"]], ["Movement and colour", ["chorus", "tape", "pan", "eq", "eq8", "filter"]], ["Distortion", ["drive", "crush", "abliterated"]], ["Repair", ["declick"]]];
-const FX_WHAT = { abliterated: "heavy distortion: two clipping stages (Crunch), a wavefolder (Edge), an octave and a ring modulator (Complicate), aimed by Steer", reverb: "an eight-line feedback delay network", plate: "Dattorro's plate: a dense, bright tail", hall: "a larger network whose delays drift slowly at random",
+const FX_GROUPS = [["Space", ["reverb", "plate", "hall", "delay"]], ["Movement and colour", ["chorus", "tape", "pan", "eq", "eq8", "filter"]], ["Distortion", ["drive", "crush", "abliterated"]], ["Gain and stereo", ["trim"]], ["Repair", ["declick"]]];
+const FX_WHAT = { trim: "gain, balance and the stereo field: width, a phase flip on each side, channel swap, bass mono, a mono check and a DC filter", abliterated: "heavy distortion: two clipping stages (Crunch), a wavefolder (Edge), an octave and a ring modulator (Complicate), aimed by Steer", reverb: "an eight-line feedback delay network", plate: "Dattorro's plate: a dense, bright tail", hall: "a larger network whose delays drift slowly at random",
   delay: "repeats, with feedback and ping-pong", chorus: "a modulated short delay", drive: "saturation with a tone control", pan: "places the sound left or right, or swings it with an auto-pan", tape: "a tape machine's colour: saturation, wow and flutter, head bump and roll-off by speed (inches a second), hiss", eq: "three bands", eq8: "a low cut, six bands and a high cut", filter: "low-, high- or band-pass with resonance", crush: "fewer bits and a lower rate", declick: "redraws the few-sample bursts a unit can make the model write" };
 function addFx(type, slot = PFX.slots.length) {
   if (PFX.slots.length >= PFX.max) return;
@@ -924,6 +924,7 @@ const FX_ROWS = {
   crush: [["bits", "hold", "mix"]],
   abliterated: [["crunch", "edge", "complicate", "steer"], ["tone", "level", "mix"]],
   declick: [["sens"], ["longest"]],
+  trim: [["width", "gain", "balance"], ["bassf"]],
 };
 const FX_SPACE = new Set(["reverb", "plate", "hall", "delay"]);
 const FX_NARROW = new Set(["drive", "pan", "declick"]);     // a knob a row, on a narrow card
@@ -1279,6 +1280,8 @@ function drawStrips() {
   const unitMenu = (btn, slot) => menu(btn, [{ where: whereIn(slot, U.chain.length, "unit") },
     ...unitGroups().flatMap(([title, us]) => [{ head: title }, ...us.map((u) => ({ label: u.title, sub: u.what, run: () => addStrip(u, slot) }))])]);
   U.chain.forEach((c, k) => { if (U.units.length) desk.appendChild(gapAdd(k, k === 0 ? "Add a unit before unit 1" : `Add a unit between units ${k} and ${k + 1}`, unitMenu)); desk.appendChild(stripEl(c, k)); });
+  if (U.units.length && SC.layers.length)                          // scopes sit after the units: a + after the last unit, before them
+    desk.appendChild(gapAdd(U.chain.length, U.chain.length ? `Add a unit after unit ${U.chain.length}` : "Add the first unit", unitMenu));
   SC.layers.forEach((L, k) => desk.appendChild(scopeEl(L, k)));
   const add = h(`<button class="addend" title="Add a unit that acts on the model's stream at a layer (not an audio effect)" aria-haspopup="menu">+</button>`);
   add.addEventListener("click", () => menu(add, [
@@ -1733,6 +1736,8 @@ async function unitHelp(u, opener) {
 }
 // What each effect does, for its help box (?): how it works, each control, and where the Effects page says more
 const FX_HELP = {
+  trim: { at: "trim", how: "No sound of its own: it sets the level and the stereo field before the next effect. In order: In picks Stereo, the left side (L) or the right side (R) on both sides, or swaps them (Swap); Ø L and Ø R flip each side's phase; Width scales the side against the mid (0% is mono, 100% as it came, 400% four times as wide), and Mono sets it to 0% to check how the sound holds up in mono; Bass mono takes the side out below Bass below, so the low end is the same on both sides, and Hear bass plays only what is below that frequency; DC takes out a constant offset; then Gain, Balance and Mute. Every switch moves over 10 ms, so none of them clicks.",
+    p: { gain: "the level after everything else, −36 to +24 dB", balance: "turns the far side down; the near side stays at unity", width: "the side against the mid: 0% mono, 100% unchanged, up to 400%", chans: "Stereo; L or R on both sides; or Swap", phl: "flips the left side's phase", phr: "flips the right side's phase", mono: "width 0%: hear the sound in mono", bass: "takes the side out below Bass below, a 24 dB-an-octave high-pass on the side", bassf: "where Bass mono and Hear bass split the sound, 50 to 500 Hz", solo: "only the mid below Bass below, to hear what Bass mono keeps", dc: "a 5 Hz high-pass that takes out a constant offset", mute: "silence, faded over 10 ms" } },
   reverb: { at: "each", how: "A feedback delay network after Signalsmith's “Let's write a reverb”. The sound is pre-delayed, smeared by four allpass diffusers, then fed into eight delay lines, about 35 to 80 ms long, whose outputs are mixed by a Householder matrix and fed back, each through a low-pass. Each line falls 60 dB over the Decay time. Left and right are taken from alternate lines, so the tail is wide.",
     p: { size: "how long the tail takes to fall 60 dB", damp: "how dark the tail grows: the low-pass in each line, from 20 kHz at 0 to 1.5 kHz at 1", predelay: "a gap before the tail begins", mix: "the tail against the dry sound" } },
   plate: { at: "each", how: "Dattorro's 1997 plate tank: two halves, each a modulated allpass, a delay, damping and another allpass, each feeding the other, read out at several taps. Its allpasses are modulated and read with cubic interpolation, so the tail does not ring. Colour sets the era: 2020s is clean; 1980s is a darker tank with noisier modulation; 1970s runs the tank at half rate behind a 10 kHz band limit.",
@@ -1899,6 +1904,7 @@ function scopeEl(L, k) {
   });
   st.querySelectorAll(".seg button").forEach((b) => b.addEventListener("click", () => { SC.mode[L] = b.dataset.m; drawStrips(); }));
   st.dataset.layer = L;
+  selectable(st, `scope:${L}`, () => { const j = SC.layers.indexOf(L); if (j >= 0) { SC.layers.splice(j, 1); drawStrips(); sendScopes(); } });
   return st;
 }
 function adoptMeters(meters) {

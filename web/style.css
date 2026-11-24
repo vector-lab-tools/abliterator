@@ -766,11 +766,9 @@ body.moddrag .knob[data-mod].drophover svg { box-shadow: 0 0 0 3px var(--dragc),
 .dyn.off .dyk, .dyrows.off .dled { opacity: .45; }
 .dyn + .stages { margin-top: 4px; }
 .dyrows { display: flex; flex-direction: column; gap: 5px; }
-.dled { display: flex; gap: 2px; height: 6px; }
+.dled { display: flex; gap: 1px; height: 6px; }
 .dled i { flex: 1; border-radius: 1px; background: #1a1d23; box-shadow: inset 0 0 0 1px #2a2e36; }
-.dled.c i.on { background: #ffd23a; box-shadow: 0 0 4px #ffd23a88; }
-.dled.c i.on:nth-child(n+4) { background: #ff9a2a; box-shadow: 0 0 4px #ff9a2a88; }
-.dled.c i.on:nth-child(n+6) { background: #ff4a24; box-shadow: 0 0 4px #ff4a2488; }
+.dled.c i.on { background: #c08a2c; box-shadow: none; }          /* amber, as the Compressor card's GR meter */
 .dled.g i.on { background: #4dff8a; box-shadow: 0 0 4px #4dff8a88; }
 /* Output tightened so Dynamics fits in the row's height */
 #pn-out .outk { gap: 4px 6px; }

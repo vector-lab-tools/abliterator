@@ -801,7 +801,7 @@ dynToggles[0].title = "Dynamics on: a compressor and a gate after the effects, b
 dynToggles[1].title = "Fast attack: 3 ms instead of 30 ms";
 dynToggles[2].title = "Peak: the compressor and gate follow the peak instead of the average (RMS) level";
 const DYN = (() => {
-  const el = $("#dyn"), COMP = [1, 3, 6, 10, 14, 20], GATE = [3, 10, 20, 40];
+  const el = $("#dyn"), COMP = [1, 2, 3, 4, 6, 8, 10, 12, 15, 20], GATE = [2, 4, 6, 8, 10, 15, 20, 25, 30, 40];   // COMP as the Compressor card's GR meter (GR_CELLS); the gate drops up to 40 dB
   el.innerHTML = `<div class="dyh"></div><div class="dyk"></div>`;
   dynToggles.forEach((t) => el.querySelector(".dyh").appendChild(t));
   dynKnobs.forEach((k) => el.querySelector(".dyk").appendChild(k));
@@ -815,8 +815,8 @@ const DYN = (() => {
     const c = -(st.comp_db || 0), g = -(st.gate_db || 0);
     COMP.forEach((d, i) => cl[i].classList.toggle("on", c >= d));
     GATE.forEach((d, i) => gl[i].classList.toggle("on", g >= d));
-    sv[0].textContent = S.master.dyn_on ? (st.comp_db != null ? (-c).toFixed(1) : "–") : "off";
-    sv[1].textContent = S.master.dyn_on ? (st.gate_db != null ? (-g).toFixed(1) : "–") : "off";
+    sv[0].textContent = S.master.dyn_on ? (st.comp_db != null ? (c >= 0.05 ? `−${c.toFixed(1)}` : "0.0") : "–") : "off";
+    sv[1].textContent = S.master.dyn_on ? (st.gate_db != null ? (g >= 0.05 ? `−${g.toFixed(1)}` : "0.0") : "–") : "off";
     el.classList.toggle("off", !S.master.dyn_on); rows.classList.toggle("off", !S.master.dyn_on);
   } };
 })();

@@ -175,6 +175,16 @@
 </ul>
 <h3 id="the-change-enters-where-the-unit-is-placed">The change enters where the unit is placed</h3>
 <p>At the first frame a unit acts, every layer before its placement is bit-for-bit identical to the plain model’s, and the stream differs from the placement onward, through layer 12. Lookback at mix 0, Rotate at angle 0 and Neuron clamped at ±100,000 (wider than any activation) run their hooks and leave the stream and the sound bit-for-bit identical.</p>
+<h3 id="order-on-the-row">Order on the row</h3>
+<p>The order of the cards matters only among units on the same layer.</p>
+<ul>
+<li>Each unit acts at its own layer or block, wherever its card sits. Lookback at layer 6 and Tanh Squash at layer 10 do the same in either order.</li>
+<li>Units on the same layer run left to right, and at layer 6 after the Steer.</li>
+<li>Where their edits do not commute, the order changes the sound: Tanh Squash then Norm Shrink is not Norm Shrink then Tanh Squash. Two Principal Bands cards on one layer scale the same principal directions, so they give the same result in either order.</li>
+<li>Lookback and Running Average record the stream as it reaches them. A unit before them on that layer goes into what they repeat; a unit after them acts on their output, echo included, without being repeated.</li>
+<li>Neuron and Abliterate act inside the blocks, so their place among the stream units makes no difference.</li>
+<li>How much the order changes the sound at a shared layer has not been measured.</li>
+</ul>
 <h3 id="which-units-shift-the-sound">Which units shift the sound</h3>
 <p>On 20 seeds of 6 s each, against the plain model on the same seed, with a sign-flip permutation test on the change of spectral centroid, the change of level and the shift of spectral shape, and Benjamini–Hochberg correction across all 51 tests:</p>
 <ul>

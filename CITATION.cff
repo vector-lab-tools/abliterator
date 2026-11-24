@@ -8,6 +8,10 @@ authors:
     given-names: "David M."
     affiliation: "University of Sussex"
     orcid: "https://orcid.org/0000-0002-7737-5586"
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.24517766
+    description: "Concept DOI (always resolves to the latest version)"
 version: "0.3.0"
 date-released: "2026-11-24"
 license: GPL-3.0-or-later

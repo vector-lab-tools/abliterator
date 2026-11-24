@@ -2,7 +2,7 @@
 //
 // The page: a control surface only. The sound is played by the backend through the sound card;
 // this page sends moves and reads the engine's and the desk's state a few times a second.
-// Two views: Make (the model as a synth panel: engine, steer, output, strips, modulation; saving sounds) and Session (the saved sounds on eight
+// Two views: Synth (the model as a synth panel: engine, steer, output, strips, modulation; saving sounds) and Session (the saved sounds on eight
 // tracks, triggered and layered). The browser on the left holds the saved sounds for both.
 // Laid out as Abliterton Lens's page; the knobs and faders follow Lens's desk.js (after Video Kintsugi).
 "use strict";
@@ -1086,7 +1086,7 @@ function adoptFx(fx) {
   if (shape !== was || !$("#fxrow").children.length) drawFx(); else PFX.ctl.forEach((c) => c.paint());
 }
 
-// the transport: the model in Make, the tracks in Session
+// the transport: the model in Synth, the tracks in Session
 async function playModel() {
   if (!S.preset) return;
   $("#play").disabled = true;
@@ -2523,7 +2523,7 @@ function drawSession() {
     });
     const add = h(`<button class="slot" title="Put a saved sound on this track">+</button>`);
     add.addEventListener("click", () => menu(add, SND.list.length ? [{ head: `Onto ${t.name}` }, ...SND.list.slice(0, 40).map((s) => ({ label: s.name, sub: `${s.seconds} s · ${s.frozen ? "frozen" : "saved while playing"}`, run: () => putSound(t.i, s.id) }))]
-      : [{ head: "No sounds yet" }, { label: "Make some first", sub: "In ☰ Make, play the model and save the last seconds", disabled: true }]));
+      : [{ head: "No sounds yet" }, { label: "Make some first", sub: "In ☰ Synth, play the model and save the last seconds", disabled: true }]));
     col.appendChild(add);
     const stop = h(`<button class="slot stop" title="Stop this track">■</button>`);
     stop.disabled = !t.live;

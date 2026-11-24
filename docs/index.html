@@ -36,7 +36,7 @@
     <div class="head-tools">
       <nav class="site-nav" aria-label="Sections">
         <a href="#listen">Listen</a>
-        <a href="#make">Make</a>
+        <a href="#synth">Synth</a>
         <a href="#chain">Signal chain</a>
         <a href="abliteration.html">What is Abliteration?</a>
         <a href="units.html">Model layers</a>
@@ -70,8 +70,8 @@
       <a class="btn" href="https://vector-lab-tools.github.io/vector-abliteration-units/">The VAU standard</a>
     </div>
     <figure class="hero-shot">
-      <a class="screen shot" href="img/make.webp" data-cap="Make while it plays: the Engine (Magenta RT 2 small, the Warm drone preset, Strength 3.8, seed 1, temperature 1.3, top-k 40, Mode Tape and Speed 1×, Width 82%) with its scope, channel meters and stereo field; the Signal path through the model's twelve layers, the codec, the model's sound and four effects; the Output section with the compressor at work and the OUT meter; under Model layers, Steer at brightness 0.1 and pulse 0.03 with LFO 1 moving the brightness dose, then Neuron in block 3, Quantise and Running Average at layer 6, each with its live display, and a Scope reading layer 6; the effects Tape, EQ 8, Pan (auto-panning) and Plate; and the modulation sources along the foot. CPU and GPU load are at the top right">
-        <video src="img/make-live.mp4" poster="img/make-live-poster.jpg" width="1396" height="1268" autoplay muted loop playsinline preload="auto" aria-label="Abliterator playing, recorded in real time: the Warm drone preset with Neuron, Quantise and Running Average on the Model layers row, a Scope at layer 6, and Tape, EQ 8, Pan and Plate on the effect chain, while the Steer dot is dragged round a loop on the XY pad and the scope, meters, unit displays and stereo field move with the sound. Select it to open the still screenshot of the whole Make view."></video>
+      <a class="screen shot" href="img/make.webp" data-cap="The Synth view while it plays: the Engine (Magenta RT 2 small, the Warm drone preset, Strength 3.8, seed 1, temperature 1.3, top-k 40, Mode Tape and Speed 1×, Width 82%) with its scope, channel meters and stereo field; the Signal path through the model's twelve layers, the codec, the model's sound and four effects; the Output section with the compressor at work and the OUT meter; under Model layers, Steer at brightness 0.1 and pulse 0.03 with LFO 1 moving the brightness dose, then Neuron in block 3, Quantise and Running Average at layer 6, each with its live display, and a Scope reading layer 6; the effects Tape, EQ 8, Pan (auto-panning) and Plate; and the modulation sources along the foot. CPU and GPU load are at the top right">
+        <video src="img/make-live.mp4" poster="img/make-live-poster.jpg" width="1396" height="1268" autoplay muted loop playsinline preload="auto" aria-label="Abliterator playing, recorded in real time: the Warm drone preset with Neuron, Quantise and Running Average on the Model layers row, a Scope at layer 6, and Tape, EQ 8, Pan and Plate on the effect chain, while the Steer dot is dragged round a loop on the XY pad and the scope, meters, unit displays and stereo field move with the sound. Select it to open the still screenshot of the whole Synth view."></video>
         <span class="zoom">Zoom</span>
       </a>
     </figure>
@@ -89,7 +89,7 @@
 <main class="content" id="main">
 
   <div class="wrap toc-strip" aria-label="On this page">
-    <a href="#what">Overview</a><a href="#listen">Listen</a><a href="#make">Make</a><a href="#chain">Signal chain</a><a href="#musical">Musical knobs</a><a href="#modulation">Modulation</a><a href="#session">Session</a><a href="#holes">Rabbit holes</a><a href="#start">Getting started</a><a href="#credits">Credits</a><a href="abliteration.html">What is Abliteration? ↗</a><a href="faq.html">FAQ ↗</a><a href="tech-specs.html">Tech specs ↗</a>
+    <a href="#what">Overview</a><a href="#listen">Listen</a><a href="#synth">Synth</a><a href="#chain">Signal chain</a><a href="#musical">Musical knobs</a><a href="#modulation">Modulation</a><a href="#session">Session</a><a href="#holes">Rabbit holes</a><a href="#start">Getting started</a><a href="#credits">Credits</a><a href="abliteration.html">What is Abliteration? ↗</a><a href="faq.html">FAQ ↗</a><a href="tech-specs.html">Tech specs ↗</a>
   </div>
 
   <!-- 01 -->
@@ -111,7 +111,7 @@
         <button type="button" data-k="fx" aria-pressed="true">Effects</button></div>
       <div class="readout" aria-live="polite"></div>
     </div>
-    <p class="viz-cap"><b>The signal path, sketched.</b> Steer and the Model layers change what the model writes; the effects change the audio it has written. The waveforms here are drawn, not recorded. Steer and Model layers have the same switches on the Make panel, and a move of either is recorded in a saved sound's recipe.</p>
+    <p class="viz-cap"><b>The signal path, sketched.</b> Steer and the Model layers change what the model writes; the effects change the audio it has written. The waveforms here are drawn, not recorded. Steer and Model layers have the same switches on the Synth panel, and a move of either is recorded in a saved sound's recipe.</p>
   </section>
 
   <!-- 02 -->
@@ -129,10 +129,10 @@
   </section>
 
   <!-- 03 -->
-  <section class="section wrap reveal" id="make">
+  <section class="section wrap reveal" id="synth">
     <span class="num">03</span>
-    <h2>Make</h2>
-    <p>Make is the instrument, laid out as a synth panel and compact enough to fit one laptop screen. Every knob sends while it turns. Press <kbd>▶</kbd> (or the space bar) and the model plays the preset; everything on the panel changes the sound from the next frame. <b>Speed</b>, under the Engine's scope, plays the model's sound slower, down to an eighth, and <b>Mode</b> sets how: <b>Off</b> plays at 1× and keeps the setting; <b>Tape</b> lets the pitch fall with it, as a slowed tape; <b>Stretch</b> keeps the pitch (a phase vocoder with locked phases); <b>Smear</b> keeps it and washes the sound out over third-of-a-second windows, after Paulstretch, for slow ambient. The model writes only as fast as its sound is used, and a saved sound replays its speed exactly. There are twenty-five presets in six groups (ambient, electronic, beats, acoustic, orchestral, experimental), or type a style of your own in the Prompt box: the engine makes its tokens in about 90 ms and plays it, or switches to it while playing, and keeps it under Your prompts.</p>
+    <h2>Synth</h2>
+    <p>The Synth view is the instrument, laid out as a synth's front panel and compact enough to fit one laptop screen. Every knob sends while it turns. Press <kbd>▶</kbd> (or the space bar) and the model plays the preset; everything on the panel changes the sound from the next frame. <b>Speed</b>, under the Engine's scope, plays the model's sound slower, down to an eighth, and <b>Mode</b> sets how: <b>Off</b> plays at 1× and keeps the setting; <b>Tape</b> lets the pitch fall with it, as a slowed tape; <b>Stretch</b> keeps the pitch (a phase vocoder with locked phases); <b>Smear</b> keeps it and washes the sound out over third-of-a-second windows, after Paulstretch, for slow ambient. The model writes only as fast as its sound is used, and a saved sound replays its speed exactly. There are twenty-five presets in six groups (ambient, electronic, beats, acoustic, orchestral, experimental), or type a style of your own in the Prompt box: the engine makes its tokens in about 90 ms and plays it, or switches to it while playing, and keeps it under Your prompts.</p>
     <div class="clips">
       <figure class="clip tilt" style="--w:440px;--mw:560px">
         <a class="shot" href="img/c-engine.webp" data-cap="The Engine while it plays. On the left: Magenta RT 2 small, the Warm drone preset and its prompt, the Prompt box for a style of your own with Strength beside it (how strongly the prompt steers the music), Seed with its die, Temperature and Top-k under SAMPLING, and Save last. On the right: the scope of the last three seconds with Wave and Spectrum, Mono and Stereo; Mode and Speed under SPEED CONTROL; Width and Spread under STEREO; the channel meters with the peak, RMS and correlation; and the stereo field with its correlation bar."><img src="img/c-engine.webp" width="750" height="341" loading="lazy" alt="The Engine panel: on the left the preset Warm drone, its prompt in italics, a Prompt box with a small Strength knob, and knobs for Seed, Temperature and Top-k above a Save last button; on the right a blue waveform scope, knobs for Mode, Speed, Width and Spread under two small brackets, left and right meters, and a round stereo field."></a>

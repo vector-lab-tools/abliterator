@@ -40,7 +40,7 @@
         <a href="units.html">Model layers</a>
         <a href="#ideas">Ideas</a>
         <a href="#built">How it is built</a>
-        <a href="#summary">The units, checked</a>
+        <a href="#summary">The units: deep dive</a>
         <a href="#presets-and-held-out-seeds">Presets</a>
         <a href="faq.html">FAQ</a>
         <span class="nav-sep" aria-hidden="true"></span>
@@ -66,7 +66,7 @@
 
 <main class="content" id="main">
 
-  <div class="wrap toc-strip" aria-label="On this page"><a href="#ideas">Ideas</a><a href="#built">How it is built</a><a href="#summary">The units, checked</a><a href="#method">Method</a><a href="#overview">What reaches the sound</a><a href="#each-unit">Unit by unit</a><a href="#time-based-effects">Time</a><a href="#presets-and-held-out-seeds">Presets</a><a href="#findings-in-the-code">Findings</a><a href="#limits">Limits</a><a href="#review-of-this-review">Checks</a></div>
+  <div class="wrap toc-strip" aria-label="On this page"><a href="#ideas">Ideas</a><a href="#built">How it is built</a><a href="#summary">The units: deep dive</a><a href="#method">Method</a><a href="#overview">What reaches the sound</a><a href="#each-unit">Unit by unit</a><a href="#time-based-effects">Time</a><a href="#presets-and-held-out-seeds">Presets</a><a href="#findings-in-the-code">Findings</a><a href="#limits">Limits</a><a href="#review-of-this-review">Checks</a></div>
 
   <section class="section wrap reveal" id="ideas">
     <span class="num">01</span>
@@ -163,7 +163,7 @@
 
   <section class="section wrap reveal" id="summary">
     <span class="num">03</span>
-    <h2>The units, checked</h2>
+    <h2>The units: deep dive</h2>
 <p>The rest of this page is a review of the units, made on 23 November 2026 for Abliterator 0.2.8, with Vector Abliteration Units at commit <code>dd1742e</code>, on Magenta RT 2 small, and checked three times by an independent agent (see <a href="#review-of-this-review">How this review was checked</a>). The presets and new defaults it led to are in Abliterator 0.2.10 and later. The sound results are for one prompt, the Warm drone preset. The review’s own scripts, named below where it helps, are not part of the repository.</p>
 <p>Each of the thirteen Model layers units, and the Steer, was checked at three levels.</p>
 <p><strong>1. The edit itself.</strong> At every hook call, the harness recorded the tensor the hook received and the one it handed back, and compared the result with the unit’s own formula applied to the input.</p>

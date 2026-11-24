@@ -984,7 +984,7 @@ html, body { overscroll-behavior-x: none; }
 .outm .os span:first-child { transform: none; }
 .outm .os span:last-child { transform: translateX(-100%); }
 /* the Engine's right side under the scope: the four knobs in a row, the levels under them, the stereo field beside both */
-.engfoot { display: grid; grid-template-columns: minmax(min-content, 1fr) auto; grid-template-areas: "knobs field" "levels field"; gap: 8px 14px; align-items: start; }
+.engfoot { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "knobs field" "levels field"; gap: 8px 14px; align-items: start; }
 .engfoot .widen { grid-area: knobs; grid-template-columns: 58px 58px auto; justify-content: start; align-items: center; }
 .engfoot .outcol { grid-area: levels; margin-right: 0; min-width: 0; }
 .engfoot .gonio { grid-area: field; align-self: center; }
@@ -1062,3 +1062,11 @@ html, body { overscroll-behavior-x: none; }
 .addmenu.cardmenu button span { font-size: 10.5px; }
 .addmenu.cardmenu button[role="menuitemcheckbox"] span { font-size: 9px; }
 .addmenu.cardmenu .am-find, .addmenu.cardmenu .am-in input { font-size: 11px; }
+/* a narrow Engine panel: below 324px (two knob pairs of 110px, their 6px gap, the 14px gap and the 84px field) the pairs take
+   the whole row and the stereo field sits beside the levels under them. .engr is in a minmax(0, 1.6fr) column, so as a size
+   container its width is unchanged */
+.engr { container: engr / inline-size; }
+@container engr (max-width: 323.9px) {
+  .engfoot { grid-template-areas: "knobs knobs" "levels field"; }
+  .engfoot .gonio { align-self: start; }
+}

@@ -180,10 +180,74 @@
 <ul>
 <li>Each unit acts at its own layer or block, wherever its card sits. Lookback at layer 6 and Tanh Squash at layer 10 do the same in either order.</li>
 <li>Units on the same layer run left to right, and at layer 6 after Steer.</li>
-<li>Where their edits do not commute, the order changes the sound: Tanh Squash then Norm Shrink is not Norm Shrink then Tanh Squash. Two Principal Bands cards on one layer scale the same principal directions, so they give the same result in either order.</li>
+<li>Where their edits do not commute, the order changes the sound: Tanh Squash then Norm Shrink is not Norm Shrink then Tanh Squash. Two Principal Bands cards on one layer commute in exact arithmetic, but the stream is rounded to bfloat16 after each unit, so even they give a different take in each order.</li>
 <li>Lookback and Running Average record the stream as it reaches them. A unit before them on that layer goes into what they repeat; a unit after them acts on their output, echo included, without being repeated.</li>
 <li>Neuron and Abliterate act inside the blocks, so their place among the stream units makes no difference.</li>
-<li>How much the order changes the sound at a shared layer has not been measured.</li>
+<li>The order was measured on seven pairs, below.</li>
+</ul>
+<h4 id="measured-on-seven-pairs">Measured on seven pairs</h4>
+<p>Each pair was rendered in both orders on ten held-out seeds (21 to 30), 6 s of the Warm drone each, with the presets’ own settings: A then B against B then A on the same seed. Five pairs share layer 6. Two are controls: two Principal Bands lines on layer 8, whose edits commute in exact arithmetic, and Tanh Squash and Norm Shrink on different layers. The figures give A then B minus B then A, with A the unit named first.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Pair</th>
+<th>Same audio</th>
+<th>Timbre distance between the orders (median)</th>
+<th>Moved the same way after correction</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tanh Squash (Warm) and Norm Shrink (Glue), layer 6</td>
+<td>0/10</td>
+<td>9.6 dB</td>
+<td>none</td>
+</tr>
+<tr>
+<td>Lookback (Feedback Loop) and Tanh Squash (Warm), layer 6</td>
+<td>0/10</td>
+<td>1.9 dB</td>
+<td>none</td>
+</tr>
+<tr>
+<td>Running Average (Long Tail) and Quantise (Bitcrush), layer 6</td>
+<td>0/10</td>
+<td>3.4 dB</td>
+<td>level +1.1 dB (10/10 up), shape, similarity at lag 1 +0.10 (9/10 up)</td>
+</tr>
+<tr>
+<td>Rotate (Turn) and Sparsify (Thin), layer 6</td>
+<td>0/10</td>
+<td>4.5 dB</td>
+<td>centroid +47 Hz (9/10 up), level −2.5 dB (2/10 up), shape</td>
+</tr>
+<tr>
+<td>Band Shrink (Low Squeeze) and Sparsify (Thin), layer 6</td>
+<td>0/10</td>
+<td>5.2 dB</td>
+<td>shape</td>
+</tr>
+<tr>
+<td>Principal Bands (Tilt Dark) and Principal Bands (Mid Hole), layer 8: control</td>
+<td>0/10</td>
+<td>1.2 dB</td>
+<td>none</td>
+</tr>
+<tr>
+<td>Tanh Squash at layer 6 and Norm Shrink at layer 10: control</td>
+<td>10/10</td>
+<td>0</td>
+<td>none</td>
+</tr>
+</tbody>
+</table></div>
+<p><em>Two-sided sign-flip tests over the ten seeds on centroid, level, the level-free long-term spectrum (shape) and, for Lookback and Running Average, frame-to-frame similarity at the unit’s lag; Benjamini–Hochberg at 5% across the 17 tests of the five shared-layer pairs. For scale, the Steer nudge of 0.001 is 5.1 dB from the plain model on the same seeds.</em></p>
+<ul>
+<li>On a shared layer the two orders never gave the same audio. Any difference in the stream sends the sampled music down another path, so the order changes the take as any change does.</li>
+<li>Three of the five pairs moved the sound the same way on most seeds: Running Average and Quantise, Rotate and Sparsify, and Band Shrink and Sparsify. For these the order shows as a difference of level, brightness or spectral shape across takes.</li>
+<li>Tanh Squash and Norm Shrink gave the largest distance between the orders, 9.6 dB, more than either order’s distance from the plain model (7.9 and 8.6 dB), with no direction that held across seeds. Lookback and Tanh Squash moved nothing consistently.</li>
+<li>The two Principal Bands cards did not give the same audio in either order: the rounding to bfloat16 after each unit differs between the orders, and that is enough to change the take. Their distance, 1.2 dB, is the smallest of the seven, and nothing moved consistently.</li>
+<li>The units on different layers gave the same audio, sample for sample, on all ten seeds.</li>
 </ul>
 <h3 id="which-units-shift-the-sound">Which units shift the sound</h3>
 <p>On 20 seeds of 6 s each, against the plain model on the same seed, with a sign-flip permutation test on the change of spectral centroid, the change of level and the shift of spectral shape, and Benjamini–Hochberg correction across all 51 tests:</p>

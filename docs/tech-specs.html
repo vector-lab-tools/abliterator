@@ -66,7 +66,7 @@
 
 <main class="content" id="main">
 
-  <div class="wrap toc-strip" aria-label="On this page"><a href="#ideas">Ideas</a><a href="#built">How it is built</a><a href="#summary">The units: deep dive</a><a href="#method">Method</a><a href="#overview">What reaches the sound</a><a href="#each-unit">Unit by unit</a><a href="#time-based-effects">Time</a><a href="#presets-and-held-out-seeds">Presets</a><a href="#findings-in-the-code">Findings</a><a href="#limits">Limits</a><a href="#review-of-this-review">Checks</a></div>
+  <div class="wrap toc-strip" aria-label="On this page"><a href="#ideas">Ideas</a><a href="#built">How it is built</a><a href="#summary">The units: deep dive</a><a href="#overview">What reaches the sound</a><a href="#each-unit">Unit by unit</a><a href="#time-based-effects">Time</a><a href="#presets-and-held-out-seeds">Presets</a><a href="#findings-in-the-code">Findings</a><a href="#limits">Not measured</a></div>
 
   <section class="section wrap reveal" id="ideas">
     <span class="num">01</span>
@@ -77,7 +77,7 @@
 <li><strong>Abliteration, widened.</strong> In the interpretability literature, abliteration means removing one direction, the refusal direction, from a chat model (Arditi et al. 2024). Here the word covers every edit to the model’s vectors while it plays: adding a direction (Steer), removing one (Abliterate), turning the stream in a plane (Rotate), squashing, quantising or delaying it. <a href="abliteration.html">What is Abliteration?</a> gives the history of the word and compares each edit with the audio effect that comes nearest.</li>
 <li><strong>Units named after audio effects.</strong> Each Vector Abliteration Unit repeats on the stream the arithmetic of an audio effect. Lookback (VAU’s vLookback) adds the stream from earlier frames, as a delay adds earlier samples; Norm Shrink reduces the stream’s size above a threshold, as a compressor reduces a signal’s level. The stream is not a signal, though, and what the model writes from an echoed stream need not sound like an echo. Most of this page reports a test of whether each unit’s change reaches the sound, and how.</li>
 <li><strong>A standard with hosts.</strong> VAU is a standard modelled on audio plugins such as Steinberg’s VST. A unit is one Python file with a manifest: its parameters, the kind of place it acts on (the stream at a layer, or the output of a block’s attention or MLP) and what it needs from its host. A unit names a kind of place and never a model, and the host maps that place onto an architecture, so the same units run on GPT-2 in <a href="https://vector-lab-tools.github.io/abliteration-lens/">Abliteration Lens</a> and on a music model here. <a href="units.html">Model layers</a> shows where they act in this model.</li>
-<li><strong>Measured knobs and exact replays.</strong> Every control was swept and each render measured before its knob’s range was set: a knob keeps to where the sound held, and ⚠ marks a setting that broke it. Steer’s directions are made from pairs of prompts kept as editable Markdown. A saved sound carries a recipe from which the engine renders it again, sample for sample. The units are held to the same measurements in the review below.</li>
+<li><strong>Measured knobs and exact replays.</strong> Every control was swept and each render measured before its knob’s range was set: a knob keeps to where the sound held, and ⚠ marks a setting that broke it. Steer’s directions are made from pairs of prompts kept as editable Markdown. A saved sound carries a recipe from which the engine renders it again, sample for sample. The units are held to the same measurements, with the results below.</li>
 </ul>
   </section>
 
@@ -164,42 +164,40 @@
   <section class="section wrap reveal" id="summary">
     <span class="num">03</span>
     <h2>The units: deep dive</h2>
-<p>The rest of this page is a review of the units, made on 23 November 2026 for Abliterator 0.2.8, with Vector Abliteration Units at commit <code>dd1742e</code>, on Magenta RT 2 small, and checked three times by an independent agent (see <a href="#review-of-this-review">How this review was checked</a>). The presets and new defaults it led to are in Abliterator 0.2.10 and later. The sound results are for one prompt, the Warm drone preset. The review’s own scripts, named below where it helps, are not part of the repository.</p>
-<p>Each of the thirteen Model layers units, and the Steer, was checked at three levels.</p>
-<p><strong>1. The edit itself.</strong> At every hook call, the harness recorded the tensor the hook received and the one it handed back, and compared the result with the unit’s own formula applied to the input.</p>
+<p>The figures here are for Magenta RT 2 small, with Abliterator 0.2.8 and Vector Abliteration Units at commit <code>dd1742e</code>, on one prompt, the Warm drone preset (“slow ambient drone, warm analogue pads, no drums”). Each unit was measured at the line its card had at 0.2.8 (under <a href="#settings-measured">Settings measured</a>). Six of those defaults changed in 0.2.10 as a result, and the presets on each card’s ▾ menu were chosen and checked the same way (see <a href="#presets-and-held-out-seeds">Presets and held-out seeds</a>).</p>
+<h3 id="each-unit-does-what-its-code-says">Each unit does what its code says</h3>
+<p>At every call, each unit’s output matches its own formula applied to its input.</p>
 <ul>
-<li><em>Coverage:</em>
-<ul>
-<li>Seeds 1–3, 75 frames each, for the eleven units that run once a frame.</li>
-<li>Seeds 1–3, 40 frames each, for every call of Neuron (12 a frame, one per block) and Abliterate (24 a frame, attention and MLP in each block).</li>
-</ul></li>
-<li><em>Torch units:</em> the recorded output is the unit’s float32 result, before the cast back to the model’s bfloat16. It matches the formula to about 10⁻⁷.</li>
-<li><em>Quantise, Neuron and Abliterate:</em> these run as MLX versions in Abliterator’s <code>mlxunits.py</code>, not as VAU’s torch code. Their outputs match the formula exactly once the prediction is rounded to bfloat16 (Abliterate’s worst call: 3×10⁻⁴).</li>
-<li><em>Sparsify:</em> differs only in tie-breaking. When several components share the 256th-largest magnitude, torch keeps a different one from numpy. On every frame it still keeps 256 components, and no dropped component is larger than a kept one.</li>
+<li><em>Calls covered:</em> seeds 1–3, 75 frames each, for the eleven units that run once a frame; seeds 1–3, 40 frames each, for every call of Neuron (12 a frame, one per block) and Abliterate (24 a frame, attention and MLP in each block).</li>
+<li><em>Torch units:</em> the unit’s float32 result, before the cast back to the model’s bfloat16, matches the formula to about 10⁻⁷.</li>
+<li><em>Quantise, Neuron and Abliterate</em>, which run as MLX versions in <code>mlxunits.py</code>: their outputs match the formula exactly once the prediction is rounded to bfloat16 (Abliterate’s worst call: 3×10⁻⁴).</li>
+<li><em>Sparsify</em> differs only in tie-breaking. When several components share the 256th-largest magnitude, torch keeps a different one from numpy. On every frame it still keeps 256 components, and no dropped component is larger than a kept one.</li>
 </ul>
-<p><strong>2. The stream.</strong> At the first frame a unit acts: - every layer before its placement is bit-for-bit identical to the plain model’s; - it differs from the placement onward, through layer 12.</p>
-<p>Three neutral strips run their hooks and leave the stream and the sound bit-for-bit identical: Lookback at mix 0, Rotate at angle 0, and Neuron clamped at ±100,000, wider than any activation. So the harness does not report change where there is none.</p>
-<p><strong>3. The sound.</strong> Any change at all, even one too small to mean anything, re-rolls the sampled music, so a single before-and-after pair says little. Each unit was rendered on 20 seeds of 6 s, and the question was whether it shifts the sound <em>the same way</em> on every seed. A sign-flip permutation test was run on three measures, with Benjamini–Hochberg correction across all 51 tests:</p>
+<h3 id="the-change-enters-where-the-unit-is-placed">The change enters where the unit is placed</h3>
+<p>At the first frame a unit acts, every layer before its placement is bit-for-bit identical to the plain model’s, and the stream differs from the placement onward, through layer 12. Lookback at mix 0, Rotate at angle 0 and Neuron clamped at ±100,000 (wider than any activation) run their hooks and leave the stream and the sound bit-for-bit identical.</p>
+<h3 id="which-units-shift-the-sound">Which units shift the sound</h3>
+<p>On 20 seeds of 6 s each, against the plain model on the same seed, with a sign-flip permutation test on the change of spectral centroid, the change of level and the shift of spectral shape, and Benjamini–Hochberg correction across all 51 tests:</p>
 <ul>
-<li><p><strong>Spectral centroid:</strong> the mean change.</p></li>
-<li><p><strong>Level:</strong> the mean change.</p></li>
-<li><p><strong>Shape shift:</strong> the RMS over the spectrum’s bands of the mean, across seeds, of the level-free difference. It is large when the spectrum moves the same way on many seeds. A Steer nudge of 0.001, run as a control, shows no consistent shift on any measure after correction. One of its three tests, shape, came out at p = 0.049 before correction, which chance gives about one time in seven for three tests. The nudge is a real push, though a very small one, so it is not a pure null. The units fall into these groups:</p></li>
-<li><p><strong>Consistent on two or three measures:</strong> Lookback (darker, quieter, a consistent change of spectral shape); Running Average (darker, quieter, a consistent change of spectral shape); Norm Shrink (louder, a consistent change of spectral shape); Tanh Squash (louder, a consistent change of spectral shape); Component Clamp (brighter, louder, a consistent change of spectral shape); Principal Bands (darker, louder, a consistent change of spectral shape); Rotate (brighter, quieter, a consistent change of spectral shape); Abliterate (brighter, quieter, a consistent change of spectral shape); Steer (brighter, a consistent change of spectral shape).</p></li>
-<li><p><strong>Consistent on one measure:</strong> Sparsify (louder).</p></li>
-<li><p><strong>No consistent shift detected at the default setting:</strong> Frame Repeat, Quantise, Band Shrink, Neuron. These change each take’s sound, as any change does, but in no direction that held across 20 seeds.</p></li>
+<li><strong>Consistent on two or three measures:</strong> Lookback (darker, quieter, a consistent change of spectral shape); Running Average (darker, quieter, a consistent change of spectral shape); Norm Shrink (louder, a consistent change of spectral shape); Tanh Squash (louder, a consistent change of spectral shape); Component Clamp (brighter, louder, a consistent change of spectral shape); Principal Bands (darker, louder, a consistent change of spectral shape); Rotate (brighter, quieter, a consistent change of spectral shape); Abliterate (brighter, quieter, a consistent change of spectral shape); Steer (brighter, a consistent change of spectral shape).</li>
+<li><strong>Consistent on one measure:</strong> Sparsify (louder).</li>
+<li><strong>No consistent shift at the 0.2.8 default:</strong> Frame Repeat, Quantise, Band Shrink, Neuron. These change each take’s sound, as any change does, but in no direction that held across 20 seeds.</li>
 </ul>
-<p><strong>4. Code findings.</strong> Five, under <a href="#findings-in-the-code">Findings in the code</a>: - Lookback, Running Average and Frame Repeat keep every past frame in memory. - Abliterate’s “Bias too” switch does nothing on this model (it is now hidden). - Quantise, Sparsify and Component Clamp skip the first frame of a take. - The site measured Abliterate’s placement sweep with settings other than the card’s. - A few coordinates hold most of the stream’s size at every layer, which is why Component Clamp and Tanh Squash make such large edits.</p>
-  </section>
-
-  <section class="section wrap reveal" id="method">
-    <span class="num">04</span>
-    <h2>How the review was done</h2>
-<p>The model was run offline in its own process, using the instrument’s own engine class (<code>Proc</code>, <code>backend/abliterator/mrt2_proc.py</code>) and its own hooks. The live server and the sound card were not involved. Prompt: the Warm drone (“slow ambient drone, warm analogue pads, no drums”). Each unit got the line the instrument gave it at 0.2.8 when added to the Model layers row (six of these defaults have since changed; see <a href="#shipped-presets-and-new-defaults">Shipped presets and new defaults</a>):</p>
+<p>A Steer nudge of 0.001, the control, shows no consistent shift on any measure after correction. One of its three tests, shape, came out at p = 0.049 before correction, which chance gives about one time in seven for three tests. The nudge is a real push, though a very small one.</p>
+<h3 id="in-the-code">In the code</h3>
+<p>Five points, under <a href="#findings-in-the-code">Findings in the code</a>:</p>
+<ul>
+<li>Lookback, Running Average and Frame Repeat keep every past frame in memory.</li>
+<li>Abliterate’s “Bias too” switch does nothing on this model (it is now hidden).</li>
+<li>Quantise, Sparsify and Component Clamp skip the first frame of a take.</li>
+<li>Abliterate’s placement figure on Model layers was measured with settings other than the card’s.</li>
+<li>A few coordinates hold most of the stream’s size at every layer, which is why Component Clamp and Tanh Squash make such large edits.</li>
+</ul>
+<h3 id="settings-measured">Settings measured</h3>
 <div class="table-wrap"><table>
 <thead>
 <tr>
 <th>Unit (VAU name)</th>
-<th>Default line on the instrument at 0.2.8</th>
+<th>Line on the card at 0.2.8</th>
 </tr>
 </thead>
 <tbody>
@@ -261,27 +259,20 @@
 </tr>
 </tbody>
 </table></div>
-<p>What was recorded:</p>
-<ul>
-<li><strong>The edit.</strong> The engine’s measuring call sites, <code>Hooks._torch_change</code> and <code>Hooks._mlx_change</code>, receive every edit’s input and output. A recorder replaced them.</li>
-<li><strong>The stream.</strong> The scope mechanism (<code>Hooks.read_at</code>) was set to all twelve layers, so the stream after each block was kept for every frame. The independent check confirmed that the stream read there is the recorded edit output, rounded to bfloat16, so what was recorded is what the model used next.</li>
-<li><strong>The sound.</strong> The model’s own output, before the output section.</li>
-</ul>
-<p>Checks made before any unit was measured: - The harness’s frame loop gives the same audio as the engine’s own <code>Proc.render</code>, sample for sample. - The plain model is deterministic. - The three neutral strips change nothing.</p>
-<p>The sound test went through <code>Proc.render</code> with the strip as the take’s start (<code>audio_sweep.py</code>): seeds 1–20, 150 frames (6 s) each.</p>
+<p>The model ran offline through the engine’s own class (<code>Proc</code>, in <code>mrt2_proc.py</code>) and its own hooks, without the live server or the sound card. Each edit’s input and output come from the engine’s measuring call sites (<code>Hooks._torch_change</code>, <code>Hooks._mlx_change</code>); the stream after every block comes from the scope’s reader (<code>Hooks.read_at</code>), at the bfloat16 values the model used next; the sound is the model’s own output, before the output section. This frame loop gives the same audio as <code>Proc.render</code>, sample for sample, and the plain model is deterministic. The sound figures come from <code>Proc.render</code> with the unit as the take’s start, on seeds 1–20, 150 frames (6 s) each.</p>
 <h3 id="why-a-single-pair-of-clips-cannot-show-a-units-effect">Why a single pair of clips cannot show a unit’s effect</h3>
-<p>Magenta RealTime samples each frame’s tokens. Any change to the stream alters the probabilities enough to flip a sampled token somewhere, and from then on the model writes a different piece. Greedy sampling (Top-k 1) does not stop this either. The 0.001 nudge still diverged from about the first frame, on both seeds tried. The figure shows the nudge moving the layer-12 stream away from the plain model, within about a second, as far as changing the seed does.</p>
+<p>Magenta RealTime samples each frame’s tokens. Any change to the stream alters the probabilities enough to flip a sampled token somewhere, and from then on the model writes a different piece. Greedy sampling (Top-k 1) does not stop this either: the 0.001 nudge still diverged from about the first frame, on both seeds tried. The figure shows the nudge moving the layer-12 stream away from the plain model, within about a second, as far as changing the seed does.</p>
 <figure class="plate"><a class="shot" href="img/review/fig-butterfly.webp" data-cap="The butterfly effect of sampling"><img src="img/review/fig-butterfly.webp" width="1200" height="540" loading="lazy" alt="The butterfly effect of sampling"><span class="zoom">Zoom</span></a><figcaption>The butterfly effect of sampling</figcaption></figure>
-<p>For listening, this means a pair of clips mostly lets one hear the path change. Rated as pairs on seed 1, and not blind, the nudge itself was heard as a strong difference. Effect size is therefore judged three ways:</p>
+<p>A pair of clips, before and after, mostly lets one hear the path change. A unit’s effect is therefore given three ways below:</p>
 <ul>
 <li><strong>The edit’s own size</strong>, where it acts.</li>
 <li><strong>The stream at the first frame the unit acts.</strong> Up to that frame everything is identical to the plain model.</li>
-<li><strong>The sound across seeds.</strong> The question is consistency of direction, which a re-rolled path does not have, not the size of a single difference.</li>
+<li><strong>The sound across seeds.</strong> What counts is a consistent direction, which a re-rolled path does not have, more than the size of any single difference.</li>
 </ul>
   </section>
 
   <section class="section wrap reveal" id="overview">
-    <span class="num">05</span>
+    <span class="num">04</span>
     <h2>What reaches the sound</h2>
 <p><strong>Where each change enters.</strong> At the first frame each unit acts, the layers before its placement are identical to the plain model (0). The change appears at the placement and carries through to layer 12. Neuron and Abliterate act inside every block, so their change starts at layer 1.</p>
 <figure class="plate"><a class="shot" href="img/review/fig-where.webp" data-cap="Where each unit’s change enters the stream"><img src="img/review/fig-where.webp" width="1200" height="780" loading="lazy" alt="Where each unit’s change enters the stream"><span class="zoom">Zoom</span></a><figcaption>Where each unit’s change enters the stream</figcaption></figure>
@@ -444,7 +435,7 @@
   </section>
 
   <section class="section wrap reveal" id="each-unit">
-    <span class="num">06</span>
+    <span class="num">05</span>
     <h2>Unit by unit</h2>
 <p>Each entry covers: - the claim, from the VAU manifest; - the code that ran; - where the instrument applies it; - what the recorded tensors show; - what reaches the sound.</p>
 <p>Each unit was tested at the line its card had at 0.2.8, given in the entry; six of those defaults have changed since (see <a href="#shipped-presets-and-new-defaults">Shipped presets and new defaults</a>). Each entry opens to show its code and figures. The <a href="units.html#units">Model layers</a> page has each unit’s card and its sweep to listen to.</p>
@@ -770,13 +761,13 @@
   </section>
 
   <section class="section wrap reveal" id="time-based-effects">
-    <span class="num">07</span>
+    <span class="num">06</span>
     <h2>Time-based effects</h2>
 <p>Lookback, Running Average and Frame Repeat claim to act in time, and so does Quantise when its Hold is above 1. Lookback mixes in the stream from an earlier frame, Running Average mixes in a decaying average of earlier frames, Frame Repeat replays an earlier frame in place of the current one, and Quantise with a hold keeps one frame’s values for several frames.</p>
 <h3 id="spectral-measures-and-frame-order">Spectral measures and frame order</h3>
 <p>The three sound measures above (centroid, level and shape) are all taken from the long-term spectrum, the power spectrum averaged over the whole take. An echo adds earlier frames to later ones, and a hold puts one frame where the next would have been. On a drone, where one frame’s spectrum is much like the next, either can leave the average over 6 s close to what it was, so the order of frames, which is what these units change, may not show in those measures at all.</p>
 <h3 id="frame-to-frame-similarity">Frame-to-frame similarity</h3>
-<p><code>temporal.py</code> measures the order of frames directly. - <strong>Spectra by frame.</strong> One spectrum per 40 ms model frame: a Hann window of 80 ms moved on by 1,920 samples (40 ms at 48 kHz), so spectrum <em>t</em> is centred on the boundary between frames <em>t</em> and <em>t</em> + 1; log magnitude from 40 Hz to 12 kHz, with each frequency bin’s mean over the take removed. At lag 1 two spectra share half their samples; from lag 2 the windows do not overlap. The overlap is the same for the plain model and the unit. - <strong>Similarity at lag <em>L</em>.</strong> The mean, over the take, of the cosine between frame <em>t</em>’s spectrum and frame <em>t</em> − <em>L</em>’s. It is higher when each frame is more like the one <em>L</em> frames before it. - <strong>Against the plain model.</strong> For each seed, the unit’s similarity minus the plain model’s on the same seed, at every lag from 1 to 16 frames (40 to 640 ms). - <strong>Seeds and test.</strong> Seeds 1–10, 150 frames (6 s) each, the Warm drone. A two-sided sign-flip test over all 1,024 sign patterns, so the smallest possible p is 0.002. The p-values in the tables are not corrected across lags or cases, and neighbouring lags are not independent of each other. Under the Benjamini–Hochberg correction used elsewhere in this review, applied across this section’s 147 tests (nine cases × 16 lags and three replaced-frame tests), none survives at 5%: with ten seeds the smallest p is 0.002. Corrected within each case over its 16 lags, Lookback at layer 6 survives at lags 1–9 and Quantise with hold 8 at lags 3–4; Running Average, Lookback at layer 12 and the Frame Repeat results do not. - <strong>Frame Repeat.</strong> It replaces only some frames (the last <em>Length</em> of every <em>Interval</em>), so it was also measured on those frames alone, at a lag equal to its Length. The frames are selected by their position in the model; whether the audio of a position lags it by a frame in the codec was not checked, and shifting the selection one frame later raised the rise for two presets on four held-out seeds (see below), so the replaced-frame figures are approximate.</p>
+<p><code>temporal.py</code> measures the order of frames directly. - <strong>Spectra by frame.</strong> One spectrum per 40 ms model frame: a Hann window of 80 ms moved on by 1,920 samples (40 ms at 48 kHz), so spectrum <em>t</em> is centred on the boundary between frames <em>t</em> and <em>t</em> + 1; log magnitude from 40 Hz to 12 kHz, with each frequency bin’s mean over the take removed. At lag 1 two spectra share half their samples; from lag 2 the windows do not overlap. The overlap is the same for the plain model and the unit. - <strong>Similarity at lag <em>L</em>.</strong> The mean, over the take, of the cosine between frame <em>t</em>’s spectrum and frame <em>t</em> − <em>L</em>’s. It is higher when each frame is more like the one <em>L</em> frames before it. - <strong>Against the plain model.</strong> For each seed, the unit’s similarity minus the plain model’s on the same seed, at every lag from 1 to 16 frames (40 to 640 ms). - <strong>Seeds and test.</strong> Seeds 1–10, 150 frames (6 s) each, the Warm drone. A two-sided sign-flip test over all 1,024 sign patterns, so the smallest possible p is 0.002. The p-values in the tables are not corrected across lags or cases, and neighbouring lags are not independent of each other. Under the Benjamini–Hochberg correction used elsewhere on this page, applied across this section’s 147 tests (nine cases × 16 lags and three replaced-frame tests), none survives at 5%: with ten seeds the smallest p is 0.002. Corrected within each case over its 16 lags, Lookback at layer 6 survives at lags 1–9 and Quantise with hold 8 at lags 3–4; Running Average, Lookback at layer 12 and the Frame Repeat results do not. - <strong>Frame Repeat.</strong> It replaces only some frames (the last <em>Length</em> of every <em>Interval</em>), so it was also measured on those frames alone, at a lag equal to its Length. The frames are selected by their position in the model; whether the audio of a position lags it by a frame in the codec was not checked, and shifting the selection one frame later raised the rise for two presets on four held-out seeds (see below), so the replaced-frame figures are approximate.</p>
 <p>An echo or a hold should raise the similarity at its lag. A change that only re-rolls the sampled path should leave it near the nudge’s figures.</p>
 <figure class="plate"><a class="shot" href="img/review/fig-time.webp" data-cap="Frame-to-frame similarity, unit minus plain, by lag"><img src="img/review/fig-time.webp" width="1500" height="600" loading="lazy" alt="Frame-to-frame similarity, unit minus plain, by lag"><span class="zoom">Zoom</span></a><figcaption>Frame-to-frame similarity, unit minus plain, by lag</figcaption></figure>
 <p><em>Filled points have p &lt; 0.05, uncorrected. The nudge in both panels is at layer 6. The figure shows similarity across the whole take; Frame Repeat’s figures on the frames it replaces are in the second table below.</em></p>
@@ -906,7 +897,7 @@
   </section>
 
   <section class="section wrap reveal" id="presets-and-held-out-seeds">
-    <span class="num">08</span>
+    <span class="num">07</span>
     <h2>Presets and held-out seeds</h2>
 <h3 id="the-search">The search</h3>
 <p><code>tune.py</code>, <code>tune2.py</code> and <code>tune3.py</code> measured 163 candidate lines across the thirteen units, and the nudge as a control. - <strong>Renders.</strong> Each line on seeds 1–6, 100 frames (4 s) each, the Warm drone, through <code>Proc.render</code> with the line as the take’s start. - <strong>Measures.</strong> Per seed, against the plain model on the same seed: - timbre distance: the RMS over the spectrum’s bands of the level-free difference between the two long-term spectra, in dB; - the change of spectral centroid and of level; - broken (<code>calibrate.broken</code>): clips (more than 0.1% of samples at 0.98 or above), falls silent (more than a quarter of the 40 ms frames below −55 dBFS, or a level 24 dB below the plain model’s), overdriven (RMS above −12 dBFS), or turns to noise (spectral flatness above 0.3 and three times the plain model’s). - <strong>Rounds.</strong> The first round covered each unit’s range at its card placement and a few others. The second and third moved most of the units with no consistent effect to later layers (mostly 11 and 12), tried Neuron at blocks 0, 9, 10 and 11, Band Shrink at layers 2 and 10, Principal Bands at 8, 10 and 12, Quantise at 10 and Rotate with its two directions swapped, added Keep size versions of the late Lookback and Running Average lines, and gave Neuron neurons chosen from the weights: in a block, those whose output weights point most along (or against) Brightness or Pulse at the layer the block writes into. - <strong>Breaks.</strong> 19 of the 163 lines, the card defaults among them, broke on at least one of the six seeds. The nudge’s median timbre distance was 4.7 dB.</p>
@@ -2064,7 +2055,7 @@
   </section>
 
   <section class="section wrap reveal" id="findings-in-the-code">
-    <span class="num">09</span>
+    <span class="num">08</span>
     <h2>Findings in the code</h2>
 <p><strong>1. Lookback, Running Average and Frame Repeat keep every past frame.</strong> - <strong>What happens:</strong> each stores the stream for every frame in a dictionary that is never pruned: <code>line[p] = …</code> in <code>delay_edit</code>, <code>tail[p] = …</code> in <code>reverb_edit</code>, <code>kept[p] = …</code> in <code>beatrepeat_edit</code>. The host’s <code>memory()</code> (<code>units.py</code>, line 431) returns a plain dict for the strip and layer. - <strong>When it is cleared:</strong> when modulation re-attaches a strip, the store is carried over (<code>Proc</code> passes <code>store=now.get("store")</code>), so memory goes on growing. Any manual change to the Model layers chain starts a fresh store, which resets every strip’s memory. - <strong>Cost:</strong> at 25 frames a second and 1,024 float32 values a frame, that is about 100 kB a second per unit, or about 360 MB an hour of continuous play. - <strong>Fix:</strong> each needs only the last few frames (Lookback <code>time</code>, Running Average one, Frame Repeat <code>length</code>). - <strong>Status:</strong> not fixed yet; the fix belongs in the VAU package.</p>
 <p><strong>2. “Bias too” on Abliterate does nothing on this model.</strong> - <strong>The weights:</strong> the host gives VAU each block’s output weights with the post-norm scale folded in, and <code>bias = None</code> (<code>Proc._components</code>). - <strong>Where the bias is:</strong> self-attention has no bias in this checkpoint, and the MLP’s bias sits inside what the post-norm writes. VAU’s hook projects the whole output either way, so the switch cannot change anything. - <strong>Since:</strong> the switch is hidden on this host (0.2.9). - <strong>Keep size:</strong> whether Keep size gives the intended rescaling on this model was not tested, and it rescales the MLP bias’s share along with the weights’ share.</p>
@@ -2074,27 +2065,15 @@
   </section>
 
   <section class="section wrap reveal" id="limits">
-    <span class="num">10</span>
-    <h2>Limits of this review</h2>
+    <span class="num">09</span>
+    <h2>What was not measured</h2>
 <ul>
 <li><strong>One prompt, one model size.</strong> All sound results are for the Warm drone on Magenta RT 2 small. A unit may behave differently on beats, voices or brighter material.</li>
-<li><strong>Default settings in the main test.</strong> Each unit was tested at the setting the card gave it at 0.2.8. “Not detected” means no consistent shift was found on 20 seeds at that setting; it is not evidence that the unit cannot change the sound. A separate search (<code>tune.py</code>, <code>tune2.py</code>, <code>tune3.py</code>) measured 163 lines across the units’ ranges, the card defaults among them, on six seeds of 4 s each, to choose presets and new defaults, and the presets were then measured on ten other seeds (see <a href="#presets-and-held-out-seeds">Presets and held-out seeds</a>).</li>
+<li><strong>Default settings in the main test.</strong> Each unit was measured at the setting the card gave it at 0.2.8. “Not detected” means no consistent shift was found on 20 seeds at that setting; it is not evidence that the unit cannot change the sound. A separate search (<code>tune.py</code>, <code>tune2.py</code>, <code>tune3.py</code>) measured 163 lines across the units’ ranges, the card defaults among them, on six seeds of 4 s each, to choose presets and new defaults, and the presets were then measured on ten other seeds (see <a href="#presets-and-held-out-seeds">Presets and held-out seeds</a>).</li>
 <li><strong>Mostly spectral measures.</strong> Apart from the frame-to-frame similarity in <a href="#time-based-effects">Time-based effects</a>, the measures are spectral centroid, level and the long-term spectrum’s shape. The spectrum’s lowest bands, below about 280 Hz, rest on one FFT bin or none at this resolution. They account for about 46% of the seed-to-seed shape distance, and a drone’s energy sits there. Rhythm and instrumentation were not measured, and no number substitutes for listening.</li>
 <li><strong>Near-silent frames.</strong> Some changes drive frames toward silence (see the per-unit entries), and that lowers the level figures.</li>
 <li><strong>Not exercised in the default-setting tests:</strong> the host features (wet, envelope, Keep size), Quantise with hold above 1, Neuron operations other than scale and clamp, Abliterate with Keep size on, and the second attention branch. Quantise’s hold appears in the time measures and the presets section, Keep size (on Lookback and Running Average) and Neuron’s add, zero and set operations only in the presets section.</li>
 </ul>
-  </section>
-
-  <section class="section wrap reveal" id="review-of-this-review">
-    <span class="num">11</span>
-    <h2>How this review was checked</h2>
-<p>An independent agent checked the review three times, given the code, the data and the text each time.</p>
-<ul>
-<li><strong>First pass.</strong> It re-derived the formula checks for seven units with its own code, Lookback, Running Average and the three MLX units among them, and its results matched. It confirmed that the recorded tensors are the ones the model used, and that the render path and the harness give identical audio with units on. It listed 20 corrections: the coverage had been overstated (only the first call of each frame had been checked); the code shown for the MLX units was not the code that ran; the Neuron neutral check attached no hook; figures from seed 1 had been presented as general; there was no correction for multiple comparisons; the nudge had been used as a baseline for size, which it cannot be; and several findings had factual slips.</li>
-<li><strong>Second pass.</strong> It re-ran every sound test over all 2²⁰ sign patterns and got the same 34 results surviving correction, and it confirmed the checks over all calls. Its 12 corrections included giving Neuron’s and Abliterate’s edit sizes for their first hook only, showing that Lookback’s and Running Average’s “quieter” rests on the takes that drop toward silence, and describing the shape statistic correctly.</li>
-<li><strong>Third pass</strong>, on the time and preset sections. It recomputed every number in the time table, wrote its own version of the preset statistics and reproduced every p and q value, and checked every row of the preset tables. Its 25 findings concerned what the figures were taken to show: two correction families quoted without labels, defaults whose held-out figures had been part of their choice, time results that do not survive the correction used elsewhere, and a replaced-frame measure that does not isolate the repeat for most Frame Repeat presets.</li>
-</ul>
-<p>The corrections from all three passes are in the text above.</p>
   </section>
 
 

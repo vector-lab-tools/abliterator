@@ -263,11 +263,16 @@
       s += C(sx(lvl).toFixed(1), clamp(sy(out(lvl)), Y, Y + H).toFixed(1), 6, "f-acc", ' style="filter:drop-shadow(0 0 5px var(--accent))"');
       var X2 = 520, comp = Math.max(0, lvl - st.thresh) * (1 - 1 / st.ratio), gated = st.gate > -79.5 && lvl < st.gate;
       s += T(X2, 70, "COMP", "f-dim t-xs t-up") + T(X2, 120, "GATE", "f-dim t-xs t-up");
-      for (i = 0; i < 6; i++) { var on = comp > i * 3 + 0.5; s += R(X2 + 60 + i * 44, 58, 38, 14, on ? (i > 3 ? "f-red" : "f-acc") : "f-panel", ' style="stroke:var(--fig-line)"'); }
-      for (i = 0; i < 4; i++) { s += R(X2 + 60 + i * 66, 108, 60, 14, gated ? "f-blue" : "f-panel", ' style="stroke:var(--fig-line)"'); }
-      s += T(X2 + 340, 70, "−" + comp.toFixed(1), "f-ink t-s") + T(X2 + 340, 120, gated ? "−40" : "0.0", "f-ink t-s");
+      // ten cells each, on the panel's scales: green to 4 dB, yellow to 10, red above
+      var COMP = [1, 2, 3, 4, 6, 8, 10, 12, 15, 20], GATE = [2, 4, 6, 8, 10, 15, 20, 25, 30, 40], gdb = gated ? 40 : 0;
+      for (i = 0; i < 10; i++) {
+        var band = i < 4 ? "#4d9f5a" : i < 7 ? "#d4b13a" : "#c84a38";
+        s += R(X2 + 60 + i * 26, 58, 22, 14, "f-panel", comp >= COMP[i] ? ' style="fill:' + band + ';stroke:var(--fig-line)"' : ' style="stroke:var(--fig-line)"');
+        s += R(X2 + 60 + i * 26, 108, 22, 14, "f-panel", gdb >= GATE[i] ? ' style="fill:#4dff8a;stroke:var(--fig-line)"' : ' style="stroke:var(--fig-line)"');
+      }
+      s += T(X2 + 340, 70, comp >= 0.05 ? "−" + comp.toFixed(1) : "0.0", "f-ink t-s") + T(X2 + 340, 120, gated ? "−40" : "0.0", "f-ink t-s");
       s += T(X2, 180, "in " + lvl.toFixed(1) + " dBFS → out " + out(lvl).toFixed(1), "f-ink t-m");
-      s += T(X2, 204, "the compressor's LEDs light in 3 dB steps of reduction", "f-dim t-xs");
+      s += T(X2, 204, "COMP cells: 1, 2, 3, 4, 6, 8, 10, 12, 15, 20 dB of reduction", "f-dim t-xs");
       f.svg.innerHTML = s;
       readout(f, "Ratio <b>" + st.ratio.toFixed(1) + ":1</b> above <b>" + st.thresh + " dBFS</b> · gate " + (st.gate > -79.5 ? "closes <b>40 dB</b> below <b>" + st.gate + " dBFS</b>" : "<b>off</b>") + " · now <b>" + red.toFixed(1) + " dB</b>");
     };

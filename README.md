@@ -22,7 +22,7 @@
 **Version:** 0.3.0
 **Status:** alpha
 **Licence:** GPL-3.0-or-later
-**Archive:** Zenodo, [10.5281/zenodo.24517766](https://doi.org/10.5281/zenodo.24517766) (all versions); each tagged release has its own version DOI, and the badge above resolves to the latest
+**DOI:** [10.5281/zenodo.24517766](https://doi.org/10.5281/zenodo.24517766)
 **Website:** https://vector-lab-tools.github.io/abliterator/
 
 Abliterator plays a music model on your own machine and changes how it runs while it plays. The model writes a frame of stereo audio at each step from a style prompt and a seed. The default engine is [Magenta RealTime 2](https://github.com/magenta/magenta-realtime) small (a 40 ms frame of 48 kHz stereo per step); MusicGen small is a second engine, and other models can be added behind the same engine interface. **Steer** adds a direction to its residual stream (brighter or darker, more pulse or beatless) on an XY pad; **Model layers** puts [Vector Abliteration Units](https://github.com/vector-lab-tools/vector-abliteration-units) between its twelve transformer layers. After the model come auto level, an **effect chain** of up to eight, **Dynamics** (a compressor and gate), stereo **Width**, a low-pass, a limiter and a volume, and twelve **modulation** sources move the knobs while it plays. A move is heard about 130 ms after it is made. Sounds are saved as heard, with a recipe that replays them exactly, and layered on eight tracks in **Session**.

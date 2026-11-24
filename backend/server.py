@@ -106,7 +106,7 @@ SOFTWARE = {
     "name": TOOL, "author": "David M. Berry", "institution": "University of Sussex", "orcid": "0000-0002-7737-5586",
     "licence": "GPL-3.0-or-later", "repository": "https://github.com/vector-lab-tools/abliterator",
     "site": "https://vector-lab-tools.github.io/abliterator/", "lab": "https://vector-lab-tools.github.io",
-    "year": 2026,
+    "year": 2026, "doi": "10.5281/zenodo.24517766",      # Zenodo concept DOI: every version, resolving to the latest
 }
 
 

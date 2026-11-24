@@ -168,13 +168,28 @@ def calibrated() -> Dict[str, Any]:
 
 
 # Settings that cannot change the sound on this model, so the card does not show them (the line keeps their value):
-# Abliterate's Bias too (the host's components carry no separate bias: VAU projects the whole output either way), and
-# the Sink too switches of Sparsify and Component Clamp (they only reach position 0, the first 40 ms frame of a take).
-HOST_HIDDEN = {"abliterate": {"bias"}, "gate": {"sink"}, "limiter": {"sink"}}
+# Abliterate's Bias too (the host's components carry no separate bias: VAU projects the whole output either way).
+# Settings that depend on the model having an attention sink (Sink too on Sparsify and Component Clamp) are hidden by
+# their manifest's `when: {"host": ["sink"]}` (VAU 0.3), since this host's model has none (AudioHost.sink).
+HOST_HIDDEN = {"abliterate": {"bias"}}
+HOST_FLAGS = {"sink": False}
 
-# Settings that only act while another setting has one of some values: the card dims them otherwise.
-HOST_WHEN = {"abliterate": {k: {"key": "shape", "in": ["linear", "bell"], "why": "no effect while Shape is flat"}
-                            for k in ("peak", "width", "edge")}}
+# Settings that only act while another setting has one of some values (the manifest's `when`, VAU 0.3): the card dims
+# them otherwise. The card reads {key, in, why}.
+def _when(q: Dict[str, Any], qs: List[Dict[str, Any]]):
+    """The manifest's `when` as the card reads it, or None; `hide` True where it names a host flag this host lacks."""
+    w = q.get("when")
+    if not isinstance(w, dict):
+        return w, False
+    hide = any(not HOST_FLAGS.get(f, False) for f in w.get("host", []))
+    for k, vals in w.items():
+        if k == "host":
+            continue
+        other = next((x for x in qs if x.get("key") == k), {})
+        rest = [c for c in (other.get("choices") or []) if c not in vals]
+        why = f"no effect while {other.get('label', k)} is {' or '.join(map(str, rest))}" if rest else f"acts only while {other.get('label', k)} is {' or '.join(map(str, vals))}"
+        return {"key": k, "in": list(vals), "why": why}, hide
+    return None, hide
 
 
 def params(u) -> List[Dict[str, Any]]:
@@ -183,7 +198,8 @@ def params(u) -> List[Dict[str, Any]]:
     over = HOST_DEFAULTS.get(u.id, {})
     cal = calibrated()
     out = []
-    for q in list(u.m["params"]) + HOST_EXTRA.get(u.id, []):
+    qs = list(u.m["params"]) + HOST_EXTRA.get(u.id, [])
+    for q in qs:
         q = {**q, "default": over[q["key"]]} if q["key"] in over else dict(q)
         q.update(HOST_RANGES.get(u.id, {}).get(q["key"], {}))
         c = cal.get(f"unit:{u.id}:{q['key']}")
@@ -198,10 +214,13 @@ def params(u) -> List[Dict[str, Any]]:
             sf = q.get("safe")                         # measured at the old default (Keep size off): its range and ⚠ no longer apply
             if sf and isinstance(q["default"], (int, float)) and not sf[0] <= q["default"] <= sf[1]:
                 q.pop("safe"); q.pop("measured", None); q["fragile"] = False
-        if q["key"] in HOST_HIDDEN.get(u.id, ()):
+        w, hide = _when(q, qs)
+        if w is None:
+            q.pop("when", None)
+        else:
+            q["when"] = w
+        if hide or q["key"] in HOST_HIDDEN.get(u.id, ()):
             q["hidden"] = True
-        if q["key"] in HOST_WHEN.get(u.id, {}):
-            q["when"] = HOST_WHEN[u.id][q["key"]]
         out.append(q)
     return out
 
@@ -246,6 +265,22 @@ ELEMENTWISE_NOTE = ("Acts on each of the stream's 1,024 coordinates separately, 
                     "often than the others.")
 
 
+_VG: Dict[str, Dict[str, Any]] = {}
+
+
+def _vau_groups() -> Dict[str, Dict[str, Any]]:
+    """Unit id -> its group in VAU's Core Collection look (VAU 0.3 and after), or {} on an older VAU."""
+    if not _VG:
+        try:
+            import json
+            from pathlib import Path as _P
+            d = json.loads((_P(vau.__file__).parent / "look" / "core.json").read_text())
+            _VG.update({uid: {"id": g["id"], "title": g["title"]} for g in d.get("groups", []) for uid in g.get("units", [])})
+        except Exception:
+            _VG["_none"] = {}
+    return {k: v for k, v in _VG.items() if k != "_none"}
+
+
 def space_of(u) -> Dict[str, Any]:
     """`space` (the manifest's own, where it declares one), VAU's `axis`, and the unit's group here."""
     try:
@@ -254,6 +289,10 @@ def space_of(u) -> Dict[str, Any]:
     except ImportError:
         space = u.m.get("space") or SPACE.get(u.id) or ("component" if u.m["site"] == "output" else "stream")
     axis = u.m.get("axis", "any")
+    g = _vau_groups().get(u.id)
+    if g:                                              # VAU 0.3's groups (look/core.json), which match the ones below
+        return {"space": space, "axis": axis, "group": g["id"], "group_title": g["title"],
+                "note": ELEMENTWISE_NOTE if u.id in ELEMENTWISE and space == "stream" else None}
     if u.id in ALONG_TIME:
         group = "time"
     elif space in ("component", "hidden"):
@@ -402,6 +441,11 @@ class AudioHost(vau.Host):
 
     def capabilities(self):
         return set(CAPABILITIES)
+
+    def sink(self) -> bool:
+        """Magenta RT 2 has no attention sink: its first position is the take's first 40 ms frame, which units bend
+        like any other (VAU 0.3)."""
+        return HOST_FLAGS["sink"]
 
     def error(self, lineno, msg):
         return vau.UnitError(f"Strip {lineno}: {msg}")

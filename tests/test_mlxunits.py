@@ -37,13 +37,14 @@ def test_neuron_matches_vau(op, value, f, keepnorm):
 
 @pytest.mark.parametrize("bits,hold", [(6, 1), (3, 1), (16, 3), (4, 4)])
 @pytest.mark.parametrize("f,keepnorm", [(1.0, False), (0.5, True)])
-def test_erosion_matches_vau(bits, hold, f, keepnorm):
+@pytest.mark.parametrize("first", [1, 0])
+def test_erosion_matches_vau(bits, hold, f, keepnorm, first):
     std = np.abs(RNG.standard_normal(64)) + 0.2
     step = None if bits >= 16 else std * (6.0 / 2 ** bits)
-    ref = V_erosion.erosion_edit(None if step is None else torch.tensor(step), hold, {})
+    ref = V_erosion.erosion_edit(None if step is None else torch.tensor(step), hold, {}, first)
     if f != 1.0 or keepnorm:
         ref = hostfx.wrap_edit(ref, f, keepnorm)
-    mine = mlxunits.erosion_fn(step, hold, {}, f, keepnorm)
+    mine = mlxunits.erosion_fn(step, hold, {}, f, keepnorm, first)
     for frame in range(0, 12):
         h = RNG.standard_normal((1, 1, 64)).astype(np.float32)
         want = ref(torch.from_numpy(h), torch.tensor([frame]))

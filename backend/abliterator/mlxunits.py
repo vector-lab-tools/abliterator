@@ -95,16 +95,17 @@ def neuron_fn(ns: List[int], op: str, value: float, f: float, keepnorm: bool) ->
     return mlx_fn(edit)
 
 
-def erosion_fn(step: Optional[np.ndarray], hold: int, held: Dict[int, Any], f: float, keepnorm: bool) -> Callable:
+def erosion_fn(step: Optional[np.ndarray], hold: int, held: Dict[int, Any], f: float, keepnorm: bool, first: int = 1) -> Callable:
     """The stream at one position quantised to multiples of `step` and held over runs of `hold`
-    frames, as vau/units/erosion.py's erosion_edit does it; frame 0 (the attention sink) untouched.
-    Only the current run's first frame is kept in `held`."""
+    frames, as vau/units/erosion.py's erosion_edit does it. `first` is the first frame bent: 1 where
+    frame 0 is an attention sink, 0 on a model with none (Magenta RT 2: AudioHost.sink). Only the
+    current run's first frame is kept in `held`."""
     st = None
 
     def edit(h, frame: int):
         nonlocal st
         mx = _mx()
-        if frame < 1 or (step is None and hold <= 1):
+        if frame < first or (step is None and hold <= 1):
             return h
         x = h.astype(mx.float32)
         if step is not None:
@@ -112,12 +113,12 @@ def erosion_fn(step: Optional[np.ndarray], hold: int, held: Dict[int, Any], f: f
                 st = mx.array(step.astype(np.float32))
             x = mx.round(x / st) * st
         if hold > 1:
-            first = 1 + ((frame - 1) // hold) * hold
-            if frame == first:
+            start = first + ((frame - first) // hold) * hold
+            if frame == start:
                 held.clear()
-                held[first] = x
-            elif first in held:
-                x = held[first]
+                held[start] = x
+            elif start in held:
+                x = held[start]
         return _mix(h.astype(mx.float32), x, f, keepnorm).astype(h.dtype)
     return mlx_fn(edit)
 
@@ -194,7 +195,8 @@ def port(u, strip, host, before: Dict[str, Dict], after: Dict[str, Dict]) -> Opt
             for layer, fns in added.items():
                 step = None if bits >= 16 else np.asarray(host.stats()["std"][layer], np.float64) * (6.0 / 2 ** max(1, bits))
                 f = _factor(s, layer, n)
-                fn = erosion_fn(step, hold, host.memory(strip, ("mlx", layer)), f, s["keepnorm"]) if f != 0.0 else mlx_fn(lambda h, frame: h)
+                first = 1 if getattr(host, "sink", lambda: True)() else 0      # VAU 0.3: no attention sink, frame 0 bent too
+                fn = erosion_fn(step, hold, host.memory(strip, ("mlx", layer)), f, s["keepnorm"], first) if f != 0.0 else mlx_fn(lambda h, frame: h)
                 out["edits"].setdefault(layer, []).extend([fn] * len(fns))
             return out
     except Exception:

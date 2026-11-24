@@ -15,7 +15,7 @@ def noise(s=2.0):
 @pytest.mark.parametrize("kind", list(fx.TYPES))
 def test_blocks_equal_whole(kind):
     x = noise()
-    on = [{"type": kind, "on": True, "params": {"mix": 0.7, "feedback": 0.6, "size": 3.0, "amount": 6, "low": 6, "high": -6, "mode": 1, "res": 4, "bits": 5, "hold": 7, "pos": 0.4, "depth": 0.5, "rate": 1.3, "width": 250, "gain": -3, "bass": 1}}]
+    on = [{"type": kind, "on": True, "params": {"mix": 0.7, "feedback": 0.6, "size": 3.0, "amount": 6, "low": 6, "high": -6, "mode": 1, "res": 4, "bits": 5, "hold": 7, "pos": 0.4, "depth": 0.5, "rate": 1.3, "width": 250, "gain": -3, "bass": 1, "freeze": 1}}]
     outs = []
     for block in (len(x), 512, 1920, 333):
         r = fx.Rack(2)

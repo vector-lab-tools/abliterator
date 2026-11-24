@@ -1116,3 +1116,6 @@ html, body { overscroll-behavior-x: none; }
 .strip .sgrid .tg i { width: 6px; height: 6px; }
 .strip .dseg button, .strip:not(.wide) .dseg button { font-size: 8.5px; padding: 2px 6px; }
 .strip .dseg .dsl { font-size: 7px; }
+/* an effect's menu of five or more choices (Resonator's Chord, Shimmer's Interval) fits the card without its inline label, which stays in its tooltip */
+.fxseg:has(> button:nth-of-type(5)) > span { display: none; }
+.fxseg:has(> button:nth-of-type(5)) > button { padding: 2px 5px; }

@@ -1254,3 +1254,17 @@ class Rack:
             pos += L
         self.t += n
         return out
+
+
+# The effects in their own modules (written for 0.2.20): Phaser, Flanger, Tremolo (fx_mod); Compressor, Resonator, Freq Shift
+# (fx_tone); Pitch, Shimmer, Freeze (fx_time). Each imports this module for its base classes and, once it has loaded,
+# registers its types here with _register, so it works whichever is imported first.
+def _register(m) -> None:
+    TYPES.update(m.TYPES_NEW)
+    CLASSES.update(m.CLASSES_NEW)
+    JUMPS.update(getattr(m, "JUMPS_NEW", {}))
+    PRESETS.update({t: v for t, v in _file_presets().items() if t in m.TYPES_NEW})
+
+
+JUMPS.update({"phaser": {"stages"}, "resonator": {"root", "chord"}})   # a change faded around, as a reverb's size is
+from . import fx_mod, fx_time, fx_tone  # noqa: E402,F401

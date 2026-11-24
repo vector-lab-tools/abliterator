@@ -1,6 +1,6 @@
 {
  "made": "2026-11-23",
- "how": "Each preset run in postfx.Rack (fades on, 512-sample blocks) over 6 s of eleven inputs: four Magenta RT 2 drones (seeds 21 to 24), a Celtic harp, an analogue modular synth and a synthetic kick, snare and hat loop, each set to -20 dBFS RMS (auto level's target), and the four drones again at their own level (-27 to -37 dBFS). None broken on any input (calibrate.broken against the dry input: clipping, silence, louder than -12 dBFS RMS, noise). Figures, means over the inputs of the change from the dry sound: timbre_median, level-free timbre distance in dB (measure.timbre_distance; the measure's own jitter, the dry sound against itself one chunk later, is 0.08 to 0.19 dB); level_mean, dB; centroid_mean_pct; side_mid_mean, side/mid energy ratio, dB; lr_mean, left/right level, dB; swing_mean, spread of the left/right level over 100 ms frames, dB; gap_mean, quietest 10% of 10 ms frames against the loudest 10%, dB (a tail filling the gaps raises it); rms_max and peak_max, the loudest output on any input, dBFS RMS and peak. heard_on: the inputs on which one of these moved by at least timbre 0.5, level 1, side/mid 1, left/right 1, swing 1 or gaps 1.5 dB. De-click changes clean input by design; its presets were measured on a drone, the drum loop and the harp with 42 zig-zag bursts of 2 to 150 samples added (clicked: bursts redrawn, and how far the error against the clean sound fell, dB) and on the clean inputs (false_repairs). Script: _tmp/review/fx_presets.py.",
+ "how": "Each preset run in postfx.Rack (fades on, 512-sample blocks) over 6 s of eleven inputs: four Magenta RT 2 drones (seeds 21 to 24), a Celtic harp, an analogue modular synth and a synthetic kick, snare and hat loop, each set to -20 dBFS RMS (auto level's target), and the four drones again at their own level (-27 to -37 dBFS). Freeze's presets leave Freeze off, so they were run with it switched on 1 s in. None broken on any input (calibrate.broken against the dry input: clipping, silence, louder than -12 dBFS RMS, noise). Figures, means over the inputs of the change from the dry sound: timbre_median, level-free timbre distance in dB (measure.timbre_distance; the measure's own jitter, the dry sound against itself one chunk later, is 0.08 to 0.19 dB); level_mean, dB; centroid_mean_pct; side_mid_mean, side/mid energy ratio, dB; lr_mean, left/right level, dB; swing_mean, spread of the left/right level over 100 ms frames, dB; gap_mean, quietest 10% of 10 ms frames against the loudest 10%, dB (a tail filling the gaps raises it); rms_max and peak_max, the loudest output on any input, dBFS RMS and peak. heard_on: the inputs on which one of these moved by at least timbre 0.5, level 1, side/mid 1, left/right 1, swing 1 or gaps 1.5 dB. De-click changes clean input by design; its presets were measured on a drone, the drum loop and the harp with 42 zig-zag bursts of 2 to 150 samples added (clicked: bursts redrawn, and how far the error against the clean sound fell, dB) and on the clean inputs (false_repairs). Script: _tmp/review/fx_presets.py.",
  "types": {
   "reverb": [
    {
@@ -2555,6 +2555,1531 @@
      "swing_mean": 0.0,
      "gap_mean": -0.01,
      "rms_max": -22.5,
+     "peak_max": 0.532,
+     "heard_on": 11,
+     "broken": 0
+    }
+   }
+  ],
+  "phaser": [
+   {
+    "name": "Slow Sweep",
+    "params": {
+     "rate": 0.1,
+     "depth": 0.7,
+     "centre": 800.0,
+     "feedback": 0.3,
+     "stages": 0,
+     "spread": 90.0,
+     "mix": 1.0
+    },
+    "tip": "Four stages, one sweep every 10 s",
+    "measured": {
+     "inputs": 11,
+     "timbre_median": 2.67,
+     "level_mean": -1.79,
+     "centroid_mean_pct": -19.4,
+     "side_mid_mean": 15.8,
+     "lr_mean": 1.29,
+     "swing_mean": 2.58,
+     "gap_mean": -2.66,
+     "rms_max": -20.07,
+     "peak_max": 0.537,
+     "heard_on": 11,
+     "broken": 0
+    }
+   },
+   {
+    "name": "Classic Four",
+    "params": {
+     "rate": 0.5,
+     "depth": 0.6,
+     "centre": 700.0,
+     "feedback": 0.5,
+     "stages": 0,
+     "spread": 0.0,
+     "mix": 1.0
+    },
+    "tip": "Four stages at 0.5 Hz, the same on both sides",
+    "measured": {
+     "inputs": 11,
+     "timbre_median": 2.6,
+     "level_mean": -2.78,
+     "centroid_mean_pct": -11.9,
+     "side_mid_mean": 0.28,
+     "lr_mean": -0.03,
+     "swing_mean": 0.03,
+     "gap_mean": -3.08,
+     "rms_max": -20.12,
+     "peak_max": 0.484,
+     "heard_on": 11,
+     "broken": 0
+    }
+   },
+   {
+    "name": "Deep Eight",
+    "params": {
+     "rate": 0.25,
+     "depth": 0.8,
+     "centre": 1000.0,
+     "feedback": 0.6,
+     "stages": 1,
+     "spread": 90.0,
+     "mix": 1.0
+    },
+    "tip": "Eight stages, four notches, a slow wide sweep",
+    "measured": {
+     "inputs": 11,
+     "timbre_median": 2.08,
+     "level_mean": -3.59,
+     "centroid_mean_pct": -15.6,
+     "side_mid_mean": 18.97,
+     "lr_mean": 0.21,
+     "swing_mean": 4.35,
+     "gap_mean": -1.8,
+     "rms_max": -21.26,
+     "peak_max": 0.505,
+     "heard_on": 11,
+     "broken": 0
+    }
+   },
+   {
+    "name": "Twelve Stage",
+    "params": {
+     "rate": 0.15,
+     "depth": 0.7,
+     "centre": 1200.0,
+     "feedback": 0.4,
+     "stages": 2,
+     "spread": 120.0,
+     "mix": 1.0
+    },
+    "tip": "Six notches, the sides 120° apart",
+    "measured": {
+     "inputs": 11,
+     "timbre_median": 1.49,
+     "level_mean": -4.57,
+     "centroid_mean_pct": -4.9,
+     "side_mid_mean": 20.48,
+     "lr_mean": 0.14,
+     "swing_mean": 3.98,
+     "gap_mean": -0.56,
+     "rms_max": -22.5,
+     "peak_max": 0.437,
+     "heard_on": 11,
+     "broken": 0
+    }
+   },
+   {
+    "name": "Resonant",
+    "params": {
+     "rate": 0.3,
+     "depth": 0.6,
+     "centre": 900.0,
+     "feedback": 0.85,
+     "stages": 1,
+     "spread": 90.0,
+     "mix": 1.0
+    },
+    "tip": "High feedback for sharp peaks",
+    "measured": {
+     "inputs": 11,
+     "timbre_median": 1.93,
+     "level_mean": -5.99,
+     "centroid_mean_pct": 10.2,
+     "side_mid_mean": 16.96,
+     "lr_mean": 0.0,
+     "swing_mean": 2.16,
+     "gap_mean": -0.65,
+     "rms_max": -23.03,
+     "peak_max": 0.389,
+     "heard_on": 11,
+     "broken": 0
+    }
+   },
+   {
+    "name": "Fast Warble",
+    "params": {
+     "rate": 3.0,
+     "depth": 0.3,
+     "centre": 1500.0,
+     "feedback": 0.4,
+     "stages": 0,
+     "spread": 180.0,
+     "mix": 0.8
+    },
+    "tip": "A quick shallow sweep, the sides opposite",
+    "measured": {
+     "inputs": 11,
+     "timbre_median": 3.01,
+     "level_mean": -0.62,
+     "centroid_mean_pct": -21.2,
+     "side_mid_mean": 8.54,
+     "lr_mean": 0.07,
+     "swing_mean": 1.23,
+     "gap_mean": -0.66,
+     "rms_max": -19.15,
+     "peak_max": 0.499,
+     "heard_on": 11,
+     "broken": 0
+    }
+   },
+   {
+    "name": "Low Phase",
+    "params": {
+     "rate": 0.2,
+     "depth": 0.5,
+     "centre": 250.0,
+     "feedback": 0.5,
+     "stages": 0,
+     "spread": 90.0,
+     "mix": 1.0
+    },
+    "tip": "The sweep held below 1 kHz",
+    "measured": {
+     "inputs": 11,
+     "timbre_median": 3.79,
+     "level_mean": -5.53,
+     "centroid_mean_pct": 30.6,
+     "side_mid_mean": 20.4,
+     "lr_mean": -0.24,
+     "swing_mean": 3.46,
+     "gap_mean": -0.5,
+     "rms_max": -24.12,
+     "peak_max": 0.473,
+     "heard_on": 11,
+     "broken": 0
+    }
+   }
+  ],
+  "flanger": [
+   {
+    "name": "Jet",
+    "params": {
+     "rate": 0.1,
+     "depth": 4.0,
+     "delay": 0.5,
+     "feedback": 0.7,
+     "spread": 0.0,
+     "mix": 1.0
+    },
+    "tip": "A slow sweep from 0.5 to 4.5 ms, strong feedback",
+    "measured": {
+     "inputs": 11,
+     "timbre_median": 1.33,
+     "level_mean": -3.24,
+     "centroid_mean_pct": -9.2,
+     "side_mid_mean": 1.22,
+     "lr_mean": -0.01,
+     "swing_mean": 0.02,
+     "gap_mean": -3.14,
+     "rms_max": -21.32,
+     "peak_max": 0.607,
+     "heard_on": 11,
+     "broken": 0
+    }
+   },
+   {
+    "name": "Gentle Flange",
+    "params": {
+     "rate": 0.25,
+     "depth": 2.0,
+     "delay": 1.0,
+     "feedback": 0.3,
+     "spread": 90.0,
+     "mix": 0.7
+    },
+    "tip": "A light sweep from 1 to 3 ms",
+    "measured": {
+     "inputs": 11,
+     "timbre_median": 1.14,
+     "level_mean": -3.0,
+     "centroid_mean_pct": -14.3,
+     "side_mid_mean": 11.66,
+     "lr_mean": 0.47,
+     "swing_mean": 1.52,
+     "gap_mean": -0.94,
+     "rms_max": -20.44,
+     "peak_max": 0.477,
+     "heard_on": 11,
+     "broken": 0
+    }
+   },
+   {
+    "name": "Negative",
+    "params": {
+     "rate": 0.2,
+     "depth": 3.0,
+     "delay": 0.8,
+     "feedback": -0.7,
+     "spread": 90.0,
+     "mix": 1.0
+    },
+    "tip": "Negative feedback: peaks where the notches were",
+    "measured": {
+     "inputs": 11,
+     "timbre_median": 0.69,
+     "level_mean": -4.32,
+     "centroid_mean_pct": -4.2,
+     "side_mid_mean": 19.61,
+     "lr_mean": 0.02,
+     "swing_mean": 0.12,
+     "gap_mean": -1.01,
+     "rms_max": -23.16,
+     "peak_max": 0.418,
+     "heard_on": 11,
+     "broken": 0
+    }
+   },
+   {
+    "name": "Wide Stereo",
+    "params": {
+     "rate": 0.15,
+     "depth": 3.0,
+     "delay": 1.0,
+     "feedback": 0.5,
+     "spread": 180.0,
+     "mix": 1.0
+    },
+    "tip": "The two sides sweep in opposite directions",
+    "measured": {
+     "inputs": 11,
+     "timbre_median": 1.79,
+     "level_mean": -4.86,
+     "centroid_mean_pct": -14.5,
+     "side_mid_mean": 19.17,
+     "lr_mean": -0.18,
+     "swing_mean": 3.33,
+     "gap_mean": -1.16,
+     "rms_max": -20.81,
+     "peak_max": 0.484,
+     "heard_on": 11,
+     "broken": 0
+    }
+   },
+   {
+    "name": "Metallic",
+    "params": {
+     "rate": 0.05,
+     "depth": 0.5,
+     "delay": 2.0,
+     "feedback": 0.9,
+     "spread": 30.0,
+     "mix": 1.0
+    },
+    "tip": "A near-fixed 2 ms comb with high feedback",
+    "measured": {
+     "inputs": 11,
+     "timbre_median": 2.06,
+     "level_mean": -6.34,
+     "centroid_mean_pct": -2.2,
+     "side_mid_mean": 8.5,
+     "lr_mean": -0.31,
+     "swing_mean": 0.53,
+     "gap_mean": -0.01,
+     "rms_max": -23.75,
+     "peak_max": 0.286,
+     "heard_on": 11,
+     "broken": 0
+    }
+   },
+   {
+    "name": "Fast Flutter",
+    "params": {
+     "rate": 4.0,
+     "depth": 1.0,
+     "delay": 0.6,
+     "feedback": 0.4,
+     "spread": 90.0,
+     "mix": 0.8
+    },
+    "tip": "A quick, shallow sweep",
+    "measured": {
+     "inputs": 11,
+     "timbre_median": 1.82,
+     "level_mean": -1.25,
+     "centroid_mean_pct": -23.5,
+     "side_mid_mean": 8.44,
+     "lr_mean": 0.04,
+     "swing_mean": 1.02,
+     "gap_mean": -0.91,
+     "rms_max": -19.36,
+     "peak_max": 0.509,
+     "heard_on": 11,
+     "broken": 0
+    }
+   },
+   {
+    "name": "Slow Chorus",
+    "params": {
+     "rate": 0.3,
+     "depth": 5.0,
+     "delay": 6.0,
+     "feedback": 0.1,
+     "spread": 90.0,
+     "mix": 0.6
+    },
+    "tip": "Longer delays, from 6 to 11 ms, little feedback",
+    "measured": {
+     "inputs": 11,
+     "timbre_median": 0.69,
+     "level_mean": -3.06,
+     "centroid_mean_pct": 5.2,
+     "side_mid_mean": 15.08,
+     "lr_mean": 0.39,
+     "swing_mean": 1.91,
+     "gap_mean": -0.18,
+     "rms_max": -22.17,
+     "peak_max": 0.477,
+     "heard_on": 11,
+     "broken": 0
+    }
+   }
+  ],
+  "tremolo": [
+   {
+    "name": "Gentle Sine",
+    "params": {
+     "rate": 3.0,
+     "depth": 0.3,
+     "shape": 0,
+     "phase": 0.0
+    },
+    "tip": "A slow sine, down to 70%",
+    "measured": {
+     "inputs": 11,
+     "timbre_median": 0.11,
+     "level_mean": -1.31,
+     "centroid_mean_pct": -0.4,
+     "side_mid_mean": 0.07,
+     "lr_mean": 0.01,
+     "swing_mean": -0.0,
+     "gap_mean": -0.36,
+     "rms_max": -21.06,
+     "peak_max": 0.532,
+     "heard_on": 11,
+     "broken": 0
+    }
+   },
+   {
+    "name": "Classic Amp",
+    "params": {
+     "rate": 5.5,
+     "depth": 0.6,
+     "shape": 0,
+     "phase": 0.0
+    },
+    "tip": "A sine at 5.5 Hz, down to 40%",
+    "measured": {
+     "inputs": 11,
+     "timbre_median": 0.24,
+     "level_mean": -2.67,
+     "centroid_mean_pct": 0.2,
+     "side_mid_mean": -0.64,
+     "lr_mean": -0.0,
+     "swing_mean": 0.0,
+     "gap_mean": -2.51,
+     "rms_max": -22.53,
+     "peak_max": 0.532,
+     "heard_on": 11,
+     "broken": 0
+    }
+   },
+   {
+    "name": "Triangle",
+    "params": {
+     "rate": 4.0,
+     "depth": 0.5,
+     "shape": 1,
+     "phase": 0.0
+    },
+    "tip": "A triangle at 4 Hz, down to half",
+    "measured": {
+     "inputs": 11,
+     "timbre_median": 0.17,
+     "level_mean": -2.31,
+     "centroid_mean_pct": 1.8,
+     "side_mid_mean": 0.05,
+     "lr_mean": -0.0,
+     "swing_mean": 0.0,
+     "gap_mean": -0.8,
+     "rms_max": -21.91,
+     "peak_max": 0.528,
+     "heard_on": 11,
+     "broken": 0
+    }
+   },
+   {
+    "name": "Hard Chop",
+    "params": {
+     "rate": 8.0,
+     "depth": 1.0,
+     "shape": 2,
+     "phase": 0.0
+    },
+    "tip": "Square at 8 Hz, on and off",
+    "measured": {
+     "inputs": 11,
+     "timbre_median": 0.97,
+     "level_mean": -3.07,
+     "centroid_mean_pct": 2.4,
+     "side_mid_mean": -0.91,
+     "lr_mean": -0.01,
+     "swing_mean": 0.12,
+     "gap_mean": -85.22,
+     "rms_max": -22.8,
+     "peak_max": 0.532,
+     "heard_on": 11,
+     "broken": 0
+    }
+   },
+   {
+    "name": "Stereo Swap",
+    "params": {
+     "rate": 2.0,
+     "depth": 0.8,
+     "shape": 0,
+     "phase": 180.0
+    },
+    "tip": "The sides take turns, twice a second",
+    "measured": {
+     "inputs": 11,
+     "timbre_median": 0.27,
+     "level_mean": -4.43,
+     "centroid_mean_pct": 0.1,
+     "side_mid_mean": 19.14,
+     "lr_mean": 0.56,
+     "swing_mean": 8.24,
+     "gap_mean": 0.04,
+     "rms_max": -24.43,
+     "peak_max": 0.514,
+     "heard_on": 11,
+     "broken": 0
+    }
+   },
+   {
+    "name": "Slow Pulse",
+    "params": {
+     "rate": 0.5,
+     "depth": 0.7,
+     "shape": 2,
+     "phase": 0.0
+    },
+    "tip": "Square, one pulse every 2 s",
+    "measured": {
+     "inputs": 11,
+     "timbre_median": 0.5,
+     "level_mean": -2.57,
+     "centroid_mean_pct": 0.3,
+     "side_mid_mean": 1.02,
+     "lr_mean": -0.0,
+     "swing_mean": 0.0,
+     "gap_mean": -6.78,
+     "rms_max": -22.24,
+     "peak_max": 0.532,
+     "heard_on": 11,
+     "broken": 0
+    }
+   },
+   {
+    "name": "Fast Shimmer",
+    "params": {
+     "rate": 14.0,
+     "depth": 0.4,
+     "shape": 1,
+     "phase": 90.0
+    },
+    "tip": "A fast triangle, the sides 90° apart",
+    "measured": {
+     "inputs": 11,
+     "timbre_median": 0.07,
+     "level_mean": -1.89,
+     "centroid_mean_pct": -0.0,
+     "side_mid_mean": 7.14,
+     "lr_mean": 0.02,
+     "swing_mean": 0.29,
+     "gap_mean": -0.21,
+     "rms_max": -21.87,
+     "peak_max": 0.503,
+     "heard_on": 11,
+     "broken": 0
+    }
+   }
+  ],
+  "compressor": [
+   {
+    "name": "Vocal Level",
+    "params": {
+     "thresh": -24.0,
+     "ratio": 3.0,
+     "attack": 5.0,
+     "release": 150.0,
+     "knee": 6.0,
+     "makeup": 4.0,
+     "mix": 1.0
+    },
+    "tip": "3:1 above -24 dB, evens out a line",
+    "measured": {
+     "inputs": 11,
+     "timbre_median": 0.31,
+     "level_mean": -1.03,
+     "centroid_mean_pct": 3.9,
+     "side_mid_mean": 0.82,
+     "lr_mean": -0.0,
+     "swing_mean": -0.01,
+     "gap_mean": 2.16,
+     "rms_max": -22.67,
+     "peak_max": 0.601,
+     "heard_on": 11,
+     "broken": 0
+    }
+   },
+   {
+    "name": "Punch",
+    "params": {
+     "thresh": -20.0,
+     "ratio": 4.0,
+     "attack": 25.0,
+     "release": 120.0,
+     "knee": 3.0,
+     "makeup": 3.0,
+     "mix": 1.0
+    },
+    "tip": "Lets the first 25 ms of each hit through",
+    "measured": {
+     "inputs": 11,
+     "timbre_median": 0.22,
+     "level_mean": -0.22,
+     "centroid_mean_pct": 3.9,
+     "side_mid_mean": 0.72,
+     "lr_mean": 0.0,
+     "swing_mean": -0.01,
+     "gap_mean": 1.54,
+     "rms_max": -21.63,
+     "peak_max": 0.707,
+     "heard_on": 11,
+     "broken": 0
+    }
+   },
+   {
+    "name": "Brick Wall",
+    "params": {
+     "thresh": -24.0,
+     "ratio": 20.0,
+     "attack": 0.1,
+     "release": 50.0,
+     "knee": 0.0,
+     "makeup": 6.0,
+     "mix": 1.0
+    },
+    "tip": "20:1 with a 0.1 ms attack above -24 dB, then 6 dB back up",
+    "measured": {
+     "inputs": 11,
+     "timbre_median": 0.93,
+     "level_mean": -0.46,
+     "centroid_mean_pct": 5.6,
+     "side_mid_mean": 1.05,
+     "lr_mean": -0.0,
+     "swing_mean": -0.01,
+     "gap_mean": 3.91,
+     "rms_max": -22.8,
+     "peak_max": 0.228,
+     "heard_on": 11,
+     "broken": 0
+    }
+   },
+   {
+    "name": "Parallel Smash",
+    "params": {
+     "thresh": -40.0,
+     "ratio": 10.0,
+     "attack": 1.0,
+     "release": 100.0,
+     "knee": 0.0,
+     "makeup": 12.0,
+     "mix": 0.5
+    },
+    "tip": "Crushed hard, then half under the dry sound",
+    "measured": {
+     "inputs": 11,
+     "timbre_median": 0.23,
+     "level_mean": -2.65,
+     "centroid_mean_pct": 1.5,
+     "side_mid_mean": 0.49,
+     "lr_mean": -0.0,
+     "swing_mean": -0.02,
+     "gap_mean": 2.55,
+     "rms_max": -23.72,
+     "peak_max": 0.337,
+     "heard_on": 11,
+     "broken": 0
+    }
+   },
+   {
+    "name": "Slow Swell",
+    "params": {
+     "thresh": -30.0,
+     "ratio": 3.0,
+     "attack": 80.0,
+     "release": 1500.0,
+     "knee": 9.0,
+     "makeup": 3.0,
+     "mix": 1.0
+    },
+    "tip": "Slow attack and 1.5 s release: the level breathes",
+    "measured": {
+     "inputs": 11,
+     "timbre_median": 0.42,
+     "level_mean": -6.38,
+     "centroid_mean_pct": -1.1,
+     "side_mid_mean": 2.55,
+     "lr_mean": 0.02,
+     "swing_mean": -0.0,
+     "gap_mean": 0.48,
+     "rms_max": -27.74,
+     "peak_max": 0.726,
+     "heard_on": 11,
+     "broken": 0
+    }
+   },
+   {
+    "name": "Pump",
+    "params": {
+     "thresh": -38.0,
+     "ratio": 8.0,
+     "attack": 0.5,
+     "release": 400.0,
+     "knee": 0.0,
+     "makeup": 8.0,
+     "mix": 1.0
+    },
+    "tip": "Ducks on each loud note and climbs back over 400 ms",
+    "measured": {
+     "inputs": 11,
+     "timbre_median": 0.45,
+     "level_mean": -10.35,
+     "centroid_mean_pct": 5.3,
+     "side_mid_mean": 1.51,
+     "lr_mean": -0.01,
+     "swing_mean": -0.02,
+     "gap_mean": 3.41,
+     "rms_max": -33.08,
+     "peak_max": 0.24,
+     "heard_on": 11,
+     "broken": 0
+    }
+   }
+  ],
+  "resonator": [
+   {
+    "name": "Glass Fifth",
+    "params": {
+     "root": 72,
+     "chord": 1,
+     "decay": 3.0,
+     "bright": 0.8,
+     "mix": 0.35
+    },
+    "tip": "C5 and G5, bright",
+    "measured": {
+     "inputs": 11,
+     "timbre_median": 1.01,
+     "level_mean": -3.29,
+     "centroid_mean_pct": 0.5,
+     "side_mid_mean": 1.66,
+     "lr_mean": 0.01,
+     "swing_mean": -0.01,
+     "gap_mean": 0.98,
+     "rms_max": -22.9,
+     "peak_max": 0.369,
+     "heard_on": 11,
+     "broken": 0
+    }
+   },
+   {
+    "name": "Major Ring",
+    "params": {
+     "root": 60,
+     "chord": 3,
+     "decay": 2.0,
+     "bright": 0.6,
+     "mix": 0.4
+    },
+    "tip": "A C major chord from middle C",
+    "measured": {
+     "inputs": 11,
+     "timbre_median": 1.35,
+     "level_mean": -2.79,
+     "centroid_mean_pct": 13.8,
+     "side_mid_mean": 3.66,
+     "lr_mean": 0.64,
+     "swing_mean": 0.18,
+     "gap_mean": 0.81,
+     "rms_max": -20.02,
+     "peak_max": 0.47,
+     "heard_on": 11,
+     "broken": 0
+    }
+   },
+   {
+    "name": "Minor Haze",
+    "params": {
+     "root": 57,
+     "chord": 4,
+     "decay": 4.0,
+     "bright": 0.35,
+     "mix": 0.45
+    },
+    "tip": "A minor from A3, dark and long",
+    "measured": {
+     "inputs": 11,
+     "timbre_median": 0.9,
+     "level_mean": -3.13,
+     "centroid_mean_pct": 29.8,
+     "side_mid_mean": 3.09,
+     "lr_mean": 0.27,
+     "swing_mean": 0.14,
+     "gap_mean": 0.95,
+     "rms_max": -19.48,
+     "peak_max": 0.404,
+     "heard_on": 11,
+     "broken": 0
+    }
+   },
+   {
+    "name": "Sus Bell",
+    "params": {
+     "root": 64,
+     "chord": 5,
+     "decay": 5.0,
+     "bright": 0.9,
+     "mix": 0.3
+    },
+    "tip": "E sus4 from E4, bright, 5 s",
+    "measured": {
+     "inputs": 11,
+     "timbre_median": 0.54,
+     "level_mean": -2.62,
+     "centroid_mean_pct": 7.1,
+     "side_mid_mean": 0.98,
+     "lr_mean": 0.04,
+     "swing_mean": 0.04,
+     "gap_mean": 1.18,
+     "rms_max": -21.94,
+     "peak_max": 0.397,
+     "heard_on": 11,
+     "broken": 0
+    }
+   },
+   {
+    "name": "Short Pluck",
+    "params": {
+     "root": 48,
+     "chord": 0,
+     "decay": 0.3,
+     "bright": 0.5,
+     "mix": 0.5
+    },
+    "tip": "One pitch, C3, gone in 0.3 s",
+    "measured": {
+     "inputs": 11,
+     "timbre_median": 1.24,
+     "level_mean": -0.48,
+     "centroid_mean_pct": 4.9,
+     "side_mid_mean": -5.54,
+     "lr_mean": -0.06,
+     "swing_mean": -0.12,
+     "gap_mean": -0.24,
+     "rms_max": -15.9,
+     "peak_max": 0.525,
+     "heard_on": 11,
+     "broken": 0
+    }
+   },
+   {
+    "name": "Open Strings",
+    "params": {
+     "root": 43,
+     "chord": 1,
+     "decay": 8.0,
+     "bright": 1.0,
+     "mix": 0.25
+    },
+    "tip": "G2 and D3, every harmonic rings 8 s",
+    "measured": {
+     "inputs": 11,
+     "timbre_median": 0.23,
+     "level_mean": -1.94,
+     "centroid_mean_pct": 5.2,
+     "side_mid_mean": 6.1,
+     "lr_mean": 0.14,
+     "swing_mean": 0.42,
+     "gap_mean": 2.44,
+     "rms_max": -20.88,
+     "peak_max": 0.437,
+     "heard_on": 11,
+     "broken": 0
+    }
+   }
+  ],
+  "freqshift": [
+   {
+    "name": "Slow Phase",
+    "params": {
+     "shift": 0.5,
+     "spread": 0.0,
+     "feedback": 0.0,
+     "mix": 0.5
+    },
+    "tip": "Half a hertz against the dry sound: a slow sweep",
+    "measured": {
+     "inputs": 11,
+     "timbre_median": 0.51,
+     "level_mean": -3.11,
+     "centroid_mean_pct": 0.7,
+     "side_mid_mean": 0.38,
+     "lr_mean": 0.01,
+     "swing_mean": 0.04,
+     "gap_mean": -2.37,
+     "rms_max": -22.9,
+     "peak_max": 0.436,
+     "heard_on": 11,
+     "broken": 0
+    }
+   },
+   {
+    "name": "Wide Drift",
+    "params": {
+     "shift": 2.0,
+     "spread": 1.0,
+     "feedback": 0.0,
+     "mix": 0.5
+    },
+    "tip": "Left 2 Hz up, right 2 Hz down",
+    "measured": {
+     "inputs": 11,
+     "timbre_median": 0.56,
+     "level_mean": -4.1,
+     "centroid_mean_pct": 1.7,
+     "side_mid_mean": 20.61,
+     "lr_mean": -0.27,
+     "swing_mean": 3.02,
+     "gap_mean": -2.02,
+     "rms_max": -23.25,
+     "peak_max": 0.434,
+     "heard_on": 11,
+     "broken": 0
+    }
+   },
+   {
+    "name": "Barber Pole",
+    "params": {
+     "shift": 6.0,
+     "spread": 0.0,
+     "feedback": 0.6,
+     "mix": 0.6
+    },
+    "tip": "Each pass round the 5 ms loop 6 Hz higher",
+    "measured": {
+     "inputs": 11,
+     "timbre_median": 1.18,
+     "level_mean": -1.51,
+     "centroid_mean_pct": 6.2,
+     "side_mid_mean": -0.44,
+     "lr_mean": 0.0,
+     "swing_mean": 0.08,
+     "gap_mean": -1.77,
+     "rms_max": -21.39,
+     "peak_max": 0.483,
+     "heard_on": 11,
+     "broken": 0
+    }
+   },
+   {
+    "name": "Metal Voice",
+    "params": {
+     "shift": 80.0,
+     "spread": 0.0,
+     "feedback": 0.0,
+     "mix": 1.0
+    },
+    "tip": "Up 80 Hz: the harmonics no longer line up",
+    "measured": {
+     "inputs": 11,
+     "timbre_median": 8.32,
+     "level_mean": -0.0,
+     "centroid_mean_pct": 54.6,
+     "side_mid_mean": 0.0,
+     "lr_mean": 0.0,
+     "swing_mean": -0.01,
+     "gap_mean": 0.0,
+     "rms_max": -20.0,
+     "peak_max": 0.538,
+     "heard_on": 11,
+     "broken": 0
+    }
+   },
+   {
+    "name": "Sink",
+    "params": {
+     "shift": -150.0,
+     "spread": 0.0,
+     "feedback": 0.0,
+     "mix": 1.0
+    },
+    "tip": "Down 150 Hz, the lows fold under",
+    "measured": {
+     "inputs": 11,
+     "timbre_median": 6.81,
+     "level_mean": -0.01,
+     "centroid_mean_pct": -46.7,
+     "side_mid_mean": 0.17,
+     "lr_mean": -0.0,
+     "swing_mean": 0.01,
+     "gap_mean": -1.93,
+     "rms_max": -19.98,
+     "peak_max": 0.529,
+     "heard_on": 11,
+     "broken": 0
+    }
+   },
+   {
+    "name": "Bell Spiral",
+    "params": {
+     "shift": 150.0,
+     "spread": 0.5,
+     "feedback": 0.7,
+     "mix": 0.5
+    },
+    "tip": "Up 150 Hz and round again, the right side unshifted",
+    "measured": {
+     "inputs": 11,
+     "timbre_median": 5.84,
+     "level_mean": -2.36,
+     "centroid_mean_pct": 48.2,
+     "side_mid_mean": 22.03,
+     "lr_mean": -0.96,
+     "swing_mean": 1.65,
+     "gap_mean": 0.68,
+     "rms_max": -21.41,
+     "peak_max": 0.576,
+     "heard_on": 11,
+     "broken": 0
+    }
+   },
+   {
+    "name": "Ring Bright",
+    "params": {
+     "shift": 600.0,
+     "spread": 1.0,
+     "feedback": 0.0,
+     "mix": 0.3
+    },
+    "tip": "600 Hz up on the left, down on the right, 30%",
+    "measured": {
+     "inputs": 11,
+     "timbre_median": 4.28,
+     "level_mean": -2.71,
+     "centroid_mean_pct": 26.1,
+     "side_mid_mean": 14.99,
+     "lr_mean": -0.01,
+     "swing_mean": 0.01,
+     "gap_mean": 0.11,
+     "rms_max": -22.71,
+     "peak_max": 0.475,
+     "heard_on": 11,
+     "broken": 0
+    }
+   }
+  ],
+  "pitch": [
+   {
+    "name": "Octave Up",
+    "params": {
+     "shift": 12,
+     "fine": 0.0,
+     "window": 50.0,
+     "feedback": 0.0,
+     "mix": 0.5
+    },
+    "tip": "One octave up, half and half with the dry sound.",
+    "measured": {
+     "inputs": 11,
+     "timbre_median": 5.74,
+     "level_mean": -3.83,
+     "centroid_mean_pct": 41.9,
+     "side_mid_mean": 0.19,
+     "lr_mean": 0.0,
+     "swing_mean": 0.02,
+     "gap_mean": 0.98,
+     "rms_max": -23.61,
+     "peak_max": 0.39,
+     "heard_on": 11,
+     "broken": 0
+    }
+   },
+   {
+    "name": "Octave Down",
+    "params": {
+     "shift": -12,
+     "fine": 0.0,
+     "window": 90.0,
+     "feedback": 0.0,
+     "mix": 0.5
+    },
+    "tip": "One octave down under the dry sound. The 90 ms window suits low notes.",
+    "measured": {
+     "inputs": 11,
+     "timbre_median": 2.64,
+     "level_mean": -3.62,
+     "centroid_mean_pct": -22.7,
+     "side_mid_mean": 0.03,
+     "lr_mean": -0.0,
+     "swing_mean": -0.01,
+     "gap_mean": 0.48,
+     "rms_max": -23.23,
+     "peak_max": 0.398,
+     "heard_on": 11,
+     "broken": 0
+    }
+   },
+   {
+    "name": "Fifth Above",
+    "params": {
+     "shift": 7,
+     "fine": 0.0,
+     "window": 50.0,
+     "feedback": 0.0,
+     "mix": 0.4
+    },
+    "tip": "A fifth (7 semitones) above, at 40% mix.",
+    "measured": {
+     "inputs": 11,
+     "timbre_median": 3.29,
+     "level_mean": -3.35,
+     "centroid_mean_pct": 12.1,
+     "side_mid_mean": 0.09,
+     "lr_mean": 0.0,
+     "swing_mean": -0.01,
+     "gap_mean": 0.41,
+     "rms_max": -23.24,
+     "peak_max": 0.379,
+     "heard_on": 11,
+     "broken": 0
+    }
+   },
+   {
+    "name": "Doubler",
+    "params": {
+     "shift": 0,
+     "fine": 9.0,
+     "window": 30.0,
+     "feedback": 0.0,
+     "mix": 0.45
+    },
+    "tip": "A second voice 9 cents sharp, read through a 30 ms window.",
+    "measured": {
+     "inputs": 11,
+     "timbre_median": 0.37,
+     "level_mean": -3.45,
+     "centroid_mean_pct": 1.7,
+     "side_mid_mean": -0.34,
+     "lr_mean": -0.01,
+     "swing_mean": -0.01,
+     "gap_mean": -1.09,
+     "rms_max": -22.94,
+     "peak_max": 0.468,
+     "heard_on": 11,
+     "broken": 0
+    }
+   },
+   {
+    "name": "Rising Spiral",
+    "params": {
+     "shift": 5,
+     "fine": 0.0,
+     "window": 40.0,
+     "feedback": 0.7,
+     "mix": 0.5
+    },
+    "tip": "A fourth up, fed back at 0.7: each repeat climbs another 5 semitones.",
+    "measured": {
+     "inputs": 11,
+     "timbre_median": 7.68,
+     "level_mean": -2.65,
+     "centroid_mean_pct": 33.3,
+     "side_mid_mean": -0.15,
+     "lr_mean": 0.0,
+     "swing_mean": -0.05,
+     "gap_mean": 1.24,
+     "rms_max": -22.28,
+     "peak_max": 0.429,
+     "heard_on": 11,
+     "broken": 0
+    }
+   },
+   {
+    "name": "Falling Spiral",
+    "params": {
+     "shift": -7,
+     "fine": 0.0,
+     "window": 70.0,
+     "feedback": 0.65,
+     "mix": 0.5
+    },
+    "tip": "A fifth down, fed back at 0.65: each repeat drops another 7 semitones.",
+    "measured": {
+     "inputs": 11,
+     "timbre_median": 3.02,
+     "level_mean": -3.14,
+     "centroid_mean_pct": -18.3,
+     "side_mid_mean": 0.25,
+     "lr_mean": 0.0,
+     "swing_mean": 0.03,
+     "gap_mean": 0.45,
+     "rms_max": -22.73,
+     "peak_max": 0.312,
+     "heard_on": 11,
+     "broken": 0
+    }
+   },
+   {
+    "name": "Two Down",
+    "params": {
+     "shift": -24,
+     "fine": 0.0,
+     "window": 140.0,
+     "feedback": 0.0,
+     "mix": 0.6
+    },
+    "tip": "Two octaves down at 60% mix, with a 140 ms window.",
+    "measured": {
+     "inputs": 11,
+     "timbre_median": 2.06,
+     "level_mean": -3.91,
+     "centroid_mean_pct": -49.8,
+     "side_mid_mean": -0.34,
+     "lr_mean": -0.0,
+     "swing_mean": 0.01,
+     "gap_mean": -0.07,
+     "rms_max": -23.62,
+     "peak_max": 0.394,
+     "heard_on": 11,
+     "broken": 0
+    }
+   }
+  ],
+  "shimmer": [
+   {
+    "name": "Octave Tail",
+    "params": {
+     "decay": 6.0,
+     "shimmer": 0.5,
+     "interval": 0,
+     "damp": 0.4,
+     "mix": 0.35
+    },
+    "tip": "A 6 s tail that climbs in octaves.",
+    "measured": {
+     "inputs": 11,
+     "timbre_median": 3.76,
+     "level_mean": -3.23,
+     "centroid_mean_pct": -0.3,
+     "side_mid_mean": 13.8,
+     "lr_mean": 0.11,
+     "swing_mean": 1.12,
+     "gap_mean": 2.66,
+     "rms_max": -22.9,
+     "peak_max": 0.349,
+     "heard_on": 11,
+     "broken": 0
+    }
+   },
+   {
+    "name": "Fifth Tail",
+    "params": {
+     "decay": 5.0,
+     "shimmer": 0.45,
+     "interval": 1,
+     "damp": 0.45,
+     "mix": 0.35
+    },
+    "tip": "A 5 s tail that climbs in fifths.",
+    "measured": {
+     "inputs": 11,
+     "timbre_median": 0.71,
+     "level_mean": -3.29,
+     "centroid_mean_pct": -0.8,
+     "side_mid_mean": 13.28,
+     "lr_mean": 0.08,
+     "swing_mean": 1.08,
+     "gap_mean": 2.49,
+     "rms_max": -22.93,
+     "peak_max": 0.346,
+     "heard_on": 11,
+     "broken": 0
+    }
+   },
+   {
+    "name": "Long Climb",
+    "params": {
+     "decay": 14.0,
+     "shimmer": 0.7,
+     "interval": 0,
+     "damp": 0.3,
+     "mix": 0.4
+    },
+    "tip": "A 14 s tail with most of each pass shifted up an octave.",
+    "measured": {
+     "inputs": 11,
+     "timbre_median": 9.51,
+     "level_mean": -3.35,
+     "centroid_mean_pct": 4.3,
+     "side_mid_mean": 16.89,
+     "lr_mean": 0.4,
+     "swing_mean": 1.42,
+     "gap_mean": 3.75,
+     "rms_max": -22.86,
+     "peak_max": 0.371,
+     "heard_on": 11,
+     "broken": 0
+    }
+   },
+   {
+    "name": "Two Octaves",
+    "params": {
+     "decay": 8.0,
+     "shimmer": 0.35,
+     "interval": 3,
+     "damp": 0.5,
+     "mix": 0.3
+    },
+    "tip": "An 8 s tail that jumps two octaves at a time.",
+    "measured": {
+     "inputs": 11,
+     "timbre_median": 5.76,
+     "level_mean": -2.68,
+     "centroid_mean_pct": 0.2,
+     "side_mid_mean": 13.1,
+     "lr_mean": 0.14,
+     "swing_mean": 1.11,
+     "gap_mean": 2.61,
+     "rms_max": -22.34,
+     "peak_max": 0.373,
+     "heard_on": 11,
+     "broken": 0
+    }
+   },
+   {
+    "name": "Twelfth",
+    "params": {
+     "decay": 7.0,
+     "shimmer": 0.4,
+     "interval": 2,
+     "damp": 0.45,
+     "mix": 0.3
+    },
+    "tip": "A 7 s tail that climbs by an octave and a fifth.",
+    "measured": {
+     "inputs": 11,
+     "timbre_median": 4.66,
+     "level_mean": -2.71,
+     "centroid_mean_pct": -0.0,
+     "side_mid_mean": 12.69,
+     "lr_mean": 0.09,
+     "swing_mean": 1.02,
+     "gap_mean": 2.48,
+     "rms_max": -22.4,
+     "peak_max": 0.372,
+     "heard_on": 11,
+     "broken": 0
+    }
+   },
+   {
+    "name": "Sinking",
+    "params": {
+     "decay": 6.0,
+     "shimmer": 0.5,
+     "interval": 4,
+     "damp": 0.2,
+     "mix": 0.35
+    },
+    "tip": "A 6 s tail that falls an octave at a time.",
+    "measured": {
+     "inputs": 11,
+     "timbre_median": 0.3,
+     "level_mean": -3.25,
+     "centroid_mean_pct": -1.2,
+     "side_mid_mean": 13.71,
+     "lr_mean": 0.12,
+     "swing_mean": 1.16,
+     "gap_mean": 2.6,
+     "rms_max": -22.91,
+     "peak_max": 0.354,
+     "heard_on": 11,
+     "broken": 0
+    }
+   },
+   {
+    "name": "Short Octave",
+    "params": {
+     "decay": 1.8,
+     "shimmer": 0.4,
+     "interval": 0,
+     "damp": 0.5,
+     "mix": 0.3
+    },
+    "tip": "A 1.8 s room with an octave above in its tail.",
+    "measured": {
+     "inputs": 11,
+     "timbre_median": 0.31,
+     "level_mean": -3.0,
+     "centroid_mean_pct": -0.4,
+     "side_mid_mean": 8.29,
+     "lr_mean": -0.18,
+     "swing_mean": 0.58,
+     "gap_mean": 0.85,
+     "rms_max": -22.78,
+     "peak_max": 0.372,
+     "heard_on": 11,
+     "broken": 0
+    }
+   }
+  ],
+  "freeze": [
+   {
+    "name": "Soft Hold",
+    "params": {
+     "blur": 12,
+     "drift": 0.1,
+     "mix": 0.7
+    },
+    "tip": "Holds the average of the last 0.3 s, at 70%.",
+    "measured": {
+     "inputs": 11,
+     "timbre_median": 1.97,
+     "level_mean": -3.39,
+     "centroid_mean_pct": -0.4,
+     "side_mid_mean": 20.35,
+     "lr_mean": 0.03,
+     "swing_mean": 1.28,
+     "gap_mean": 1.75,
+     "rms_max": -21.49,
+     "peak_max": 0.532,
+     "heard_on": 11,
+     "broken": 0
+    }
+   },
+   {
+    "name": "Under the Live",
+    "params": {
+     "blur": 8,
+     "drift": 0.2,
+     "mix": 0.4
+    },
+    "tip": "Holds the last 0.23 s under the live sound, at 40%.",
+    "measured": {
+     "inputs": 11,
+     "timbre_median": 0.64,
+     "level_mean": -2.53,
+     "centroid_mean_pct": -1.5,
+     "side_mid_mean": 14.53,
+     "lr_mean": -0.01,
+     "swing_mean": 1.01,
+     "gap_mean": 0.15,
+     "rms_max": -21.81,
+     "peak_max": 0.532,
+     "heard_on": 11,
+     "broken": 0
+    }
+   },
+   {
+    "name": "Moving Hold",
+    "params": {
+     "blur": 8,
+     "drift": 0.6,
+     "mix": 0.6
+    },
+    "tip": "A held spectrum whose bands rise and fall slowly by a few dB.",
+    "measured": {
+     "inputs": 11,
+     "timbre_median": 2.16,
+     "level_mean": -3.18,
+     "centroid_mean_pct": 0.7,
+     "side_mid_mean": 18.57,
+     "lr_mean": 0.03,
+     "swing_mean": 1.22,
+     "gap_mean": 1.27,
+     "rms_max": -21.71,
+     "peak_max": 0.532,
+     "heard_on": 11,
+     "broken": 0
+    }
+   },
+   {
+    "name": "Wide Average",
+    "params": {
+     "blur": 32,
+     "drift": 0.15,
+     "mix": 0.6
+    },
+    "tip": "Holds the average of the last 0.73 s, at 60%.",
+    "measured": {
+     "inputs": 11,
+     "timbre_median": 1.38,
+     "level_mean": -3.31,
+     "centroid_mean_pct": -0.4,
+     "side_mid_mean": 20.09,
+     "lr_mean": -0.02,
+     "swing_mean": 1.29,
+     "gap_mean": 2.44,
+     "rms_max": -21.65,
+     "peak_max": 0.532,
+     "heard_on": 11,
+     "broken": 0
+    }
+   },
+   {
+    "name": "Restless",
+    "params": {
+     "blur": 16,
+     "drift": 1.0,
+     "mix": 0.6
+    },
+    "tip": "Drift at full: the held bands move up and down by about 10 dB.",
+    "measured": {
+     "inputs": 11,
+     "timbre_median": 2.84,
+     "level_mean": -3.39,
+     "centroid_mean_pct": 3.4,
+     "side_mid_mean": 19.26,
+     "lr_mean": 0.05,
+     "swing_mean": 1.25,
+     "gap_mean": 2.08,
+     "rms_max": -21.76,
+     "peak_max": 0.532,
+     "heard_on": 11,
+     "broken": 0
+    }
+   },
+   {
+    "name": "Faint Bed",
+    "params": {
+     "blur": 24,
+     "drift": 0.3,
+     "mix": 0.25
+    },
+    "tip": "A quiet hold of the last 0.56 s, at 25% under the live sound.",
+    "measured": {
+     "inputs": 11,
+     "timbre_median": 0.26,
+     "level_mean": -1.71,
+     "centroid_mean_pct": -0.6,
+     "side_mid_mean": 11.2,
+     "lr_mean": -0.02,
+     "swing_mean": 0.65,
+     "gap_mean": 1.35,
+     "rms_max": -21.35,
      "peak_max": 0.532,
      "heard_on": 11,
      "broken": 0

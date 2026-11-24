@@ -707,9 +707,19 @@ $("#pdel").addEventListener("click", async () => {
   if (!S.preset?.user) return;
   try { await api(`/api/prompts/${encodeURIComponent(S.preset.id)}/delete`, {}); await loadPresets(); info("removed from Your prompts", "ok"); } catch (err) { fail(err); }
 });
-$("#engine").addEventListener("change", async () => {
-  try { await api("/api/engine", { engine: $("#engine").value }); dirsKnown = -1; S.engine = null; listSessions(); } catch (e) { fail(e); }
-});
+// The model is chosen in Settings (⚙), Model: it is seldom changed, so the Engine panel only names it
+async function switchEngine(id) {
+  if (!id || id === S.engine) return;
+  try { await api("/api/engine", { engine: id }); dirsKnown = -1; S.engine = null; listSessions(); } catch (e) { fail(e); }
+}
+function drawEngine(s) {
+  const es = s.engines || [], cur = es.find((e) => e.id === s.engine);
+  $("#engname").textContent = cur ? cur.label : (s.engine || "");
+  const pick = $("#engpick");
+  const html = es.map((e) => `<button type="button" data-e="${esc(e.id)}" aria-pressed="${e.id === s.engine}"><b>${esc(e.label)}</b><span>${e.id === s.engine ? "in use" : e.state === "ready" ? "ready" : esc(e.state)}</span></button>`).join("");
+  if (pick && pick._html !== html) { pick.innerHTML = html; pick._html = html; }
+}
+$("#engname").addEventListener("click", () => openSettings("model"));
 const engKnobs = [
   knob({ label: "Strength", min: 0, max: 8, step: 0.1, reset: 3, get: () => +(S.sampling.guidance ?? 3), put: (v) => sendSampling({ guidance: v }), fmt: (v) => v.toFixed(1), mod: "guidance", curve: "guidance", tip: "how strongly the prompt steers the music: the model's guidance, its weight on the style conditioning; live, at no cost" }),
   knob({ label: "Temperature", min: 0.5, max: 2, step: 0.05, reset: 1.3, get: () => +(S.sampling.temperature ?? 1.3), put: (v) => sendSampling({ temperature: v }), fmt: (v) => v.toFixed(2), mod: "temperature", curve: "temperature", tip: "the sampler's temperature" }),
@@ -2299,9 +2309,8 @@ async function poll() {
   part("engine", () => {
       S.status = s;
       $("#ver").textContent = s.version || "";
-      if (s.engines && document.activeElement !== $("#engine")) {
-        $("#engine").innerHTML = s.engines.map((e) => `<option value="${esc(e.id)}">${esc(e.label)}${e.state === "ready" ? "" : ` (${esc(e.state)})`}</option>`).join("");
-        $("#engine").value = s.engine;
+      if (s.engines) {
+        drawEngine(s);
       }
       const sl = s.model?.steer_layer;
       if (sl != null && $("#steercard .sat").textContent !== `layer ${sl} · fixed`) {
@@ -2704,11 +2713,13 @@ function drawSettings() {
     return;
   }
   const m = d.model || {}, mi = m.model || {}, t = m.timing || {}, v = m.versions || {}, st = m.stream_stats, cal = m.calibration, mc = m.machine || {};
-  let h = `<h4>Model</h4>` + kv([["Engine", esc(mi.model_id || d.engine)], ["Package", esc(mi.package)], ["Weights", esc(mi.dtype)], ["Device", esc(mi.device)],
+  let h = `<h4>Model in use</h4><div class="engpick" id="engpick" role="group" aria-label="The model that plays"></div>
+    <p class="setnote">Magenta RT 2 small is the instrument's model: Steer and the Model layers both act on it. MusicGen small plays with Steer and no model-layer units.</p>`;
+  h += `<h4>Model</h4>` + kv([["Engine", esc(mi.model_id || d.engine)], ["Package", esc(mi.package)], ["Weights", esc(mi.dtype)], ["Device", esc(mi.device)],
     ["Licence", esc(mi.licence)], ["Sample rate", mi.sample_rate && `${mi.sample_rate} Hz, ${mi.channels} channels`], ["Frame", mi.frame_ms && `${mi.frame_ms} ms (${Math.round(mi.sample_rate * mi.frame_ms / 1000)} samples)`],
     ["Transformer layers", mi.n_layers], ["Steer layer", mi.steer_layer], ["Loaded in", m.load_s && `${m.load_s} s`], ["Presets", d.presets]]);
-  h += `<h4>Timing</h4>` + kv([["Buffer", t.lead_frames && `${t.lead_frames} frames (${t.lead_frames * t.frame_ms} ms)`], ["Declared latency", t.latency && `${t.latency.declared_first_ms} ms from a move to the sound`],
-    ["Measured latency", t.latency && t.latency.measured_median_ms != null ? `${t.latency.measured_median_ms} ms (median of the last ${t.latency.measured_ms.length})` : "play and move a knob to measure"],
+  h += `<h4>Timing</h4>` + kv([["Buffer", t.lead_frames && `${t.lead_frames} frames (${t.lead_frames * t.frame_ms} ms)`], ["Declared latency", t.latency && `${Math.round(t.latency.declared_first_ms)} ms from a move to the sound`],
+    ["Measured latency", t.latency && t.latency.measured_median_ms != null ? `${Math.round(t.latency.measured_median_ms)} ms (median of the last ${t.latency.measured_ms.length})` : "play and move a knob to measure"],
     ["Step time", t.step_ms_p50 != null ? `${t.step_ms_p50} ms median, ${t.step_ms_p95} ms at the 95th percentile, budget ${t.frame_ms} ms` : "while playing"], ["Dropouts", t.underruns], ["Sound card block", t.block && `${t.block} samples`]]);
   if (m.directions && m.directions.length) h += `<h4>Directions</h4><table><tr><th>Name</th><th>Pairs</th><th>Separation at layer ${mi.steer_layer}</th><th>Best layer</th><th>Made</th></tr>${m.directions.map((x) => `<tr><td>${esc(x.name)}</td><td>${x.pairs}</td><td>${x.separation_at_steer ?? "–"}</td><td>${x.best_layer ?? "–"}</td><td>${esc(x.made || "")}</td></tr>`).join("")}</table>`;
   if (st) h += `<h4>Stream statistics</h4>` + kv([["Measured", esc(st.made)], ["Reference prompts", st.prompts], ["Samples", `${st.samples} frames (${st.frames} a prompt, the first ${st.skip} skipped)`], ["Stream", `${st.layers} layers × ${st.width} numbers`]]) + `<p style="margin:6px 0 0;color:#8f95a1">The stream's typical size, layer by layer:</p>` + sparkline(st.norm_by_layer);
@@ -2717,6 +2728,8 @@ function drawSettings() {
   h += `<h4>Runtime</h4>` + kv([["Versions", esc(Object.entries(v).map(([k, x]) => `${k} ${x}`).join(" · "))], ["Python", esc(`engine ${m.python || "?"} · server ${d.server_python}`)], ["Machine", esc(`${mc.chip || ""} · ${mc.memory_gb ? mc.memory_gb + " GB" : ""} · ${mc.platform || ""}`)]]);
   if (d.model_error) h += `<p>${esc(d.model_error)}</p>`;
   box.innerHTML = h;
+  if (S.status) drawEngine(S.status);
+  $("#engpick").addEventListener("click", (e) => { const b = e.target.closest("button[data-e]"); if (b) switchEngine(b.dataset.e); });
 }
 async function openSettings(tab) {
   if (tab) SET.tab = tab;

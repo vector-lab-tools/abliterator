@@ -25,7 +25,7 @@
   <div class="modelchip" id="modelchip">connecting…</div>
   <div class="loads"><span title="CPU load: the share of this computer's processor (all its cores) that Abliterator, the server and the model's process, is using">CPU load <b id="om-cpu">–</b></span><span title="GPU load: the model's time to make a frame against the frame's length, taking the slower of its slowest 5% over ten seconds and its slowest step in the last two. Over 100% a step ran longer than a frame lasts; the Buffer's frames in hand cover it, and the engine adds a frame or two by itself when other programs load the computer.">GPU load <b id="om-load">–</b></span></div>
   <button class="icon-btn" id="themebtn" title="Theme: the system's, light or dark">◐</button>
-  <button class="icon-btn" id="setbtn" title="Settings: the model, and about Abliterator" aria-haspopup="dialog">⚙</button>
+  <button class="icon-btn" id="setbtn" title="Settings: the model (which one plays, and its data), and about Abliterator" aria-haspopup="dialog">⚙</button>
 </header>
 <div class="setpanel" id="unithelp" role="dialog" aria-modal="true" aria-label="Unit help" hidden>
   <div class="setbox uhbox">
@@ -60,7 +60,7 @@
       <section id="v-make">
         <div class="synth" id="synth">
           <div class="pn" id="pn-engine">
-            <div class="ph"><span class="pw on"></span><b>Engine</b><select id="engine" class="psel" aria-label="Engine"></select><span class="pinfo"><span id="modelinfo"></span> · <span class="readout" id="readout">Ready</span></span></div>
+            <div class="ph"><span class="pw on"></span><b>Engine</b><button type="button" id="engname" class="engname" title="The model that plays. Change it in Settings (⚙), Model" aria-haspopup="dialog"></button><span class="pinfo"><span id="modelinfo"></span> · <span class="readout" id="readout">Ready</span></span></div>
             <div class="eng">
               <div class="engl">
                 <div class="prow"><button class="ib" id="presetprev" title="The previous preset">‹</button><select id="preset" class="psel wide" aria-label="Preset"></select><button class="ib" id="presetnext" title="The next preset">›</button></div>

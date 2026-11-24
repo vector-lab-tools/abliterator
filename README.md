@@ -18,7 +18,7 @@
 
 **Author:** David M. Berry
 **Institution:** University of Sussex
-**Version:** 0.2.15
+**Version:** 0.2.16
 **Status:** alpha
 **Licence:** GPL-3.0-or-later
 **Website:** https://vector-lab-tools.github.io/abliterator/
@@ -42,7 +42,7 @@ Abliterator plays a music model on your own machine and changes how it runs whil
 - **Modulation.** Three LFOs, three envelopes, two random sources, Steps (a drawn sequence), the Follower (the sound's own loudness), Drift and Chaos (on the Wild tab), and four macros (a macro's tile, and ENV 2 and 3, show once they move something). Drag a source onto any knob that takes one: the Steer doses, Strength, Temperature, the low-pass, the volume, and every knob of a Model layers unit or an effect. With a source selected, each knob it can move shows its send: drag up for more, down for less, double-click to unlink. An LFO's Amount scales every send from it. A modulated unit is attached again with its memory kept whenever its knob moves a step. Sources are functions of the frame's time, so a saved sound replays its modulation exactly.
 - **Musical knobs.** Every control and every unit setting was swept on several presets and each render measured (level, clipping, silence, centroid, flatness, a long-term spectrum, flux), against the spread that changing the seed alone gives. Each knob keeps to the measured safe range, and its travel is shaped toward where the sound changes. The ranges were measured on the four ambient presets; the other presets and typed styles use them until a Tune pass is run on them. **Tune** lays the sweeps out as a grid of clips, and a range can be set by ear there.
 - **Sounds and Session.** **Save last** keeps the last 4 to 60 seconds as heard, with a recipe from which the engine renders it again sample for sample. Session has eight tracks of saved sounds that loop or play once, each a channel strip with pan, mute, solo, effects, and a fader with a ladder of LEDs and Hold reading the track's peak; a limiter on the mix, and exports of a track or the mix.
-- **Two engines.** Magenta RT 2 small (MLX, Apple silicon) is the live engine. MusicGen small (PyTorch) is kept as a second engine with Steer and no model-layer units; it answers in about 285 ms.
+- **Two engines.** Magenta RT 2 small (MLX, Apple silicon) is the live engine. MusicGen small (PyTorch) is kept as a second engine with Steer and no model-layer units; it answers in about 285 ms. The model is chosen in Settings (⚙), Model, which the model's name in the Engine panel's header also opens.
 
 <p align="center"><img src="docs/img/c-scopes.webp" alt="Two scopes on the Model layers row: layer 6 in Trace, a cyan waveform of the stream; layer 9 in Time, with the brightness reading stepping up when a Brightness dose was set" width="80%"></p>
 

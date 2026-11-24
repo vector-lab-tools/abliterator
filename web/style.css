@@ -1119,3 +1119,10 @@ html, body { overscroll-behavior-x: none; }
 /* an effect's menu of five or more choices (Resonator's Chord, Shimmer's Interval) fits the card without its inline label, which stays in its tooltip */
 .fxseg:has(> button:nth-of-type(5)) > span { display: none; }
 .fxseg:has(> button:nth-of-type(5)) > button { padding: 2px 5px; }
+/* the header's output level and Volume, at the top right: a small cell meter on its side and a mini knob */
+.hdrout { flex: none; display: flex; align-items: center; gap: 6px; }
+.hdrmeter.master { flex-direction: row; align-self: center; width: auto; height: 30px; padding: 0; gap: 5px; }
+.hdrmeter.master .mh { display: none; }
+.hdrmeter.master .mm { flex: none; width: 8px; height: 30px; min-height: 0; }
+.hdrmeter.master .mi { font-size: 9px; min-width: 30px; text-align: right; color: #9aa0ab; }
+.hdrout .knob.kmini { transform: translateY(3px); }

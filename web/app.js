@@ -766,9 +766,10 @@ sampPair.append(tempKnob, topkKnob);
 $("#engknobs").appendChild(sampPair);
 
 // Output: the master, after the model
+let hdrVol = null;                                               // the header's Volume, the same as the Output panel's
 const outKnobs = [
   knob({ label: "Low-pass", min: 500, max: 16000, log: true, step: 10, reset: 16000, get: () => +(S.master.lowpass_hz ?? 16000), put: (v) => sendMaster({ lowpass_hz: v }), fmt: (v) => `${(v / 1000).toFixed(1)}k`, mod: "lowpass_hz", tip: "a low-pass filter on the model's output" }),
-  knob({ label: "Volume", min: 0, max: 1, step: 0.01, reset: 0.5, get: () => +(S.master.volume ?? 0.5), put: (v) => sendMaster({ volume: v }), fmt: (v) => v.toFixed(2), mod: "volume" }),
+  knob({ label: "Volume", min: 0, max: 1, step: 0.01, reset: 0.5, get: () => +(S.master.volume ?? 0.5), put: (v) => { sendMaster({ volume: v }); hdrVol?.paint(); }, fmt: (v) => v.toFixed(2), mod: "volume" }),
 ];
 const outToggles = [toggle("Bypass", () => !S.master.on, (v) => sendMaster({ on: !v })), toggle("Level", () => !!S.master.level, (v) => sendMaster({ level: v })),
   toggle("Limiter", () => !!S.master.limit, (v) => sendMaster({ limit: v })), toggle("De-click", () => !!S.master.declick, (v) => sendMaster({ declick: v }))];
@@ -823,6 +824,15 @@ const DYN = (() => {
 })();
 const engMeter = meter("OUT", true);
 $("#outmeter").appendChild(engMeter);
+// the output level and Volume at the top right of the header, as on a synth's top bar: always in view
+const hdrMeter = meter("OUT", true);
+hdrMeter.classList.add("hdrmeter");
+hdrMeter.title = "The output level: each channel's peak, with a hold line; the figure is the held peak (dBFS). The same as the Output panel's OUT meter";
+hdrVol = knob({ label: "Volume", min: 0, max: 1, step: 0.01, reset: 0.5, get: () => +(S.master.volume ?? 0.5),
+  put: (v) => { sendMaster({ volume: v }); outKnobs.find((k) => k.getAttribute("aria-label") === "Volume")?.paint(); }, fmt: (v) => v.toFixed(2), mod: "volume",
+  tip: "the output's volume, the same as Volume in the Output panel" });
+hdrVol.classList.add("kmini");
+$("#hdrout").append(hdrMeter, hdrVol);
 
 // Drag to reorder: an item is picked up by its handle and dropped before or after another item in
 // the same row; move(from, to) gets the item's old place and its new one.
@@ -2366,7 +2376,7 @@ async function poll() {
         if (changed) { Object.assign(S.doses, s.doses); drawXY(); paintDoses(); }
       }
       if (s.sampling && Date.now() - samplingTouched > 400) { S.sampling = { ...s.sampling }; if (!holding) engKnobs.forEach((k) => k.paint?.()); }
-      if (s.master && Date.now() - masterTouched > 400) { S.master = { ...s.master }; if (!holding) { for (const k of [...outKnobs, ...widenKnobs, ...outToggles, ...dynKnobs, ...dynToggles, speedKnob]) k.paint?.(); } }
+      if (s.master && Date.now() - masterTouched > 400) { S.master = { ...s.master }; if (!holding) { for (const k of [...outKnobs, hdrVol, ...widenKnobs, ...outToggles, ...dynKnobs, ...dynToggles, speedKnob]) k.paint?.(); } }
   });
   part("effects", () => {
       if (s.master?.fx) { if (!Object.keys(PFX.types).length && !PFX.loading) { PFX.loading = true; loadFx(); } else adoptFx(s.master.fx); }
@@ -2392,14 +2402,14 @@ async function poll() {
         const recent = Date.now() - (S.dropAt || 0) < 3000;
         ro.innerHTML = recent ? `<span class="bad">Dropouts</span>` : "Playing";
         ro.title = `A step takes ${s.step_ms_p50.toFixed(1)} ms (${s.step_ms_p95.toFixed(1)} at worst) of its ${S.frameMs}; ${s.underruns} dropouts in ${s.seconds.toFixed(0)} s; a move heard after ${L.measured_ms.length ? L.measured_ms.map(Math.round).join(", ") + " ms" : "–"}`;
-        engMeter.set(s.level || 0, s.level_lr, s.peak_lr);
+        engMeter.set(s.level || 0, s.level_lr, s.peak_lr); hdrMeter.set(s.level || 0, s.level_lr, s.peak_lr);
       } else {
         S.lastUnderruns = undefined;
         const st = String(s.state || "");
-        if (s.error) { ro.innerHTML = `<span class="bad">Error</span>`; ro.title = s.error; engMeter.set(0); }
+        if (s.error) { ro.innerHTML = `<span class="bad">Error</span>`; ro.title = s.error; engMeter.set(0); hdrMeter.set(0); }
         else ro.textContent = st === "ready" ? "Ready" : /^loading/.test(st) ? "Loading" : /^measuring/.test(st) ? "Measuring" : /^(embedding|making)/.test(st) ? "Preparing" : st === "stopped" ? "Stopped" : st;
         if (!s.error) ro.title = st === "ready" ? `A move is heard about ${ms(L.declared_first_ms)} after it is made` : st;
-        engMeter.set(0);
+        engMeter.set(0); hdrMeter.set(0);
       }
   });
   part("scope and meters", () => {

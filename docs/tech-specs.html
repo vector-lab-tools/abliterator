@@ -1,0 +1,2133 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Technical specs · Abliterator</title>
+  <meta name="description" content="How Abliterator is built and the ideas behind it, and a review of every unit on its Model layers row: what each one does to the model's vectors, checked tensor by tensor, and whether that change reaches the sound.">
+  <meta property="og:title" content="Technical specs · Abliterator">
+  <meta property="og:description" content="How Abliterator is built, and a review of every Model layers unit: the edit, the stream and the sound, with presets checked on held-out seeds.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://vector-lab-tools.github.io/abliterator/img/share.png">
+  <meta property="og:image:width" content="1280">
+  <meta property="og:image:height" content="640">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="img/mark.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#f3f2ee" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0e1015" media="(prefers-color-scheme: dark)">
+  <script>(function(){try{var t=localStorage.getItem('abl-theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+  <link rel="stylesheet" href="style.css?v=c40f464e">
+  <link rel="stylesheet" href="audio.css?v=75a41c3f">
+  <link rel="stylesheet" href="tech-specs.css?v=1">
+</head>
+<body>
+<!-- Written by hand. Copyright (C) 2026 David M. Berry. SPDX-License-Identifier: GPL-3.0-or-later -->
+<a class="skip" href="#main">Skip to the content</a>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="./" aria-label="Abliterator, home">
+      <img src="img/mark.svg" alt="">
+      <span class="brand-block">
+        <span class="brand-name">Abliterator</span>
+        <span class="brand-tagline">Technical specs</span>
+      </span>
+    </a>
+    <div class="head-tools">
+      <nav class="site-nav" aria-label="Sections">
+        <a href="./">Home</a>
+        <a href="abliteration.html">What is Abliteration?</a>
+        <a href="units.html">Model layers</a>
+        <a href="#ideas">Ideas</a>
+        <a href="#built">How it is built</a>
+        <a href="#summary">The units, checked</a>
+        <a href="#presets-and-held-out-seeds">Presets</a>
+        <a href="faq.html">FAQ</a>
+        <span class="nav-sep" aria-hidden="true"></span>
+        <a class="ext" href="https://github.com/vector-lab-tools/abliterator">GitHub</a>
+        <a class="ext vau" href="https://vector-lab-tools.github.io/vector-abliteration-units/">VAU ↗</a>
+      </nav>
+      <button class="theme-toggle" type="button" aria-label="Switch between light and dark" title="Switch between light and dark">
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<section class="hero hero-short">
+  <canvas class="hero-scope" id="hero-scope" aria-hidden="true"></canvas>
+  <div class="wrap hero-inner">
+    <span class="kicker">Abliterator · technical specs · Vector Abliteration Units</span>
+    <h1><span class="glitch" id="title" data-text="Technical specs">Technical specs</span></h1>
+    <p class="tagline">The ideas Abliterator starts from, how it is built, and a review of every unit on its Model layers row: what each unit's code does to the model's vectors, checked tensor by tensor, whether that change reaches the sound across twenty seeds, and how the presets on each card were chosen and checked on seeds the search never used.</p>
+  </div>
+</section>
+
+<main class="content" id="main">
+
+  <div class="wrap toc-strip" aria-label="On this page"><a href="#ideas">Ideas</a><a href="#built">How it is built</a><a href="#summary">The units, checked</a><a href="#method">Method</a><a href="#overview">What reaches the sound</a><a href="#each-unit">Unit by unit</a><a href="#time-based-effects">Time</a><a href="#presets-and-held-out-seeds">Presets</a><a href="#findings-in-the-code">Findings</a><a href="#limits">Limits</a><a href="#review-of-this-review">Checks</a></div>
+
+  <section class="section wrap reveal" id="ideas">
+    <span class="num">01</span>
+    <h2>The ideas behind it</h2>
+<p>Abliterator is an instrument for vector bending: it changes the vectors a music model computes with while it plays. Most ways of shaping a generated sound act on what goes into the model (the prompt, the seed, the sampler) or on what comes out of it (filters and effects on the audio). Abliterator also acts between the two, on the residual stream of Magenta RealTime 2: 1,024 numbers for each 40 ms frame, which each of the model’s twelve transformer blocks reads and adds to. The model writes every frame from that stream, so an edit there changes what is written: its register, its density and the instruments it seems to use, as well as its spectrum.</p>
+<p>The instrument is built on four ideas.</p>
+<ul>
+<li><strong>Abliteration, widened.</strong> In the interpretability literature, abliteration means removing one direction, the refusal direction, from a chat model (Arditi et al. 2024). Here the word covers every edit to the model’s vectors while it plays: adding a direction (Steer), removing one (Abliterate), turning the stream in a plane (Rotate), squashing, quantising or delaying it. <a href="abliteration.html">What is Abliteration?</a> gives the history of the word and compares each edit with the audio effect that comes nearest.</li>
+<li><strong>Units named after audio effects.</strong> Each Vector Abliteration Unit repeats on the stream the arithmetic of an audio effect. Lookback (VAU’s vLookback) adds the stream from earlier frames, as a delay adds earlier samples; Norm Shrink reduces the stream’s size above a threshold, as a compressor reduces a signal’s level. The stream is not a signal, though, and what the model writes from an echoed stream need not sound like an echo. Most of this page reports a test of whether each unit’s change reaches the sound, and how.</li>
+<li><strong>A standard with hosts.</strong> VAU is a standard modelled on audio plugins such as Steinberg’s VST. A unit is one Python file with a manifest: its parameters, the kind of place it acts on (the stream at a layer, or the output of a block’s attention or MLP) and what it needs from its host. A unit names a kind of place and never a model, and the host maps that place onto an architecture, so the same units run on GPT-2 in <a href="https://vector-lab-tools.github.io/abliteration-lens/">Abliteration Lens</a> and on a music model here. <a href="units.html">Model layers</a> shows where they act in this model.</li>
+<li><strong>Measured knobs and exact replays.</strong> Every control was swept and each render measured before its knob’s range was set: a knob keeps to where the sound held, and ⚠ marks a setting that broke it. Steer’s directions are made from pairs of prompts kept as editable Markdown. A saved sound carries a recipe from which the engine renders it again, sample for sample. The units are held to the same measurements in the review below.</li>
+</ul>
+  </section>
+
+  <section class="section wrap reveal" id="built">
+    <span class="num">02</span>
+    <h2>How it is built</h2>
+<p>Abliterator is written in Python and plain JavaScript, and runs on one Mac with Apple silicon. Nothing it plays or measures leaves the machine. It runs as three programs.</p>
+<ul>
+<li><strong>The engine</strong> (<code>backend/abliterator/mrt2_proc.py</code>) runs Magenta RT 2 small, in 8-bit on Apple’s MLX, in its own process and its own Python environment (<code>.venv-mrt2</code>: magenta-rt 2.0.3, MLX 0.32.4 and the VAU package). Its main thread writes one 40 ms frame of 48 kHz stereo per step, SpectroStream decoding included, reading the Steer doses and the prompt’s conditioning at every step. A second thread takes commands, and the sound card’s callback (<code>sounddevice</code>) plays the frames through the output section. A move is heard about 130 ms after it is made.</li>
+<li><strong>The server</strong> (<code>backend/server.py</code>, FastAPI under uvicorn) starts the engine and passes it commands as JSON lines on its standard input, one reply per command. It listens on 127.0.0.1 only, refuses a request whose Host header is not this machine, and refuses a write without the header <code>X-Abliterator: 1</code>. The engine plays through the sound card itself, so nothing the server or the page does is on the audio path.</li>
+<li><strong>The page</strong> (<code>web/</code>) is plain HTML, CSS and JavaScript, with no framework and no build step. It reads the engine’s state from the server as JSON and sends each knob’s value while the knob turns.</li>
+</ul>
+<h3 id="the-model">The model</h3>
+<p>Magenta RT 2 small is an autoregressive transformer over audio tokens. At each step its temporal transformer reads the frames it has written and a style embedding of the prompt; its residual stream carries 1,024 numbers for the new frame through twelve blocks, and each block’s attention and MLP add what they compute back onto it. A smaller depth transformer then writes the frame’s codebook tokens, and the SpectroStream codec turns them into 1,920 samples of 48 kHz stereo. The weights (about 2.9 GB) are not in the repository; <code>magenta-rt</code> keeps them on the machine.</p>
+<p>A unit acts in one of two kinds of place. A <strong>stream</strong> unit sits at a layer, between two blocks: <code>layer=6</code> is the stream after block 6, and changes what blocks 7 to 12 read. An <strong>output</strong> unit sits inside a block, on what its attention or MLP writes (Abliterate) or on the MLP’s 4,096 hidden units (Neuron). The engine wraps each of the twelve blocks so that the Steer and the units placed at a layer run on the frame being written; the code is under <a href="#where-the-edits-are-applied">Where the edits are applied</a>.</p>
+<h3 id="pytorch-units-on-an-mlx-model">PyTorch units on an MLX model</h3>
+<p>The VAU units are PyTorch, and the model is MLX. At each step, for the one frame being written, the engine copies the stream at a unit’s layer out of MLX, passes it through the unit on the CPU, and copies the result back. Each crossing makes the GPU wait for the CPU. Neuron, Quantise and Abliterate skip the crossing: their arithmetic is written again in MLX (<code>mlxunits.py</code>), tested against VAU’s own units, and stays on the GPU. Neuron in all twelve blocks adds under 1 ms to a step this way, where the crossing added about 9 ms. The VAU package is installed at a pinned commit (<code>dd1742e</code>), named in <code>requirements-mrt2.txt</code>, and every saved sound’s recipe records the chain lines it was made with.</p>
+<h3 id="measuring">Measuring</h3>
+<p><code>measure.py</code> measures a render: level, clipping, silent frames, spectral centroid, spectral flatness, the long-term spectrum and spectral flux. <code>calibrate.broken</code> calls a render broken when it clips (more than 0.1% of samples at 0.98 or above), falls silent (more than a quarter of its 40 ms frames below −55 dBFS, or a level 24 dB below the plain model’s), is overdriven (RMS above −12 dBFS) or turns to noise (spectral flatness above 0.3 and three times the plain model’s). The sweeps of every control and unit setting, measured this way, make the calibration the knobs use (<code>data/calibration/mrt2_small.json</code>), and the Tune view lays the same sweeps out as clips to set a range by ear. The engine’s offline render (<code>Proc.render</code>) gives the same audio as a live take with the same recipe, sample for sample, and every measurement on this page was made through it.</p>
+<h3 id="after-the-model">After the model</h3>
+<p>The output section and the effects (<code>dsp.py</code>, <code>postfx.py</code>) are written in numpy and scipy, so their output is the same at any block size: de-click, auto level, a chain of up to eight effects, a compressor and gate, stereo width and spread, a low-pass, a limiter and a volume. <a href="effects.html">Effects</a> and <a href="output.html">Output</a> describe them. Speed (<code>speed.py</code>) sits between the model and the output section.</p>
+<h3 id="where-things-are">Where things are</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Path</th>
+<th>What it holds</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>backend/abliterator/mrt2_proc.py</code></td>
+<td>The engine: the step loop, Steer, the bridge to the units, modulation per frame, offline renders</td>
+</tr>
+<tr>
+<td><code>backend/abliterator/units.py</code></td>
+<td>The VAU units on this host: names, the space each acts on, defaults, presets, measured ranges and placements</td>
+</tr>
+<tr>
+<td><code>backend/abliterator/mlxunits.py</code></td>
+<td>Neuron, Quantise and Abliterate in MLX, in place of their PyTorch hooks</td>
+</tr>
+<tr>
+<td><code>backend/abliterator/scope.py</code></td>
+<td>The scope: what it reads from the stream at a layer</td>
+</tr>
+<tr>
+<td><code>backend/abliterator/directions.py</code></td>
+<td>Steer’s directions, by difference of means over pairs of prompts</td>
+</tr>
+<tr>
+<td><code>backend/abliterator/mod.py</code></td>
+<td>Modulation sources, routes and the calibrated curves they move along</td>
+</tr>
+<tr>
+<td><code>backend/abliterator/measure.py</code>, <code>calibrate.py</code></td>
+<td>The measures of a render, and the calibration built from the sweeps</td>
+</tr>
+<tr>
+<td><code>backend/abliterator/dsp.py</code>, <code>postfx.py</code>, <code>speed.py</code></td>
+<td>The output section, the effect chain and Speed</td>
+</tr>
+<tr>
+<td><code>backend/server.py</code>, <code>mrt2.py</code></td>
+<td>The local server, and its side of the engine</td>
+</tr>
+<tr>
+<td><code>data/presets/mrt2_small.json</code>, <code>fx.json</code></td>
+<td>The units’ and the effects’ presets, with the figures they were chosen on</td>
+</tr>
+<tr>
+<td><code>web/</code></td>
+<td>The instrument’s page</td>
+</tr>
+<tr>
+<td><code>docs/</code></td>
+<td>This website</td>
+</tr>
+</tbody>
+</table></div>
+<p>MusicGen small is kept as a second engine (PyTorch, <code>engine.py</code> and <code>musicgen.py</code>), with Steer and without the model-layer units. The code is GPL-3.0-or-later; at 0.2.12 the test suite (pytest) runs 156 tests, among them the MLX units against VAU’s, every preset’s line against its unit, and the server’s refusals.</p>
+  </section>
+
+  <section class="section wrap reveal" id="summary">
+    <span class="num">03</span>
+    <h2>The units, checked</h2>
+<p>The rest of this page is a review of the units, made on 23 November 2026 for Abliterator 0.2.8, with Vector Abliteration Units at commit <code>dd1742e</code>, on Magenta RT 2 small, and checked three times by an independent agent (see <a href="#review-of-this-review">How this review was checked</a>). The presets and new defaults it led to are in Abliterator 0.2.10 and later. The sound results are for one prompt, the Warm drone preset. The review’s own scripts, named below where it helps, are not part of the repository.</p>
+<p>Each of the thirteen Model layers units, and the Steer, was checked at three levels.</p>
+<p><strong>1. The edit itself.</strong> At every hook call, the harness recorded the tensor the hook received and the one it handed back, and compared the result with the unit’s own formula applied to the input.</p>
+<ul>
+<li><em>Coverage:</em>
+<ul>
+<li>Seeds 1–3, 75 frames each, for the eleven units that run once a frame.</li>
+<li>Seeds 1–3, 40 frames each, for every call of Neuron (12 a frame, one per block) and Abliterate (24 a frame, attention and MLP in each block).</li>
+</ul></li>
+<li><em>Torch units:</em> the recorded output is the unit’s float32 result, before the cast back to the model’s bfloat16. It matches the formula to about 10⁻⁷.</li>
+<li><em>Quantise, Neuron and Abliterate:</em> these run as MLX versions in Abliterator’s <code>mlxunits.py</code>, not as VAU’s torch code. Their outputs match the formula exactly once the prediction is rounded to bfloat16 (Abliterate’s worst call: 3×10⁻⁴).</li>
+<li><em>Sparsify:</em> differs only in tie-breaking. When several components share the 256th-largest magnitude, torch keeps a different one from numpy. On every frame it still keeps 256 components, and no dropped component is larger than a kept one.</li>
+</ul>
+<p><strong>2. The stream.</strong> At the first frame a unit acts: - every layer before its placement is bit-for-bit identical to the plain model’s; - it differs from the placement onward, through layer 12.</p>
+<p>Three neutral strips run their hooks and leave the stream and the sound bit-for-bit identical: Lookback at mix 0, Rotate at angle 0, and Neuron clamped at ±100,000, wider than any activation. So the harness does not report change where there is none.</p>
+<p><strong>3. The sound.</strong> Any change at all, even one too small to mean anything, re-rolls the sampled music, so a single before-and-after pair says little. Each unit was rendered on 20 seeds of 6 s, and the question was whether it shifts the sound <em>the same way</em> on every seed. A sign-flip permutation test was run on three measures, with Benjamini–Hochberg correction across all 51 tests:</p>
+<ul>
+<li><p><strong>Spectral centroid:</strong> the mean change.</p></li>
+<li><p><strong>Level:</strong> the mean change.</p></li>
+<li><p><strong>Shape shift:</strong> the RMS over the spectrum’s bands of the mean, across seeds, of the level-free difference. It is large when the spectrum moves the same way on many seeds. A Steer nudge of 0.001, run as a control, shows no consistent shift on any measure after correction. One of its three tests, shape, came out at p = 0.049 before correction, which chance gives about one time in seven for three tests. The nudge is a real push, though a very small one, so it is not a pure null. The units fall into these groups:</p></li>
+<li><p><strong>Consistent on two or three measures:</strong> Lookback (darker, quieter, a consistent change of spectral shape); Running Average (darker, quieter, a consistent change of spectral shape); Norm Shrink (louder, a consistent change of spectral shape); Tanh Squash (louder, a consistent change of spectral shape); Component Clamp (brighter, louder, a consistent change of spectral shape); Principal Bands (darker, louder, a consistent change of spectral shape); Rotate (brighter, quieter, a consistent change of spectral shape); Abliterate (brighter, quieter, a consistent change of spectral shape); Steer (brighter, a consistent change of spectral shape).</p></li>
+<li><p><strong>Consistent on one measure:</strong> Sparsify (louder).</p></li>
+<li><p><strong>No consistent shift detected at the default setting:</strong> Frame Repeat, Quantise, Band Shrink, Neuron. These change each take’s sound, as any change does, but in no direction that held across 20 seeds.</p></li>
+</ul>
+<p><strong>4. Code findings.</strong> Five, under <a href="#findings-in-the-code">Findings in the code</a>: - Lookback, Running Average and Frame Repeat keep every past frame in memory. - Abliterate’s “Bias too” switch does nothing on this model (it is now hidden). - Quantise, Sparsify and Component Clamp skip the first frame of a take. - The site measured Abliterate’s placement sweep with settings other than the card’s. - A few coordinates hold most of the stream’s size at every layer, which is why Component Clamp and Tanh Squash make such large edits.</p>
+  </section>
+
+  <section class="section wrap reveal" id="method">
+    <span class="num">04</span>
+    <h2>How the review was done</h2>
+<p>The model was run offline in its own process, using the instrument’s own engine class (<code>Proc</code>, <code>backend/abliterator/mrt2_proc.py</code>) and its own hooks. The live server and the sound card were not involved. Prompt: the Warm drone (“slow ambient drone, warm analogue pads, no drums”). Each unit got the line the instrument gave it at 0.2.8 when added to the Model layers row (six of these defaults have since changed; see <a href="#shipped-presets-and-new-defaults">Shipped presets and new defaults</a>):</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Unit (VAU name)</th>
+<th>Default line on the instrument at 0.2.8</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Lookback (vLookback)</td>
+<td><code>delay layer=6 time=4 feedback=0.3 mix=0.2</code></td>
+</tr>
+<tr>
+<td>Running Average</td>
+<td><code>reverb layer=6 decay=0.8 mix=0.2</code></td>
+</tr>
+<tr>
+<td>Frame Repeat (Position Repeat)</td>
+<td><code>beatrepeat layer=6 interval=8 length=2 mix=1</code></td>
+</tr>
+<tr>
+<td>Norm Shrink</td>
+<td><code>compressor layer=6 ratio=4 makeup=1 thresh=1</code></td>
+</tr>
+<tr>
+<td>Tanh Squash</td>
+<td><code>saturator layer=6 mix=1 drive=1</code></td>
+</tr>
+<tr>
+<td>Quantise</td>
+<td><code>erosion layer=6 bits=6 hold=1</code></td>
+</tr>
+<tr>
+<td>Sparsify</td>
+<td><code>gate layer=6 sink=0 keep=0.25</code></td>
+</tr>
+<tr>
+<td>Component Clamp</td>
+<td><code>limiter layer=4 sink=0 ceiling=0.99</code></td>
+</tr>
+<tr>
+<td>Principal Bands</td>
+<td><code>eq layer=8 low=1.3 mid=1 high=0.7</code></td>
+</tr>
+<tr>
+<td>Band Shrink</td>
+<td><code>multiband layer=6 ratio=4 band=all thresh=1</code></td>
+</tr>
+<tr>
+<td>Rotate</td>
+<td><code>shifter layer=6 dir=brightness dir2=pulse angle=45</code></td>
+</tr>
+<tr>
+<td>Neuron</td>
+<td><code>neuron block=all n=373 op=scale value=6</code></td>
+</tr>
+<tr>
+<td>Abliterate</td>
+<td><code>abliterate block=all dir=brightness shape=flat projected=1 size=0 bias=1 strength=1</code></td>
+</tr>
+<tr>
+<td>Steer</td>
+<td>brightness 0.1, pulse 0.03 at layer 6</td>
+</tr>
+</tbody>
+</table></div>
+<p>What was recorded:</p>
+<ul>
+<li><strong>The edit.</strong> The engine’s measuring call sites, <code>Hooks._torch_change</code> and <code>Hooks._mlx_change</code>, receive every edit’s input and output. A recorder replaced them.</li>
+<li><strong>The stream.</strong> The scope mechanism (<code>Hooks.read_at</code>) was set to all twelve layers, so the stream after each block was kept for every frame. The independent check confirmed that the stream read there is the recorded edit output, rounded to bfloat16, so what was recorded is what the model used next.</li>
+<li><strong>The sound.</strong> The model’s own output, before the output section.</li>
+</ul>
+<p>Checks made before any unit was measured: - The harness’s frame loop gives the same audio as the engine’s own <code>Proc.render</code>, sample for sample. - The plain model is deterministic. - The three neutral strips change nothing.</p>
+<p>The sound test went through <code>Proc.render</code> with the strip as the take’s start (<code>audio_sweep.py</code>): seeds 1–20, 150 frames (6 s) each.</p>
+<h3 id="why-a-single-pair-of-clips-cannot-show-a-units-effect">Why a single pair of clips cannot show a unit’s effect</h3>
+<p>Magenta RealTime samples each frame’s tokens. Any change to the stream alters the probabilities enough to flip a sampled token somewhere, and from then on the model writes a different piece. Greedy sampling (Top-k 1) does not stop this either. The 0.001 nudge still diverged from about the first frame, on both seeds tried. The figure shows the nudge moving the layer-12 stream away from the plain model, within about a second, as far as changing the seed does.</p>
+<figure class="plate"><a class="shot" href="img/review/fig-butterfly.webp" data-cap="The butterfly effect of sampling"><img src="img/review/fig-butterfly.webp" width="1200" height="540" loading="lazy" alt="The butterfly effect of sampling"><span class="zoom">Zoom</span></a><figcaption>The butterfly effect of sampling</figcaption></figure>
+<p>For listening, this means a pair of clips mostly lets one hear the path change. Rated as pairs on seed 1, and not blind, the nudge itself was heard as a strong difference. Effect size is therefore judged three ways:</p>
+<ul>
+<li><strong>The edit’s own size</strong>, where it acts.</li>
+<li><strong>The stream at the first frame the unit acts.</strong> Up to that frame everything is identical to the plain model.</li>
+<li><strong>The sound across seeds.</strong> The question is consistency of direction, which a re-rolled path does not have, not the size of a single difference.</li>
+</ul>
+  </section>
+
+  <section class="section wrap reveal" id="overview">
+    <span class="num">05</span>
+    <h2>What reaches the sound</h2>
+<p><strong>Where each change enters.</strong> At the first frame each unit acts, the layers before its placement are identical to the plain model (0). The change appears at the placement and carries through to layer 12. Neuron and Abliterate act inside every block, so their change starts at layer 1.</p>
+<figure class="plate"><a class="shot" href="img/review/fig-where.webp" data-cap="Where each unit’s change enters the stream"><img src="img/review/fig-where.webp" width="1200" height="780" loading="lazy" alt="Where each unit’s change enters the stream"><span class="zoom">Zoom</span></a><figcaption>Where each unit’s change enters the stream</figcaption></figure>
+<p><strong>How big each edit is.</strong> The median ‖after − before‖ / ‖before‖ over every recorded call on seeds 1–3. What “before” is depends on the unit: - for stream units, the stream at their layer; - for Neuron, block 0’s MLP hidden vector; - for Abliterate, block 0 attention’s output.</p>
+<p>The last two are not comparable with the rest.</p>
+<figure class="plate"><a class="shot" href="img/review/fig-edit-size.webp" data-cap="Size of each unit’s edit"><img src="img/review/fig-edit-size.webp" width="1200" height="630" loading="lazy" alt="Size of each unit’s edit"><span class="zoom">Zoom</span></a><figcaption>Size of each unit’s edit</figcaption></figure>
+<p><strong>What reaches the sound.</strong> 20 seeds × 6 s against the same seed. Ticks are medians, and the pink band runs from 0 to the nudge’s median change of shape.</p>
+<figure class="plate"><a class="shot" href="img/review/fig-sound.webp" data-cap="What reaches the sound"><img src="img/review/fig-sound.webp" width="1650" height="810" loading="lazy" alt="What reaches the sound"><span class="zoom">Zoom</span></a><figcaption>What reaches the sound</figcaption></figure>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Unit</th>
+<th>Acts at</th>
+<th>Edit (median)</th>
+<th>Centroid</th>
+<th>Level</th>
+<th>Shape shift</th>
+<th>Consistent after correction</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Lookback</td>
+<td>layer 6</td>
+<td>27%</td>
+<td>-37 Hz, 1/20 up ✓</td>
+<td>-3.2 dB, 4/20 up ✓</td>
+<td>2.7 dB ✓</td>
+<td>darker, quieter, a consistent change of spectral shape</td>
+</tr>
+<tr>
+<td>Running Average</td>
+<td>layer 6</td>
+<td>19%</td>
+<td>-47 Hz, 3/20 up ✓</td>
+<td>-1.9 dB, 7/20 up ✓</td>
+<td>3.6 dB ✓</td>
+<td>darker, quieter, a consistent change of spectral shape</td>
+</tr>
+<tr>
+<td>Frame Repeat</td>
+<td>layer 6</td>
+<td>58%</td>
+<td>-12 Hz, 7/20 up</td>
+<td>-0.3 dB, 8/20 up</td>
+<td>1.0 dB</td>
+<td>none detected</td>
+</tr>
+<tr>
+<td>Norm Shrink</td>
+<td>layer 6</td>
+<td>5%</td>
+<td>+6 Hz, 12/20 up</td>
+<td>+2.1 dB, 16/20 up ✓</td>
+<td>3.6 dB ✓</td>
+<td>louder, a consistent change of spectral shape</td>
+</tr>
+<tr>
+<td>Tanh Squash</td>
+<td>layer 6</td>
+<td>32%</td>
+<td>-16 Hz, 6/20 up</td>
+<td>+10.8 dB, 20/20 up ✓</td>
+<td>3.9 dB ✓</td>
+<td>louder, a consistent change of spectral shape</td>
+</tr>
+<tr>
+<td>Quantise</td>
+<td>layer 6</td>
+<td>2%</td>
+<td>+7 Hz, 12/20 up</td>
+<td>+0.2 dB, 11/20 up</td>
+<td>1.2 dB</td>
+<td>none detected</td>
+</tr>
+<tr>
+<td>Sparsify</td>
+<td>layer 6</td>
+<td>28%</td>
+<td>+9 Hz, 10/20 up</td>
+<td>+2.1 dB, 16/20 up ✓</td>
+<td>1.5 dB</td>
+<td>louder</td>
+</tr>
+<tr>
+<td>Component Clamp</td>
+<td>layer 4</td>
+<td>65%</td>
+<td>+65 Hz, 14/20 up ✓</td>
+<td>+11.4 dB, 20/20 up ✓</td>
+<td>10.7 dB ✓</td>
+<td>brighter, louder, a consistent change of spectral shape</td>
+</tr>
+<tr>
+<td>Principal Bands</td>
+<td>layer 8</td>
+<td>16%</td>
+<td>-55 Hz, 2/20 up ✓</td>
+<td>+12.1 dB, 20/20 up ✓</td>
+<td>3.6 dB ✓</td>
+<td>darker, louder, a consistent change of spectral shape</td>
+</tr>
+<tr>
+<td>Band Shrink</td>
+<td>layer 6</td>
+<td>8%</td>
+<td>-5 Hz, 8/20 up</td>
+<td>+1.5 dB, 11/20 up</td>
+<td>1.5 dB</td>
+<td>none detected</td>
+</tr>
+<tr>
+<td>Rotate</td>
+<td>layer 6</td>
+<td>9%</td>
+<td>+78 Hz, 18/20 up ✓</td>
+<td>-6.5 dB, 2/20 up ✓</td>
+<td>4.7 dB ✓</td>
+<td>brighter, quieter, a consistent change of spectral shape</td>
+</tr>
+<tr>
+<td>Neuron</td>
+<td>block all</td>
+<td>5%ᵃ</td>
+<td>-13 Hz, 6/20 up</td>
+<td>-0.1 dB, 7/20 up</td>
+<td>0.7 dB</td>
+<td>none detected</td>
+</tr>
+<tr>
+<td>Abliterate</td>
+<td>block all</td>
+<td>6%ᵃ</td>
+<td>+178 Hz, 17/20 up ✓</td>
+<td>-12.4 dB, 0/20 up ✓</td>
+<td>9.4 dB ✓</td>
+<td>brighter, quieter, a consistent change of spectral shape</td>
+</tr>
+<tr>
+<td>Steer</td>
+<td>layer 6</td>
+<td>dose 0.1</td>
+<td>+863 Hz, 19/20 up ✓</td>
+<td>-3.1 dB, 7/20 up</td>
+<td>19.8 dB ✓</td>
+<td>brighter, a consistent change of spectral shape</td>
+</tr>
+<tr>
+<td>Steer 0.001 (control)</td>
+<td>layer 6</td>
+<td>dose 0.001</td>
+<td>+11 Hz, 11/20 up</td>
+<td>-0.6 dB, 10/20 up</td>
+<td>1.6 dB</td>
+<td>control</td>
+</tr>
+</tbody>
+</table></div>
+<p>ᵃ Neuron’s edit is of block 0’s MLP hidden vector and Abliterate’s of block 0 attention’s output (the first hook each frame), not of the stream. ✓: the shift survives Benjamini–Hochberg correction at 5% across 51 tests (two-sided sign-flip permutation tests over 20 seeds). Shape shift: the RMS over the 48 bands of the mean, across seeds, of the level-free long-term spectrum difference; it is large when the spectrum moves the same way on many seeds.</p>
+  </section>
+
+  <section class="section wrap reveal" id="each-unit">
+    <span class="num">06</span>
+    <h2>Unit by unit</h2>
+<p>Each entry covers: - the claim, from the VAU manifest; - the code that ran; - where the instrument applies it; - what the recorded tensors show; - what reaches the sound.</p>
+<p>Each unit was tested at the line its card had at 0.2.8, given in the entry; six of those defaults have changed since (see <a href="#shipped-presets-and-new-defaults">Shipped presets and new defaults</a>). Each entry opens to show its code and figures. The <a href="units.html#units">Model layers</a> page has each unit’s card and its sweep to listen to.</p>
+<h3 id="where-the-edits-are-applied">Where the edits are applied</h3>
+<p>All stream units go through <code>Hooks._wrap</code> in <code>mrt2_proc.py</code>, which wraps each of the twelve transformer blocks. In the code the blocks are numbered from 0, and “layer <em>l</em>” is the stream after block <em>l</em> − 1. After a block runs, the Steer adds its sum (at layer 6, so after block 5 in the code’s numbering), and then the edits placed at that layer run on the frame being written:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># backend/abliterator/mrt2_proc.py, Hooks._wrap (lines 228-236)</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>y, st2, emits <span class="op">=</span> orig(x, st, <span class="op">*</span>a, <span class="op">**</span>k)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> i <span class="op">+</span> <span class="dv">1</span> <span class="op">==</span> <span class="va">self</span>.layer:</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    v <span class="op">=</span> <span class="va">self</span>.vec</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> v <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span>:</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>        y <span class="op">=</span> y.apply_values(<span class="kw">lambda</span> h: h <span class="op">+</span> mx.linalg.norm(h.astype(mx.float32), axis<span class="op">=-</span><span class="dv">1</span>, keepdims<span class="op">=</span><span class="va">True</span>).astype(h.dtype)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>                           <span class="op">*</span> v.astype(h.dtype))</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>edits <span class="op">=</span> <span class="va">self</span>.edits.get(i <span class="op">+</span> <span class="dv">1</span>)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> edits:</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    y <span class="op">=</span> y.apply_values(<span class="kw">lambda</span> h: <span class="va">self</span>._bridge(h, edits))</span></code></pre></div>
+<p>How the edits run: - <strong>Torch units</strong> cross to the CPU in <code>Hooks._bridge</code>. The stream is copied out of MLX, passed through each unit’s <code>edit(h, pos)</code>, with <code>pos</code> the frame number, and copied back. - <strong>Neuron, Quantise and Abliterate</strong> run as MLX versions (<code>mlxunits.py</code>). - <strong>Inside the blocks:</strong> Abliterate and Neuron act through <code>Hooks._wrap_part</code>. Abliterate works on what self-attention’s and the MLP’s post-norms write (<code>att[4]</code>, <code>mlp[5]</code>). Neuron works on the MLP down-projection’s input, the 4,096 hidden units (<code>mlp[3]</code>). - <strong>Not reachable by any unit:</strong> each block has a third branch, a second attention layer (<code>b.layers[1]</code>), that also writes into the stream.</p>
+<details class="unitd" id="lookback"><summary><span class="dn">Lookback</span><span class="dv">darker, quieter, a consistent change of spectral shape</span></summary>
+
+<p><strong>Claims.</strong> Adds the stream from some positions back: an echo, with feedback. Line: <code>delay layer=6 time=4 feedback=0.3 mix=0.2</code>.</p>
+<p><strong>Code that ran.</strong></p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># vau/units/delay.py, line 26</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> delay_edit(time: <span class="bu">int</span>, feedback: <span class="bu">float</span>, mix: <span class="bu">float</span>, line: Dict[<span class="bu">int</span>, torch.Tensor]):</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> edit(h, pos):</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>        x <span class="op">=</span> h.<span class="bu">float</span>()</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>        out <span class="op">=</span> x.clone()</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> j, p <span class="kw">in</span> <span class="bu">enumerate</span>(pos.tolist()):</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>            src <span class="op">=</span> line.get(p <span class="op">-</span> time) <span class="cf">if</span> p <span class="op">-</span> time <span class="op">&gt;=</span> <span class="dv">1</span> <span class="cf">else</span> <span class="va">None</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> p <span class="op">&gt;=</span> <span class="dv">1</span>:</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>                line[p] <span class="op">=</span> (x[<span class="dv">0</span>, j] <span class="op">+</span> feedback <span class="op">*</span> src) <span class="cf">if</span> src <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span> <span class="cf">else</span> x[<span class="dv">0</span>, j].clone()</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> src <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span>:</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>                out[<span class="dv">0</span>, j] <span class="op">=</span> x[<span class="dv">0</span>, j] <span class="op">+</span> mix <span class="op">*</span> src</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> out.to(h.dtype)</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> edit</span></code></pre></div>
+<p><strong>On the recorded tensors.</strong> From frame 5 it adds a fifth (mix 0.2) of the delay line from four frames back; the line is the stream there plus 0.3 of the line four frames before that. It changed the stream on 70 of 75 frames. The Mix knob runs only from 0 to 0.2, because a mix of 0.4 sent the model toward silence in the site’s sweep. Size of the edit: median 27% of the stream at that layer (90th percentile 29%), seeds 1–3.</p>
+<figure class="plate"><a class="shot" href="img/review/unit-delay.webp" data-cap="Lookback: its edit on the recorded tensors"><img src="img/review/unit-delay.webp" width="1350" height="510" loading="lazy" alt="Lookback: its edit on the recorded tensors"><span class="zoom">Zoom</span></a><figcaption>Lookback: its edit on the recorded tensors</figcaption></figure>
+<p><strong>What reaches the sound</strong> (20 seeds × 6 s, against the same seed): centroid -37 Hz on average, up on 1 of 20 seeds (p = 0.000, q = 0.000); level -3.2 dB on average, up on 4 of 20 seeds (p = 0.003, q = 0.005); mean level-free spectrum shift 2.7 dB (RMS over bands of the mean across seeds (p = 0.000, q = 0.000). On 10 seeds more than 5% of frames fell near silence (at most 48%). The quieter result rests on the seeds where the take drops toward silence: without the 10 seeds with more than 5% near-silent frames, the level shift is not detected (p = 0.24), while the darkening still is (p = 0.002).</p>
+<p><strong>Verdict.</strong> Consistent across seeds after correction: darker, quieter, a consistent change of spectral shape.</p>
+</details>
+<details class="unitd" id="running-average"><summary><span class="dn">Running Average</span><span class="dv">darker, quieter, a consistent change of spectral shape</span></summary>
+
+<p><strong>Claims.</strong> Adds a decaying average of the earlier positions. Line: <code>reverb layer=6 decay=0.8 mix=0.2</code>.</p>
+<p><strong>Code that ran.</strong></p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># vau/units/reverb.py, line 24</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> reverb_edit(decay: <span class="bu">float</span>, mix: <span class="bu">float</span>, tail: Dict[<span class="bu">int</span>, torch.Tensor]):</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> edit(h, pos):</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>        x <span class="op">=</span> h.<span class="bu">float</span>()</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>        out <span class="op">=</span> x.clone()</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> j, p <span class="kw">in</span> <span class="bu">enumerate</span>(pos.tolist()):</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>            prev <span class="op">=</span> tail.get(p <span class="op">-</span> <span class="dv">1</span>) <span class="cf">if</span> p <span class="op">&gt;=</span> <span class="dv">2</span> <span class="cf">else</span> <span class="va">None</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> p <span class="op">&gt;=</span> <span class="dv">1</span>:</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>                tail[p] <span class="op">=</span> (decay <span class="op">*</span> prev <span class="op">+</span> (<span class="dv">1</span> <span class="op">-</span> decay) <span class="op">*</span> x[<span class="dv">0</span>, j]) <span class="cf">if</span> prev <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span> <span class="cf">else</span> x[<span class="dv">0</span>, j].clone()</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> prev <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span>:</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>                out[<span class="dv">0</span>, j] <span class="op">=</span> x[<span class="dv">0</span>, j] <span class="op">+</span> mix <span class="op">*</span> prev</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> out.to(h.dtype)</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> edit</span></code></pre></div>
+<p><strong>On the recorded tensors.</strong> From frame 2 it adds a fifth of a decaying average of the earlier frames (decay 0.8). It changed the stream on 73 of 75 frames. Mix is capped at 0.2 for the same reason as Lookback’s. Size of the edit: median 19% of the stream at that layer (90th percentile 20%), seeds 1–3.</p>
+<figure class="plate"><a class="shot" href="img/review/unit-reverb.webp" data-cap="Running Average: its edit on the recorded tensors"><img src="img/review/unit-reverb.webp" width="1350" height="510" loading="lazy" alt="Running Average: its edit on the recorded tensors"><span class="zoom">Zoom</span></a><figcaption>Running Average: its edit on the recorded tensors</figcaption></figure>
+<p><strong>What reaches the sound</strong> (20 seeds × 6 s, against the same seed): centroid -47 Hz on average, up on 3 of 20 seeds (p = 0.000, q = 0.000); level -1.9 dB on average, up on 7 of 20 seeds (p = 0.016, q = 0.025); mean level-free spectrum shift 3.6 dB (RMS over bands of the mean across seeds (p = 0.000, q = 0.000). On 4 seeds more than 5% of frames fell near silence (at most 22%). The quieter result rests on the seeds where the take drops toward silence: without those 4 seeds the level shift is not detected (p = 0.18), while the darkening still is (p = 0.0003).</p>
+<p><strong>Verdict.</strong> Consistent across seeds after correction: darker, quieter, a consistent change of spectral shape.</p>
+</details>
+<details class="unitd" id="frame-repeat"><summary><span class="dn">Frame Repeat</span><span class="dv">no consistent shift at the 0.2.8 default</span></summary>
+
+<p><strong>Claims.</strong> In every run of positions, replays the stream of the few positions before over the last few: a stutter. Line: <code>beatrepeat layer=6 interval=8 length=2 mix=1</code>.</p>
+<p><strong>Code that ran.</strong></p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># vau/units/beatrepeat.py, line 27</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> beatrepeat_edit(interval: <span class="bu">int</span>, length: <span class="bu">int</span>, mix: <span class="bu">float</span>, kept: Dict[<span class="bu">int</span>, torch.Tensor]):</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    length <span class="op">=</span> <span class="bu">min</span>(length, interval <span class="op">-</span> <span class="dv">1</span>)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> edit(h, pos):</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>        x <span class="op">=</span> h.<span class="bu">float</span>()</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>        out <span class="op">=</span> x.clone()</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> j, p <span class="kw">in</span> <span class="bu">enumerate</span>(pos.tolist()):</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> p <span class="op">&lt;</span> <span class="dv">1</span>:</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>                <span class="cf">continue</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>            kept[p] <span class="op">=</span> x[<span class="dv">0</span>, j].clone()</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> (p <span class="op">-</span> <span class="dv">1</span>) <span class="op">%</span> interval <span class="op">&gt;=</span> interval <span class="op">-</span> length <span class="kw">and</span> (p <span class="op">-</span> length) <span class="kw">in</span> kept <span class="kw">and</span> p <span class="op">-</span> length <span class="op">&gt;=</span> <span class="dv">1</span>:</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>                out[<span class="dv">0</span>, j] <span class="op">=</span> (<span class="dv">1</span> <span class="op">-</span> mix) <span class="op">*</span> x[<span class="dv">0</span>, j] <span class="op">+</span> mix <span class="op">*</span> kept[p <span class="op">-</span> length]</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> out.to(h.dtype)</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> edit</span></code></pre></div>
+<p><strong>On the recorded tensors.</strong> On frames 7 and 8 of every eight (counting from 1) it replaces the stream with the stream two frames back: 18 of 75 frames, 80 ms in every 320 ms. The size of the edit below is over those frames only. Size of the edit: median 58% of the stream at that layer (90th percentile 70%), seeds 1–3.</p>
+<figure class="plate"><a class="shot" href="img/review/unit-beatrepeat.webp" data-cap="Frame Repeat: its edit on the recorded tensors"><img src="img/review/unit-beatrepeat.webp" width="1350" height="510" loading="lazy" alt="Frame Repeat: its edit on the recorded tensors"><span class="zoom">Zoom</span></a><figcaption>Frame Repeat: its edit on the recorded tensors</figcaption></figure>
+<p><strong>What reaches the sound</strong> (20 seeds × 6 s, against the same seed): centroid -12 Hz on average, up on 7 of 20 seeds (p = 0.097, q = 0.137); level -0.3 dB on average, up on 8 of 20 seeds (p = 0.484, q = 0.549); mean level-free spectrum shift 1.0 dB (RMS over bands of the mean across seeds (p = 0.563, q = 0.611).</p>
+<p><strong>Verdict.</strong> No consistent shift detected on 20 seeds at the default setting (no test survives correction).</p>
+</details>
+<details class="unitd" id="norm-shrink"><summary><span class="dn">Norm Shrink</span><span class="dv">louder, a consistent change of spectral shape</span></summary>
+
+<p><strong>Claims.</strong> Above a threshold, reduces the stream’s size at each position by a ratio. Line: <code>compressor layer=6 ratio=4 makeup=1 thresh=1</code>.</p>
+<p><strong>Code that ran.</strong></p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># vau/units/compressor.py, line 24</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> compressor_edit(threshold: <span class="bu">float</span>, ratio: <span class="bu">float</span>, makeup: <span class="bu">float</span>):</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> edit(h, pos):</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>        x <span class="op">=</span> h.<span class="bu">float</span>()</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>        n <span class="op">=</span> x.norm(dim<span class="op">=-</span><span class="dv">1</span>, keepdim<span class="op">=</span><span class="va">True</span>).clamp_min(<span class="fl">1e-9</span>)</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>        target <span class="op">=</span> torch.where(n <span class="op">&gt;</span> threshold, threshold <span class="op">+</span> (n <span class="op">-</span> threshold) <span class="op">/</span> ratio, n)</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> (x <span class="op">*</span> (target <span class="op">/</span> n) <span class="op">*</span> makeup).to(h.dtype)</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> edit</span></code></pre></div>
+<p><strong>On the recorded tensors.</strong> The threshold is the stream’s typical size at layer 6 over the reference set (54.3). The share of frames over it was 100%, 99% and 77% on seeds 1–3, and the stream was shrunk to a median of 94%, 94% and 99% of its size. Size of the edit: median 5% of the stream at that layer (90th percentile 10%), seeds 1–3.</p>
+<figure class="plate"><a class="shot" href="img/review/unit-compressor.webp" data-cap="Norm Shrink: its edit on the recorded tensors"><img src="img/review/unit-compressor.webp" width="1350" height="510" loading="lazy" alt="Norm Shrink: its edit on the recorded tensors"><span class="zoom">Zoom</span></a><figcaption>Norm Shrink: its edit on the recorded tensors</figcaption></figure>
+<p><strong>What reaches the sound</strong> (20 seeds × 6 s, against the same seed): centroid +6 Hz on average, up on 12 of 20 seeds (p = 0.542, q = 0.601); level +2.1 dB on average, up on 16 of 20 seeds (p = 0.029, q = 0.045); mean level-free spectrum shift 3.6 dB (RMS over bands of the mean across seeds (p = 0.000, q = 0.000).</p>
+<p><strong>Verdict.</strong> Consistent across seeds after correction: louder, a consistent change of spectral shape.</p>
+</details>
+<details class="unitd" id="tanh-squash"><summary><span class="dn">Tanh Squash</span><span class="dv">louder, a consistent change of spectral shape</span></summary>
+
+<p><strong>Claims.</strong> Soft-clips each dimension of the stream, harder as the drive rises. Line: <code>saturator layer=6 mix=1 drive=1</code>.</p>
+<p><strong>Code that ran.</strong></p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># vau/units/saturator.py, line 23</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> saturator_edit(level: torch.Tensor, mix: <span class="bu">float</span>):</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> edit(h, pos):</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>        x <span class="op">=</span> h.<span class="bu">float</span>()</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>        wet <span class="op">=</span> level <span class="op">*</span> torch.tanh(x <span class="op">/</span> level)</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> ((<span class="dv">1</span> <span class="op">-</span> mix) <span class="op">*</span> x <span class="op">+</span> mix <span class="op">*</span> wet).to(h.dtype)</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> edit</span></code></pre></div>
+<p><strong>On the recorded tensors.</strong> It changes every coordinate, but 91–93% of the edit lies on the 2–3% of coordinates beyond three standard deviations. Size of the edit: median 32% of the stream at that layer (90th percentile 41%), seeds 1–3.</p>
+<figure class="plate"><a class="shot" href="img/review/unit-saturator.webp" data-cap="Tanh Squash: its edit on the recorded tensors"><img src="img/review/unit-saturator.webp" width="1350" height="510" loading="lazy" alt="Tanh Squash: its edit on the recorded tensors"><span class="zoom">Zoom</span></a><figcaption>Tanh Squash: its edit on the recorded tensors</figcaption></figure>
+<p><strong>What reaches the sound</strong> (20 seeds × 6 s, against the same seed): centroid -16 Hz on average, up on 6 of 20 seeds (p = 0.241, q = 0.299); level +10.8 dB on average, up on 20 of 20 seeds (p = 0.000, q = 0.000); mean level-free spectrum shift 3.9 dB (RMS over bands of the mean across seeds (p = 0.000, q = 0.000).</p>
+<p><strong>Verdict.</strong> Consistent across seeds after correction: louder, a consistent change of spectral shape.</p>
+</details>
+<details class="unitd" id="quantise"><summary><span class="dn">Quantise</span><span class="dv">no consistent shift at the 0.2.8 default</span></summary>
+
+<p><strong>Claims.</strong> Quantises the stream to few levels, or holds it over several positions. Line: <code>erosion layer=6 bits=6 hold=1</code>.</p>
+<p><strong>Code that ran.</strong> Abliterator’s MLX version, <code>erosion_fn</code> in <code>mlxunits.py</code>, tested in its own test suite against VAU’s torch unit; the VAU code was not executed in these runs.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># backend/abliterator/mlxunits.py, line 98</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> erosion_fn(step: Optional[np.ndarray], hold: <span class="bu">int</span>, held: Dict[<span class="bu">int</span>, Any], f: <span class="bu">float</span>, keepnorm: <span class="bu">bool</span>) <span class="op">-&gt;</span> Callable:</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    st <span class="op">=</span> <span class="va">None</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> edit(h, frame: <span class="bu">int</span>):</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>        <span class="kw">nonlocal</span> st</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>        mx <span class="op">=</span> _mx()</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> frame <span class="op">&lt;</span> <span class="dv">1</span> <span class="kw">or</span> (step <span class="kw">is</span> <span class="va">None</span> <span class="kw">and</span> hold <span class="op">&lt;=</span> <span class="dv">1</span>):</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> h</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>        x <span class="op">=</span> h.astype(mx.float32)</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> step <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span>:</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> st <span class="kw">is</span> <span class="va">None</span>:</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>                st <span class="op">=</span> mx.array(step.astype(np.float32))</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>            x <span class="op">=</span> mx.<span class="bu">round</span>(x <span class="op">/</span> st) <span class="op">*</span> st</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> hold <span class="op">&gt;</span> <span class="dv">1</span>:</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>            first <span class="op">=</span> <span class="dv">1</span> <span class="op">+</span> ((frame <span class="op">-</span> <span class="dv">1</span>) <span class="op">//</span> hold) <span class="op">*</span> hold</span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> frame <span class="op">==</span> first:</span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>                held.clear()</span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>                held[first] <span class="op">=</span> x</span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>            <span class="cf">elif</span> first <span class="kw">in</span> held:</span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>                x <span class="op">=</span> held[first]</span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> _mix(h.astype(mx.float32), x, f, keepnorm).astype(h.dtype)</span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> mlx_fn(edit)</span></code></pre></div>
+<p><strong>On the recorded tensors.</strong> With 6 bits the step is about a tenth of a typical coordinate. It changes every frame from frame 1; frame 0 is skipped (Finding 3). Size of the edit: median 2% of the stream at that layer (90th percentile 2%), seeds 1–3.</p>
+<figure class="plate"><a class="shot" href="img/review/unit-erosion.webp" data-cap="Quantise: its edit on the recorded tensors"><img src="img/review/unit-erosion.webp" width="1350" height="510" loading="lazy" alt="Quantise: its edit on the recorded tensors"><span class="zoom">Zoom</span></a><figcaption>Quantise: its edit on the recorded tensors</figcaption></figure>
+<p><strong>What reaches the sound</strong> (20 seeds × 6 s, against the same seed): centroid +7 Hz on average, up on 12 of 20 seeds (p = 0.280, q = 0.340); level +0.2 dB on average, up on 11 of 20 seeds (p = 0.729, q = 0.759); mean level-free spectrum shift 1.2 dB (RMS over bands of the mean across seeds (p = 0.227, q = 0.289).</p>
+<p><strong>Verdict.</strong> No consistent shift detected on 20 seeds at the default setting (no test survives correction).</p>
+</details>
+<details class="unitd" id="sparsify"><summary><span class="dn">Sparsify</span><span class="dv">louder</span></summary>
+
+<p><strong>Claims.</strong> Keeps only each position’s largest components and zeroes the rest, making the stream sparse. Line: <code>gate layer=6 sink=0 keep=0.25</code>.</p>
+<p><strong>Code that ran.</strong></p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># vau/units/gate.py, line 26</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> gate_edit(keep: <span class="bu">float</span>, sink: <span class="bu">bool</span>):</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> edit(h, pos):</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> keep <span class="op">&gt;=</span> <span class="fl">1.0</span>:</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> h</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>        x <span class="op">=</span> h.<span class="bu">float</span>()</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>        k <span class="op">=</span> <span class="bu">max</span>(<span class="dv">1</span>, math.ceil(keep <span class="op">*</span> x.shape[<span class="op">-</span><span class="dv">1</span>]))</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>        idx <span class="op">=</span> x.<span class="bu">abs</span>().topk(k, dim<span class="op">=-</span><span class="dv">1</span>).indices</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>        out <span class="op">=</span> torch.zeros_like(x).scatter(<span class="op">-</span><span class="dv">1</span>, idx, x.gather(<span class="op">-</span><span class="dv">1</span>, idx))</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="kw">not</span> sink:</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>            out <span class="op">=</span> torch.where(pos.view(<span class="dv">1</span>, <span class="op">-</span><span class="dv">1</span>, <span class="dv">1</span>) <span class="op">==</span> <span class="dv">0</span>, x, out)</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> out.to(h.dtype)</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> edit</span></code></pre></div>
+<p><strong>On the recorded tensors.</strong> From frame 1 it keeps exactly the 256 largest of 1,024 components, which hold 96% of the stream’s size. Size of the edit: median 28% of the stream at that layer (90th percentile 30%), seeds 1–3.</p>
+<figure class="plate"><a class="shot" href="img/review/unit-gate.webp" data-cap="Sparsify: its edit on the recorded tensors"><img src="img/review/unit-gate.webp" width="1350" height="510" loading="lazy" alt="Sparsify: its edit on the recorded tensors"><span class="zoom">Zoom</span></a><figcaption>Sparsify: its edit on the recorded tensors</figcaption></figure>
+<p><strong>What reaches the sound</strong> (20 seeds × 6 s, against the same seed): centroid +9 Hz on average, up on 10 of 20 seeds (p = 0.308, q = 0.365); level +2.1 dB on average, up on 16 of 20 seeds (p = 0.009, q = 0.014); mean level-free spectrum shift 1.5 dB (RMS over bands of the mean across seeds (p = 0.163, q = 0.220).</p>
+<p><strong>Verdict.</strong> Consistent across seeds after correction: louder.</p>
+</details>
+<details class="unitd" id="component-clamp"><summary><span class="dn">Component Clamp</span><span class="dv">brighter, louder, a consistent change of spectral shape</span></summary>
+
+<p><strong>Claims.</strong> Clamps each position’s largest components at a ceiling set by a quantile of their sizes. Line: <code>limiter layer=4 sink=0 ceiling=0.99</code>.</p>
+<p><strong>Code that ran.</strong></p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># vau/units/limiter.py, line 30</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> limiter_edit(q: <span class="bu">float</span>, sink: <span class="bu">bool</span>):</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> edit(h, pos):</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> q <span class="op">&gt;=</span> <span class="fl">1.0</span>:</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> h</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>        x <span class="op">=</span> h.<span class="bu">float</span>()</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>        lim <span class="op">=</span> torch.quantile(x.<span class="bu">abs</span>(), q, dim<span class="op">=-</span><span class="dv">1</span>, keepdim<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>        out <span class="op">=</span> torch.maximum(torch.minimum(x, lim), <span class="op">-</span>lim)</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="kw">not</span> sink:</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>            out <span class="op">=</span> torch.where(pos.view(<span class="dv">1</span>, <span class="op">-</span><span class="dv">1</span>, <span class="dv">1</span>) <span class="op">==</span> <span class="dv">0</span>, x, out)</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> out.to(h.dtype)</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> edit</span></code></pre></div>
+<p><strong>On the recorded tensors.</strong> At layer 4 the largest 1% of coordinates hold 82–83% of the stream’s size; clamping them at the 99th percentile removes 36–38% of the stream’s size each frame, the largest edit of any unit. Size of the edit: median 65% of the stream at that layer (90th percentile 69%), seeds 1–3.</p>
+<figure class="plate"><a class="shot" href="img/review/unit-limiter.webp" data-cap="Component Clamp: its edit on the recorded tensors"><img src="img/review/unit-limiter.webp" width="1350" height="510" loading="lazy" alt="Component Clamp: its edit on the recorded tensors"><span class="zoom">Zoom</span></a><figcaption>Component Clamp: its edit on the recorded tensors</figcaption></figure>
+<p><strong>What reaches the sound</strong> (20 seeds × 6 s, against the same seed): centroid +65 Hz on average, up on 14 of 20 seeds (p = 0.030, q = 0.045); level +11.4 dB on average, up on 20 of 20 seeds (p = 0.000, q = 0.000); mean level-free spectrum shift 10.7 dB (RMS over bands of the mean across seeds (p = 0.000, q = 0.000).</p>
+<p><strong>Verdict.</strong> Consistent across seeds after correction: brighter, louder, a consistent change of spectral shape.</p>
+</details>
+<details class="unitd" id="principal-bands"><summary><span class="dn">Principal Bands</span><span class="dv">darker, louder, a consistent change of spectral shape</span></summary>
+
+<p><strong>Claims.</strong> Scales three bands of the stream’s principal directions: low, mid, high. Line: <code>eq layer=8 low=1.3 mid=1 high=0.7</code>.</p>
+<p><strong>Code that ran.</strong></p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># vau/units/eq.py, line 28</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> eq_edit(mean: torch.Tensor, bands: List[torch.Tensor], gains: List[<span class="bu">float</span>]):</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> edit(h, pos):</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>        x <span class="op">=</span> h.<span class="bu">float</span>()</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>        xc <span class="op">=</span> x <span class="op">-</span> mean</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> v, g <span class="kw">in</span> <span class="bu">zip</span>(bands, gains):</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> g <span class="op">!=</span> <span class="fl">1.0</span>:</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>                x <span class="op">=</span> x <span class="op">+</span> (g <span class="op">-</span> <span class="fl">1.0</span>) <span class="op">*</span> ((xc <span class="op">@</span> v.T) <span class="op">@</span> v)</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> x.to(h.dtype)</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> edit</span></code></pre></div>
+<p><strong>On the recorded tensors.</strong> The change lies in the low band (the first 8 principal directions, raised 30%) and the high band (65 onward, cut 30%) of layer 8’s principal directions, with none in the middle band. Size of the edit: median 16% of the stream at that layer (90th percentile 17%), seeds 1–3.</p>
+<figure class="plate"><a class="shot" href="img/review/unit-eq.webp" data-cap="Principal Bands: its edit on the recorded tensors"><img src="img/review/unit-eq.webp" width="1350" height="510" loading="lazy" alt="Principal Bands: its edit on the recorded tensors"><span class="zoom">Zoom</span></a><figcaption>Principal Bands: its edit on the recorded tensors</figcaption></figure>
+<p><strong>What reaches the sound</strong> (20 seeds × 6 s, against the same seed): centroid -55 Hz on average, up on 2 of 20 seeds (p = 0.000, q = 0.000); level +12.1 dB on average, up on 20 of 20 seeds (p = 0.000, q = 0.000); mean level-free spectrum shift 3.6 dB (RMS over bands of the mean across seeds (p = 0.000, q = 0.001).</p>
+<p><strong>Verdict.</strong> Consistent across seeds after correction: darker, louder, a consistent change of spectral shape.</p>
+</details>
+<details class="unitd" id="band-shrink"><summary><span class="dn">Band Shrink</span><span class="dv">no consistent shift at the 0.2.8 default</span></summary>
+
+<p><strong>Claims.</strong> Compresses the stream separately in three bands of its principal directions: low, mid, high. Line: <code>multiband layer=6 ratio=4 band=all thresh=1</code>.</p>
+<p><strong>Code that ran.</strong></p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># vau/units/multiband.py, line 29</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> multiband_edit(mean: torch.Tensor, bands: List[torch.Tensor], limits: List[<span class="bu">float</span>], ratio: <span class="bu">float</span>, which: List[<span class="bu">int</span>]):</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> edit(h, pos):</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>        x <span class="op">=</span> h.<span class="bu">float</span>()</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>        xc <span class="op">=</span> x <span class="op">-</span> mean</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>        out <span class="op">=</span> x.clone()</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> b <span class="kw">in</span> which:</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>            v, lim <span class="op">=</span> bands[b], limits[b]</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>            y <span class="op">=</span> xc <span class="op">@</span> v.T                                        <span class="co"># the band&#39;s coordinates</span></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>            n <span class="op">=</span> y.norm(dim<span class="op">=-</span><span class="dv">1</span>, keepdim<span class="op">=</span><span class="va">True</span>).clamp_min(<span class="fl">1e-9</span>)</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>            target <span class="op">=</span> torch.where(n <span class="op">&gt;</span> lim, lim <span class="op">+</span> (n <span class="op">-</span> lim) <span class="op">/</span> ratio, n)</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>            out <span class="op">=</span> out <span class="op">+</span> ((y <span class="op">*</span> (target <span class="op">/</span> n <span class="op">-</span> <span class="dv">1</span>)) <span class="op">@</span> v)</span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> out.to(h.dtype)</span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> edit</span></code></pre></div>
+<p><strong>On the recorded tensors.</strong> The high band is over its limit on every frame; the middle band on 55%, 49% and 36% of frames on seeds 1–3, the low band on 13%, 4% and 4%. Size of the edit: median 8% of the stream at that layer (90th percentile 12%), seeds 1–3.</p>
+<figure class="plate"><a class="shot" href="img/review/unit-multiband.webp" data-cap="Band Shrink: its edit on the recorded tensors"><img src="img/review/unit-multiband.webp" width="1350" height="510" loading="lazy" alt="Band Shrink: its edit on the recorded tensors"><span class="zoom">Zoom</span></a><figcaption>Band Shrink: its edit on the recorded tensors</figcaption></figure>
+<p><strong>What reaches the sound</strong> (20 seeds × 6 s, against the same seed): centroid -5 Hz on average, up on 8 of 20 seeds (p = 0.597, q = 0.634); level +1.5 dB on average, up on 11 of 20 seeds (p = 0.180, q = 0.235); mean level-free spectrum shift 1.5 dB (RMS over bands of the mean across seeds (p = 0.164, q = 0.220).</p>
+<p><strong>Verdict.</strong> No consistent shift detected on 20 seeds at the default setting (no test survives correction).</p>
+</details>
+<details class="unitd" id="rotate"><summary><span class="dn">Rotate</span><span class="dv">brighter, quieter, a consistent change of spectral shape</span></summary>
+
+<p><strong>Claims.</strong> Rotates the stream in the plane of two directions. Line: <code>shifter layer=6 dir=brightness dir2=pulse angle=45</code>.</p>
+<p><strong>Code that ran.</strong></p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># vau/units/shifter.py, line 25</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> shifter_edit(e1: torch.Tensor, e2: torch.Tensor, angle: <span class="bu">float</span>):</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    c, s <span class="op">=</span> math.cos(math.radians(angle)), math.sin(math.radians(angle))</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> edit(h, pos):</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>        x <span class="op">=</span> h.<span class="bu">float</span>()</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>        a, b <span class="op">=</span> (x <span class="op">*</span> e1).<span class="bu">sum</span>(<span class="op">-</span><span class="dv">1</span>, keepdim<span class="op">=</span><span class="va">True</span>), (x <span class="op">*</span> e2).<span class="bu">sum</span>(<span class="op">-</span><span class="dv">1</span>, keepdim<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> (x <span class="op">+</span> (a <span class="op">*</span> c <span class="op">-</span> b <span class="op">*</span> s <span class="op">-</span> a) <span class="op">*</span> e1 <span class="op">+</span> (a <span class="op">*</span> s <span class="op">+</span> b <span class="op">*</span> c <span class="op">-</span> b) <span class="op">*</span> e2).to(h.dtype)</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> edit</span></code></pre></div>
+<p><strong>On the recorded tensors.</strong> The stream’s size is kept exactly; its part in the plane of Brightness and Pulse, 10–13% of its size, is turned 45°. Size of the edit: median 9% of the stream at that layer (90th percentile 14%), seeds 1–3.</p>
+<figure class="plate"><a class="shot" href="img/review/unit-shifter.webp" data-cap="Rotate: its edit on the recorded tensors"><img src="img/review/unit-shifter.webp" width="1350" height="510" loading="lazy" alt="Rotate: its edit on the recorded tensors"><span class="zoom">Zoom</span></a><figcaption>Rotate: its edit on the recorded tensors</figcaption></figure>
+<p><strong>What reaches the sound</strong> (20 seeds × 6 s, against the same seed): centroid +78 Hz on average, up on 18 of 20 seeds (p = 0.000, q = 0.000); level -6.5 dB on average, up on 2 of 20 seeds (p = 0.000, q = 0.000); mean level-free spectrum shift 4.7 dB (RMS over bands of the mean across seeds (p = 0.000, q = 0.000). On 2 seeds more than 5% of frames fell near silence (at most 6%).</p>
+<p><strong>Verdict.</strong> Consistent across seeds after correction: brighter, quieter, a consistent change of spectral shape.</p>
+</details>
+<details class="unitd" id="neuron"><summary><span class="dn">Neuron</span><span class="dv">no consistent shift at the 0.2.8 default</span></summary>
+
+<p><strong>Claims.</strong> Scales, adds to, sets, zeroes, flips or clamps single MLP neurons in one block. Line: <code>neuron block=all n=373 op=scale value=6</code>.</p>
+<p><strong>Code that ran.</strong> Abliterator’s MLX version, <code>neuron_fn</code> in <code>mlxunits.py</code>, tested in its own test suite against VAU’s torch unit; the VAU code was not executed in these runs.</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># backend/abliterator/mlxunits.py, line 66</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> neuron_fn(ns: List[<span class="bu">int</span>], op: <span class="bu">str</span>, value: <span class="bu">float</span>, f: <span class="bu">float</span>, keepnorm: <span class="bu">bool</span>) <span class="op">-&gt;</span> Callable:</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    masks: Dict[<span class="bu">int</span>, Any] <span class="op">=</span> {}</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> edit(h):</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>        mx <span class="op">=</span> _mx()</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>        shape, flat <span class="op">=</span> h.shape, h.reshape(<span class="op">-</span><span class="dv">1</span>).astype(mx.float32)</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>        n <span class="op">=</span> flat.shape[<span class="dv">0</span>]</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> n <span class="kw">not</span> <span class="kw">in</span> masks:</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>            m <span class="op">=</span> np.zeros(n, np.float32)</span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>            m[[i <span class="cf">for</span> i <span class="kw">in</span> ns <span class="cf">if</span> i <span class="op">&lt;</span> n]] <span class="op">=</span> <span class="fl">1.0</span></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>            masks[n] <span class="op">=</span> mx.array(m)</span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>        m <span class="op">=</span> masks[n]</span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> op <span class="op">==</span> <span class="st">&quot;scale&quot;</span>:</span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>            a <span class="op">=</span> flat <span class="op">*</span> (<span class="fl">1.0</span> <span class="op">+</span> m <span class="op">*</span> (value <span class="op">-</span> <span class="fl">1.0</span>))</span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>        <span class="cf">elif</span> op <span class="op">==</span> <span class="st">&quot;add&quot;</span>:</span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>            a <span class="op">=</span> flat <span class="op">+</span> m <span class="op">*</span> value</span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>        <span class="cf">elif</span> op <span class="op">==</span> <span class="st">&quot;set&quot;</span>:</span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a>            a <span class="op">=</span> flat <span class="op">*</span> (<span class="fl">1.0</span> <span class="op">-</span> m) <span class="op">+</span> m <span class="op">*</span> value</span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a>        <span class="cf">elif</span> op <span class="op">==</span> <span class="st">&quot;zero&quot;</span>:</span>
+<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a>            a <span class="op">=</span> flat <span class="op">*</span> (<span class="fl">1.0</span> <span class="op">-</span> m)</span>
+<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a>        <span class="cf">elif</span> op <span class="op">==</span> <span class="st">&quot;flip&quot;</span>:</span>
+<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a>            a <span class="op">=</span> flat <span class="op">*</span> (<span class="fl">1.0</span> <span class="op">-</span> <span class="fl">2.0</span> <span class="op">*</span> m)</span>
+<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span>:                                                 <span class="co"># clamp</span></span>
+<span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a>            v <span class="op">=</span> <span class="bu">abs</span>(value)</span>
+<span id="cb13-26"><a href="#cb13-26" aria-hidden="true" tabindex="-1"></a>            a <span class="op">=</span> mx.where(m <span class="op">&gt;</span> <span class="dv">0</span>, mx.clip(flat, <span class="op">-</span>v, v), flat)</span>
+<span id="cb13-27"><a href="#cb13-27" aria-hidden="true" tabindex="-1"></a>        out <span class="op">=</span> _mix(flat.reshape(<span class="dv">1</span>, <span class="dv">1</span>, <span class="op">-</span><span class="dv">1</span>), a.reshape(<span class="dv">1</span>, <span class="dv">1</span>, <span class="op">-</span><span class="dv">1</span>), f, keepnorm)</span>
+<span id="cb13-28"><a href="#cb13-28" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> out.reshape(shape).astype(h.dtype)</span>
+<span id="cb13-29"><a href="#cb13-29" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> mlx_fn(edit)</span></code></pre></div>
+<p><strong>On the recorded tensors.</strong> Neuron 373 of the 4,096 MLP hidden units is multiplied by 6 in every block and no other hidden unit changes: on all 1,440 calls (12 blocks × 40 frames × 3 seeds) the recorded output equals the prediction exactly after rounding. Size of the edit: median 5% of block 0’s MLP hidden vector (90th percentile 26%), seeds 1–3.</p>
+<figure class="plate"><a class="shot" href="img/review/unit-neuron.webp" data-cap="Neuron: its edit on the recorded tensors"><img src="img/review/unit-neuron.webp" width="1350" height="510" loading="lazy" alt="Neuron: its edit on the recorded tensors"><span class="zoom">Zoom</span></a><figcaption>Neuron: its edit on the recorded tensors</figcaption></figure>
+<p><strong>What reaches the sound</strong> (20 seeds × 6 s, against the same seed): centroid -13 Hz on average, up on 6 of 20 seeds (p = 0.318, q = 0.368); level -0.1 dB on average, up on 7 of 20 seeds (p = 0.909, q = 0.927); mean level-free spectrum shift 0.7 dB (RMS over bands of the mean across seeds (p = 0.979, q = 0.979).</p>
+<p><strong>Verdict.</strong> No consistent shift detected on 20 seeds at the default setting (no test survives correction).</p>
+</details>
+<details class="unitd" id="abliterate"><summary><span class="dn">Abliterate</span><span class="dv">brighter, quieter, a consistent change of spectral shape</span></summary>
+
+<p><strong>Claims.</strong> Removes a direction from what attention and MLPs write, with a strength that peaks at one block and tapers. Line: <code>abliterate block=all dir=brightness shape=flat peak=0.7 width=0.4 edge=0.3 share=0.5 projected=1 size=0 bias=1 strength=1</code>.</p>
+<p><strong>Code that ran.</strong> Abliterator’s MLX version, <code>abliterate_fn</code> in <code>mlxunits.py</code>, tested in its own test suite against VAU’s torch unit; the VAU code was not executed in these runs.</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># backend/abliterator/mlxunits.py, line 125</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> abliterate_fn(v: np.ndarray, s: <span class="bu">float</span>, scale: Optional[np.ndarray]) <span class="op">-&gt;</span> Callable:</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>    vv, sc <span class="op">=</span> <span class="va">None</span>, <span class="va">None</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> edit(h):</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>        <span class="kw">nonlocal</span> vv, sc</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>        mx <span class="op">=</span> _mx()</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> vv <span class="kw">is</span> <span class="va">None</span>:</span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>            vv <span class="op">=</span> mx.array(v.astype(np.float32))</span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>            sc <span class="op">=</span> mx.array(scale.astype(np.float32)) <span class="cf">if</span> scale <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span> <span class="cf">else</span> <span class="va">None</span></span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>        x <span class="op">=</span> h.astype(mx.float32)</span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>        x <span class="op">=</span> x <span class="op">-</span> s <span class="op">*</span> mx.<span class="bu">sum</span>(x <span class="op">*</span> vv, axis<span class="op">=-</span><span class="dv">1</span>, keepdims<span class="op">=</span><span class="va">True</span>) <span class="op">*</span> vv</span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> sc <span class="kw">is</span> <span class="kw">not</span> <span class="va">None</span>:</span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>            x <span class="op">=</span> x <span class="op">*</span> sc</span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> x.astype(h.dtype)</span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> mlx_fn(edit)</span></code></pre></div>
+<p><strong>On the recorded tensors.</strong> In every block it removes the part of what self-attention writes along Brightness (strength 1), and half the part of what the MLP writes (MLP share 0.5), with Brightness first made orthogonal to the stream’s mean at that layer. All 2,880 calls (24 a frame × 40 frames × 3 seeds) match the formula (worst error 3×10⁻⁴). In block 0’s attention output the part along the direction fell from 5–8% of the output to 0.02%. At strength 2 the attention part is turned round, not removed. Size of the edit: median 6% of block 0 attention’s output (90th percentile 16%), seeds 1–3.</p>
+<figure class="plate"><a class="shot" href="img/review/unit-abliterate_inst.webp" data-cap="Abliterate: its edit on the recorded tensors"><img src="img/review/unit-abliterate_inst.webp" width="1350" height="510" loading="lazy" alt="Abliterate: its edit on the recorded tensors"><span class="zoom">Zoom</span></a><figcaption>Abliterate: its edit on the recorded tensors</figcaption></figure>
+<p><strong>What reaches the sound</strong> (20 seeds × 6 s, against the same seed): centroid +178 Hz on average, up on 17 of 20 seeds (p = 0.001, q = 0.001); level -12.4 dB on average, up on 0 of 20 seeds (p = 0.000, q = 0.000); mean level-free spectrum shift 9.4 dB (RMS over bands of the mean across seeds (p = 0.000, q = 0.000). On 12 seeds more than 5% of frames fell near silence (at most 59%).</p>
+<p><strong>Verdict.</strong> Consistent across seeds after correction: brighter, quieter, a consistent change of spectral shape.</p>
+</details>
+<details class="unitd" id="steer"><summary><span class="dn">Steer</span><span class="dv">brighter, a consistent change of spectral shape</span></summary>
+
+<p><strong>Claims.</strong> Adds a dose of each direction to the stream at layer 6, scaled by the stream’s own size: <code>h ← h + ‖h‖ · Σ dose_i · v_i</code>, with each v_i of unit length. Code: the <code>Hooks._wrap</code> lines above.</p>
+<p><strong>On the recorded tensors.</strong> At frame 0, layers 1–5 are identical to the plain model’s, and layer 6 has had 9.96% of its size added: doses of 0.1 and 0.03 along two directions about 100° apart at this layer (cosine −0.17), which sum to 0.0995. This matches the formula to within 1.4% of what was added, the stream’s bfloat16 rounding. A dose of 0.001 sits at that rounding’s scale: 94% of its size survives, but it lands on only 166 of 1,024 coordinates, at a cosine of 0.84 with the intended direction.</p>
+<figure class="plate"><a class="shot" href="img/review/unit-steer.webp" data-cap="Steer: its edit on the recorded tensors"><img src="img/review/unit-steer.webp" width="1350" height="510" loading="lazy" alt="Steer: its edit on the recorded tensors"><span class="zoom">Zoom</span></a><figcaption>Steer: its edit on the recorded tensors</figcaption></figure>
+<p><strong>What reaches the sound</strong> (20 seeds × 6 s, against the same seed): centroid +863 Hz on average, up on 19 of 20 seeds (p = 0.000, q = 0.000); level -3.1 dB on average, up on 7 of 20 seeds (p = 0.043, q = 0.062); mean level-free spectrum shift 19.8 dB (RMS over bands of the mean across seeds (p = 0.000, q = 0.000). On 3 seeds more than 5% of frames fell near silence (at most 17%).</p>
+<p><strong>Verdict.</strong> Consistent across seeds after correction: brighter, a consistent change of spectral shape.</p>
+</details>
+  </section>
+
+  <section class="section wrap reveal" id="time-based-effects">
+    <span class="num">07</span>
+    <h2>Time-based effects</h2>
+<p>Lookback, Running Average and Frame Repeat claim to act in time, and so does Quantise when its Hold is above 1. Lookback mixes in the stream from an earlier frame, Running Average mixes in a decaying average of earlier frames, Frame Repeat replays an earlier frame in place of the current one, and Quantise with a hold keeps one frame’s values for several frames.</p>
+<h3 id="spectral-measures-and-frame-order">Spectral measures and frame order</h3>
+<p>The three sound measures above (centroid, level and shape) are all taken from the long-term spectrum, the power spectrum averaged over the whole take. An echo adds earlier frames to later ones, and a hold puts one frame where the next would have been. On a drone, where one frame’s spectrum is much like the next, either can leave the average over 6 s close to what it was, so the order of frames, which is what these units change, may not show in those measures at all.</p>
+<h3 id="frame-to-frame-similarity">Frame-to-frame similarity</h3>
+<p><code>temporal.py</code> measures the order of frames directly. - <strong>Spectra by frame.</strong> One spectrum per 40 ms model frame: a Hann window of 80 ms moved on by 1,920 samples (40 ms at 48 kHz), so spectrum <em>t</em> is centred on the boundary between frames <em>t</em> and <em>t</em> + 1; log magnitude from 40 Hz to 12 kHz, with each frequency bin’s mean over the take removed. At lag 1 two spectra share half their samples; from lag 2 the windows do not overlap. The overlap is the same for the plain model and the unit. - <strong>Similarity at lag <em>L</em>.</strong> The mean, over the take, of the cosine between frame <em>t</em>’s spectrum and frame <em>t</em> − <em>L</em>’s. It is higher when each frame is more like the one <em>L</em> frames before it. - <strong>Against the plain model.</strong> For each seed, the unit’s similarity minus the plain model’s on the same seed, at every lag from 1 to 16 frames (40 to 640 ms). - <strong>Seeds and test.</strong> Seeds 1–10, 150 frames (6 s) each, the Warm drone. A two-sided sign-flip test over all 1,024 sign patterns, so the smallest possible p is 0.002. The p-values in the tables are not corrected across lags or cases, and neighbouring lags are not independent of each other. Under the Benjamini–Hochberg correction used elsewhere in this review, applied across this section’s 147 tests (nine cases × 16 lags and three replaced-frame tests), none survives at 5%: with ten seeds the smallest p is 0.002. Corrected within each case over its 16 lags, Lookback at layer 6 survives at lags 1–9 and Quantise with hold 8 at lags 3–4; Running Average, Lookback at layer 12 and the Frame Repeat results do not. - <strong>Frame Repeat.</strong> It replaces only some frames (the last <em>Length</em> of every <em>Interval</em>), so it was also measured on those frames alone, at a lag equal to its Length. The frames are selected by their position in the model; whether the audio of a position lags it by a frame in the codec was not checked, and shifting the selection one frame later raised the rise for two presets on four held-out seeds (see below), so the replaced-frame figures are approximate.</p>
+<p>An echo or a hold should raise the similarity at its lag. A change that only re-rolls the sampled path should leave it near the nudge’s figures.</p>
+<figure class="plate"><a class="shot" href="img/review/fig-time.webp" data-cap="Frame-to-frame similarity, unit minus plain, by lag"><img src="img/review/fig-time.webp" width="1500" height="600" loading="lazy" alt="Frame-to-frame similarity, unit minus plain, by lag"><span class="zoom">Zoom</span></a><figcaption>Frame-to-frame similarity, unit minus plain, by lag</figcaption></figure>
+<p><em>Filled points have p &lt; 0.05, uncorrected. The nudge in both panels is at layer 6. The figure shows similarity across the whole take; Frame Repeat’s figures on the frames it replaces are in the second table below.</em></p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Case</th>
+<th>Lag 1</th>
+<th>Lag 4</th>
+<th>Largest rise</th>
+<th>Lags with p &lt; 0.05</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Steer 0.001 (control)</td>
+<td>+0.042 (p = 0.375)</td>
+<td>+0.076 (p = 0.297)</td>
+<td>+0.094 at lag 8 (p = 0.275)</td>
+<td>none (smallest p 0.107, lag 2)</td>
+</tr>
+<tr>
+<td>Lookback, card default (layer 6, time 4)</td>
+<td>+0.195 (p = 0.002)</td>
+<td>+0.219 (p = 0.004)</td>
+<td>+0.231 at lag 3 (p = 0.004)</td>
+<td>1–10</td>
+</tr>
+<tr>
+<td>Lookback, the same at layer 12</td>
+<td>+0.126 (p = 0.012)</td>
+<td>+0.124 (p = 0.037)</td>
+<td>+0.147 at lag 2 (p = 0.029)</td>
+<td>1–4</td>
+</tr>
+<tr>
+<td>Running Average, card default (layer 6)</td>
+<td>+0.141 (p = 0.004)</td>
+<td>+0.161 (p = 0.014)</td>
+<td>+0.173 at lag 3 (p = 0.008)</td>
+<td>1–9</td>
+</tr>
+<tr>
+<td>Running Average, the same at layer 12</td>
+<td>+0.093 (p = 0.105)</td>
+<td>+0.061 (p = 0.178)</td>
+<td>+0.100 at lag 2 (p = 0.061)</td>
+<td>none</td>
+</tr>
+<tr>
+<td>Frame Repeat, card default (layer 6, interval 8, length 2)</td>
+<td>+0.012 (p = 0.723)</td>
+<td>+0.042 (p = 0.188)</td>
+<td>+0.082 at lag 8 (p = 0.262)</td>
+<td>none</td>
+</tr>
+<tr>
+<td>Frame Repeat, the same at layer 12</td>
+<td>−0.003 (p = 0.939)</td>
+<td>+0.019 (p = 0.455)</td>
+<td>+0.081 at lag 8 (p = 0.053)</td>
+<td>none</td>
+</tr>
+<tr>
+<td>Frame Repeat, layer 12, interval 16, length 8</td>
+<td>−0.007 (p = 0.842)</td>
+<td>+0.048 (p = 0.160)</td>
+<td>+0.098 at lag 8 (p = 0.111)</td>
+<td>none</td>
+</tr>
+<tr>
+<td>Quantise, 16 bits, hold 8 (layer 6)</td>
+<td>+0.079 (p = 0.152)</td>
+<td>+0.151 (p = 0.006)</td>
+<td>+0.167 at lag 3 (p = 0.004)</td>
+<td>2–8</td>
+</tr>
+<tr>
+<td>Quantise, 16 bits, hold 8, at layer 12</td>
+<td>+0.031 (p = 0.297)</td>
+<td>+0.067 (p = 0.129)</td>
+<td>+0.091 at lag 2 (p = 0.023)</td>
+<td>2–3; lower at 11 (−0.083, p = 0.047) and 16 (−0.080, p = 0.033)</td>
+</tr>
+</tbody>
+</table></div>
+<p>On the replaced frames alone, at a lag equal to the Length:</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Frame Repeat case</th>
+<th>Lag</th>
+<th>Rise</th>
+<th>p</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Card default (layer 6, interval 8, length 2)</td>
+<td>2</td>
+<td>+0.111</td>
+<td>0.014</td>
+</tr>
+<tr>
+<td>The same at layer 12</td>
+<td>2</td>
+<td>+0.056</td>
+<td>0.191</td>
+</tr>
+<tr>
+<td>Layer 12, interval 16, length 8</td>
+<td>8</td>
+<td>+0.136</td>
+<td>0.027</td>
+</tr>
+</tbody>
+</table></div>
+<ul>
+<li><strong>Lookback and Running Average at layer 6</strong> raise the similarity at every lag from 1 to 9 or 10 (up to 400 ms), most at lag 3. Lookback’s rise at its own Time, lag 4, is +0.219. The rise does not peak at lag 4, so the measure may be picking up a general smoothing of frame-to-frame change along with an echo at 160 ms.</li>
+<li><strong>At layer 12</strong> the same lines give smaller rises: Lookback’s clears p &lt; 0.05 at lags 1–4, and Running Average’s at none.</li>
+<li><strong>Frame Repeat</strong> at its card default shows no change with p &lt; 0.05 at any lag across the whole take (largest rise +0.082 at lag 8, p = 0.262, about the nudge’s size). On the frames it replaces, the similarity at lag 2 rises by 0.111 (p = 0.014). The replaced frames are a quarter of the take at this setting.</li>
+<li><strong>Quantise with a hold of 8 frames</strong> at layer 6 raises the similarity from lag 2 to lag 8. At lag 1 the rise, +0.079, has p = 0.152.</li>
+<li><strong>The nudge</strong> is above zero at all sixteen lags, by 0.016 to 0.094, with no p below 0.107. Every case is compared with the same ten plain takes, so part of each unit’s rise may be of the size that any change of path gives, up to about 0.09 on these seeds.</li>
+<li><strong>On the held-out seeds</strong> (21–30; see <a href="#presets-and-held-out-seeds">Presets and held-out seeds</a>), with correction: the old Lookback default rose by +0.271 at lag 4 (q = 0.006), the old Running Average default by +0.170 at lag 1 (q = 0.006) and Quantise with hold 8 by +0.099 at lag 1 (q = 0.010). Frame Repeat’s card default rose by +0.088 on its replaced frames (8 of 10 up, q = 0.081), short of correction, and the layer-12 line with interval 16 and length 8 by +0.005 (p = 0.855).</li>
+<li><strong>Quantise at its old default</strong> (6 bits, hold 1) holds nothing, so the time measure does not apply to it. On the spectral measures it was not detected on 20 seeds: centroid +7 Hz (12 of 20 up, q = 0.34), level +0.2 dB (q = 0.76), shape 1.2 dB (q = 0.29). In the preset search (six seeds × 4 s) its median timbre distance was 4.0 dB, against the nudge’s 4.7 dB. The instrument’s default for Quantise is now the Bitcrush preset (1 bit, hold 1, layer 6; <code>HOST_HEARD</code> in <code>units.py</code>).</li>
+</ul>
+  </section>
+
+  <section class="section wrap reveal" id="presets-and-held-out-seeds">
+    <span class="num">08</span>
+    <h2>Presets and held-out seeds</h2>
+<h3 id="the-search">The search</h3>
+<p><code>tune.py</code>, <code>tune2.py</code> and <code>tune3.py</code> measured 163 candidate lines across the thirteen units, and the nudge as a control. - <strong>Renders.</strong> Each line on seeds 1–6, 100 frames (4 s) each, the Warm drone, through <code>Proc.render</code> with the line as the take’s start. - <strong>Measures.</strong> Per seed, against the plain model on the same seed: - timbre distance: the RMS over the spectrum’s bands of the level-free difference between the two long-term spectra, in dB; - the change of spectral centroid and of level; - broken (<code>calibrate.broken</code>): clips (more than 0.1% of samples at 0.98 or above), falls silent (more than a quarter of the 40 ms frames below −55 dBFS, or a level 24 dB below the plain model’s), overdriven (RMS above −12 dBFS), or turns to noise (spectral flatness above 0.3 and three times the plain model’s). - <strong>Rounds.</strong> The first round covered each unit’s range at its card placement and a few others. The second and third moved most of the units with no consistent effect to later layers (mostly 11 and 12), tried Neuron at blocks 0, 9, 10 and 11, Band Shrink at layers 2 and 10, Principal Bands at 8, 10 and 12, Quantise at 10 and Rotate with its two directions swapped, added Keep size versions of the late Lookback and Running Average lines, and gave Neuron neurons chosen from the weights: in a block, those whose output weights point most along (or against) Brightness or Pulse at the layer the block writes into. - <strong>Breaks.</strong> 19 of the 163 lines, the card defaults among them, broke on at least one of the six seeds. The nudge’s median timbre distance was 4.7 dB.</p>
+<p><code>presets.py</code> first listed the presets, chosen by hand from the lines that broke on none of the six seeds: 80 presets for twelve units, six to eight each. Abliterate keeps its own five presets by strength and was not part of this check.</p>
+<h3 id="the-held-out-check">The held-out check</h3>
+<p>The presets were chosen on seeds 1–6 and checked on seeds 21–30, which played no part in the choice. A line picked from many candidates because it held on six seeds may have held partly by chance on those six, so figures from the same seeds would tend to overstate how often it holds.</p>
+<ul>
+<li><strong>Renders</strong> (<code>verify_presets.py</code>). Every preset on seeds 21–30, 150 frames (6 s) each, the Warm drone, with the nudge as the control.</li>
+<li><strong>Measures.</strong> Those of the search, the shape shift of the sound table above, and for the time presets the frame-to-frame similarity at the preset’s own lag, unit minus plain: Lookback at its Time, Running Average at lag 1, Frame Repeat at its Length on the frames it replaces, Quantise with a hold at lag 1. These lags were fixed from each unit’s design before the held-out run, not from the peaks in the time section, where lag 1 was the weakest for Quantise with hold 8 and Lookback peaked at lag 3.</li>
+<li><strong>Tests</strong> (<code>verify_stats.py</code>). Two-sided sign-flip tests over the ten seeds on centroid, level, shape and, for the time presets, similarity. Benjamini–Hochberg correction at 5% across all 265 tests of the 80 presets, the control reported and not counted.</li>
+<li><strong>Shipping rule</strong> (<code>presets.py</code>). A preset ships when it broke on none of the ten held-out seeds. A unit’s presets ship when at least five of them hold and all have been checked. A preset does not need any measure to survive correction to ship.</li>
+<li><strong>This round and the next.</strong> The figures below are for the presets as first chosen (round 1). After this round, the 15 presets that broke at Lookback, Running Average, Component Clamp, Principal Bands, Band Shrink and Neuron were replaced in <code>presets.py</code> with new lines: Keep size on for Lookback and Running Average, Component Clamp at layers 10 and 12, Air and Sky with the minor directions up by a quarter, Deep Low with a threshold of 0.5, and Bright Push adding 3. Drive, Back Turn and Late Turn were left as they were. The replacements were chosen after the held-out results and measured on the same seeds 21–30, so for them those seeds are not independent of the choice; their results are under “The replaced presets” below. In the second round’s statistics the replaced lines take the place of the first ones, and the correction runs over that set of 265 tests.</li>
+</ul>
+<figure class="plate"><a class="shot" href="img/review/fig-presets.webp" data-cap="Presets as first chosen, on ten held-out seeds"><img src="img/review/fig-presets.webp" width="1200" height="2520" loading="lazy" alt="Presets as first chosen, on ten held-out seeds"><span class="zoom">Zoom</span></a><figcaption>Presets as first chosen, on ten held-out seeds</figcaption></figure>
+<p><em>Timbre distance only; whether a measure moved consistently is in the tables below. The dashed line is the nudge’s median, not a threshold.</em></p>
+<h3 id="held-out-results">Held-out results</h3>
+<ul>
+<li><strong>The control.</strong> The nudge on seeds 21–30: timbre distance 5.1 dB (median), centroid +20 Hz (6 of 10 up, p = 0.207), level −0.4 dB (4 of 10 up, p = 0.676), shape 2.2 dB (p = 0.139), similarity at lag 1 +0.030 (6 of 10 up, p = 0.43), broken on none. There is no control at other lags or on replaced frames.</li>
+<li><strong>Breaks.</strong> Every preset broke on none of the six search seeds. On the held-out seeds, 18 of the 80 broke on at least one. Most of these breaks are silent gaps: more than a quarter of the 40 ms frames below −55 dBFS, which can happen with little loss of level (Long Echo on seed 29: 25.3% of frames, level −2.8 dB; Bright Push on seed 30: 35% of frames, the take at −26 dBFS). The rule is a hard threshold: Meltdown on seed 25 and Early Turn on seed 27 held with 37 of 150 frames (24.7%) below it.</li>
+<li><strong>Lookback.</strong> The card default, Ghost Trail, had silent gaps on 4 of 10 seeds (21, 22, 27 and 29, with 30–45% of frames below −55 dBFS). Slapback broke on 3, Long Echo on 3 and Deep Echo on 2. These four have Keep size off. The three with Keep size on (Smear, Feedback Loop, Late Repeats) broke on none.</li>
+<li><strong>Running Average.</strong> The card default, Afterglow, had silent gaps on 1 seed (27, 36% of frames) and Wash on 2. Both have Keep size off, and the five with Keep size on held.</li>
+<li><strong>Running Average with Keep size.</strong> The five Keep size presets lower the mean similarity at lag 1 (−0.020 to −0.061), where the two without raise it (Afterglow +0.170 and Wash +0.148, 10 of 10 up). The fall survives correction for Long Tail (−0.047, 1 of 10 up, q = 0.031) and Late Bloom (−0.035, 2 of 10 up, q = 0.017); Infinite Hall’s (−0.061, 1 of 10 up) has p = 0.027 and q = 0.052, Short Room’s went up on 3 of 10 seeds (p = 0.080) and Undertow’s on 4 (p = 0.238). These five differ from Afterglow and Wash in layer, decay and mix as well. With Keep size on at Afterglow’s and Wash’s own settings (see <a href="#the-replaced-presets">The replaced presets</a>), the rise goes (−0.004 and −0.025, neither consistent).</li>
+<li><strong>Frame Repeat.</strong> No preset broke. Half Bar (+0.119, 10 of 10 up, q = 0.006) and Deep Stutter (+0.237, 10 of 10 up, q = 0.006) raise the similarity on the replaced frames after correction. On the four held-out seeds whose audio was kept (21–24), only Stutter and Half Bar rose more on the frames they replace than on the others (Stutter +0.097 against +0.047, Half Bar +0.164 against +0.018); Deep Stutter rose as much on the frames it does not replace (+0.207 against +0.202), so its figure is a rise across the whole take, and so are Double Time’s, Tape Catch’s and Long Loop’s. Stutter, the card default (+0.088, 8 of 10 up, p = 0.047, q = 0.081), Double Time (+0.098, 8 of 10 up, p = 0.035, q = 0.063) and Tape Catch (+0.087, 7 of 10 up, p = 0.055, q = 0.090) rise by similar amounts without clearing correction. Long Loop rises by 0.005 (p = 0.855); on seeds 1–10 in <code>temporal.py</code> the same line gave +0.136 (p = 0.027).</li>
+<li><strong>Component Clamp.</strong> All five presets at layer 4, the card default Lid among them, were overdriven on 1 or 2 seeds (Lid on seeds 23 and 26, 15.6 and 14.9 dB above the plain model); Brickwall also clipped. Only Tail Clamp, at layer 12, held.</li>
+<li><strong>Principal Bands.</strong> Air broke on 1 seed (silent gaps) and Sky on 4 (clipping, silent gaps, overdrive). Their mean centroid changes, +2,408 and +3,728 Hz, come mostly from a few seeds: Air +17,051 Hz on seed 21 and +5,018 Hz on seed 26; Sky +18,651 Hz on seed 21 and +10,652 Hz on seed 27. The card default, Tilt Dark, held: centroid −65 Hz (0 of 10 up), level +12.9 dB (10 of 10 up) and shape, all after correction.</li>
+<li><strong>Band Shrink.</strong> Deep Low had silent gaps on 5 of 10 seeds, with a mean level change of −18.0 dB (0 of 10 up). The other six held, among them Low Squeeze, now the card default (shape after correction).</li>
+<li><strong>Tanh Squash.</strong> Drive (drive 2) was overdriven on 1 seed. The card default, Warm, held.</li>
+<li><strong>Rotate.</strong> Back Turn (−90°) and Late Turn (90° at layer 12) each had silent gaps on 1 seed. The six presets at layers 2 and 6 that held all moved shape after correction. The mean level change was negative for all six presets (−1.6 to −10.0 dB), and survives correction for five. Late Turn raised the centroid on all ten seeds (+424 Hz, q = 0.006).</li>
+<li><strong>Neuron.</strong> Bright Push, then planned as Neuron’s new default, had silent gaps on 2 seeds (26 and 30) and made the sound darker after correction (−87 Hz, 1 of 10 up, q = 0.017), although its neurons were chosen for writing along Brightness. The other five held; Bright Cells and Silence Cells moved no measure after correction.</li>
+<li><strong>No consistent measure.</strong> Ten of the presets that held moved no measure after correction: Stutter, Double Time, Tape Catch and Long Loop (Frame Repeat), Top Lid (Norm Shrink), Two-Bit (Quantise), Soft Low and Top Squeeze (Band Shrink), and Bright Cells and Silence Cells (Neuron).</li>
+</ul>
+<h3 id="the-replaced-presets">The replaced presets</h3>
+<p>Seeds 21–30 again, which had already shown the first versions breaking. None of the replacements was among the search lines, so seeds 21–30 are the only seeds they were run on. The q values in this subsection come from the second round, where the correction runs over the 265 tests with the replacements in place; elsewhere in this section they come from round 1, so the same unchanged preset can carry slightly different q values in the two.</p>
+<ul>
+<li><strong>Lookback with Keep size on.</strong> Ghost Trail, Slapback, Long Echo and Deep Echo held on all ten seeds. Their rise in similarity at their own lag is small: +0.021 to +0.035 (5 to 8 of 10 up), against +0.147 to +0.324 (9 or 10 of 10 up) for the same settings with Keep size off. Slapback moved shape (q = 0.022) and Long Echo level (−2.2 dB, 2 of 10 up, q = 0.022); Ghost Trail and Deep Echo moved no measure after correction.</li>
+<li><strong>Running Average with Keep size on.</strong> Afterglow and Wash held. Afterglow moved no measure (similarity −0.004); Wash was darker (−21 Hz, 2 of 10 up, q = 0.030).</li>
+<li><strong>Component Clamp at layers 10 and 12.</strong> All five held. Lid (0.99 at layer 10) and Clamp Down moved shape (q = 0.018), Brickwall and Flat Top level (+7.6 and +9.2 dB, 9 of 10 up, q = 0.013); Tame moved nothing after correction.</li>
+<li><strong>Principal Bands.</strong> Sky with the minor directions up by a quarter held and moved shape (q = 0.026). Air, the same at layer 8, still had silent gaps on 1 seed.</li>
+<li><strong>Band Shrink.</strong> Deep Low with a threshold of 0.5 still had silent gaps on 1 seed.</li>
+<li><strong>Neuron.</strong> Bright Push adding 3 held and moved no measure after correction.</li>
+</ul>
+<h3 id="shipped-presets-and-new-defaults">Shipped presets and new defaults</h3>
+<p><code>data/presets/mrt2_small.json</code> holds 75 presets for the twelve units (Abliterate keeps its own five): Lookback 7, Running Average 7, Frame Repeat 6, Norm Shrink 6, Tanh Squash 6, Quantise 7, Sparsify 6, Component Clamp 6, Principal Bands 6, Band Shrink 6, Rotate 6 and Neuron 6. Each broke on none of seeds 21–30. Air, Deep Low, Drive, Back Turn and Late Turn were left out. Instrument version 0.2.10 (and later) lists them on each card’s ▾ menu, with each tip naming which way centroid, level and similarity moved after correction, and a change of spectral shape where shape moved.</p>
+<p>Six card defaults changed, each to a preset that held on all ten seeds and moved at least one measure after correction. Quantise’s and Band Shrink’s were chosen before the held-out run, from the search. Lookback’s, Running Average’s, Component Clamp’s and Neuron’s were chosen after it, from presets that held on seeds 21–30, so for these four the held-out figures are not independent of the choice and are likely to be optimistic. Lid at layer 10 was a replacement and was never run on seeds 1–6. The q values are from round 1, except Lid’s, which is from the set with the replacements.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Unit</th>
+<th>Old default</th>
+<th>New default</th>
+<th>Held-out result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Lookback</td>
+<td>layer 6, Time 4, Feedback 0.3, Mix 0.2</td>
+<td>Feedback Loop: Time 8, Feedback 0.7, Mix 0.8, Keep size on</td>
+<td>darker (−19 Hz, 1 of 10 up, q = 0.010), quieter (−2.0 dB, 0 of 10 up, q = 0.006), shape (q = 0.017); similarity at lag 8 +0.090, 8 of 10 up, not after correction</td>
+</tr>
+<tr>
+<td>Running Average</td>
+<td>layer 6, Decay 0.8, Mix 0.2</td>
+<td>Long Tail: Decay 0.99, Mix 0.8, Keep size on</td>
+<td>darker (−57 Hz, 1 of 10 up, q = 0.014), shape (q = 0.006), similarity at lag 1 down (−0.047, q = 0.031)</td>
+</tr>
+<tr>
+<td>Component Clamp</td>
+<td>layer 4, ceiling 0.99</td>
+<td>Lid: layer 10, ceiling 0.99</td>
+<td>shape (q = 0.018)</td>
+</tr>
+<tr>
+<td>Quantise</td>
+<td>6 bits</td>
+<td>Bitcrush: 1 bit</td>
+<td>darker (−71 Hz, 1 of 10 up, q = 0.017), shape (q = 0.010)</td>
+</tr>
+<tr>
+<td>Band Shrink</td>
+<td>all bands, 4:1, threshold 1</td>
+<td>Low Squeeze: low band, 20:1, threshold 0.5</td>
+<td>shape (q = 0.031)</td>
+</tr>
+<tr>
+<td>Neuron</td>
+<td>neuron 373 × 6 in every block</td>
+<td>Ten Set: the 32 neurons of block 10 that write most along Brightness, held at 8</td>
+<td>shape (q = 0.017); centroid not consistent (+117 Hz, 6 of 10 up, p = 0.33)</td>
+</tr>
+</tbody>
+</table></div>
+<p>Keep size is now a switch on the Lookback and Running Average cards. With Keep size on, the old Lookback default’s rise at lag 4 falls from +0.271 to +0.021; the new default’s rise at lag 8 is +0.090 (8 of 10 up, not after correction). The presets with Keep size off are gone from the menu, and the settings can still be set by hand. The knobs’ measured ranges (the calibration) were measured with Keep size off and predate these defaults.</p>
+<h3 id="held-out-figures-by-unit">Held-out figures by unit</h3>
+<p>The presets as first chosen, seeds 21–30, 6 s each, against the plain model on the same seed. - <strong>Timbre:</strong> median timbre distance. - <strong>Centroid</strong> and <strong>Level:</strong> the mean change, with the number of seeds on which it went up. - <strong>Shape:</strong> the shape shift of the sound table above. - <strong>Similarity at own lag:</strong> for the time presets, the mean change of frame-to-frame similarity at the preset’s own lag, with the number of seeds on which it went up. - <strong>Consistent after correction:</strong> the measures whose sign-flip test survives Benjamini–Hochberg at 5% across 265 tests. - <strong>Broken:</strong> seeds out of ten, and how.</p>
+<details class="unitd" id="lookback-1"><summary><span class="dn">Lookback</span><span class="dv">7 presets</span></summary>
+
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Preset</th>
+<th>Setting</th>
+<th>Timbre</th>
+<th>Centroid</th>
+<th>Level</th>
+<th>Shape</th>
+<th>Similarity at own lag</th>
+<th>Consistent after correction</th>
+<th>Broken</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ghost Trail</td>
+<td><code>layer=6 time=4 feedback=0.3 mix=0.2 keepnorm=0</code></td>
+<td>6.3 dB</td>
+<td>−56 Hz (1/10 up)</td>
+<td>−3.2 dB (3/10 up)</td>
+<td>3.2 dB</td>
+<td>+0.271 (lag 4, 10/10 up)</td>
+<td>centroid, shape, time</td>
+<td>4/10 (near silent)</td>
+</tr>
+<tr>
+<td>Slapback</td>
+<td><code>layer=6 time=2 feedback=0.3 mix=0.2 keepnorm=0</code></td>
+<td>6.8 dB</td>
+<td>−59 Hz (1/10 up)</td>
+<td>−3.5 dB (3/10 up)</td>
+<td>3.9 dB</td>
+<td>+0.324 (lag 2, 10/10 up)</td>
+<td>centroid, shape, time</td>
+<td>3/10 (near silent)</td>
+</tr>
+<tr>
+<td>Long Echo</td>
+<td><code>layer=6 time=12 feedback=0.3 mix=0.2 keepnorm=0</code></td>
+<td>4.1 dB</td>
+<td>−32 Hz (1/10 up)</td>
+<td>−3.1 dB (0/10 up)</td>
+<td>2.7 dB</td>
+<td>+0.177 (lag 12, 10/10 up)</td>
+<td>centroid, level, shape, time</td>
+<td>3/10 (near silent)</td>
+</tr>
+<tr>
+<td>Deep Echo</td>
+<td><code>layer=12 time=4 feedback=0.3 mix=0.2 keepnorm=0</code></td>
+<td>6.1 dB</td>
+<td>−63 Hz (1/10 up)</td>
+<td>−1.4 dB (4/10 up)</td>
+<td>4.0 dB</td>
+<td>+0.147 (lag 4, 9/10 up)</td>
+<td>centroid, shape, time</td>
+<td>2/10 (near silent)</td>
+</tr>
+<tr>
+<td>Smear</td>
+<td><code>layer=2 time=4 feedback=0.3 mix=0.3 keepnorm=1</code></td>
+<td>4.8 dB</td>
+<td>−24 Hz (1/10 up)</td>
+<td>−1.0 dB (4/10 up)</td>
+<td>1.8 dB</td>
+<td>+0.128 (lag 4, 10/10 up)</td>
+<td>time</td>
+<td>0/10</td>
+</tr>
+<tr>
+<td>Feedback Loop</td>
+<td><code>layer=6 time=8 feedback=0.7 mix=0.8 keepnorm=1</code></td>
+<td>4.0 dB</td>
+<td>−19 Hz (1/10 up)</td>
+<td>−2.0 dB (0/10 up)</td>
+<td>2.0 dB</td>
+<td>+0.090 (lag 8, 8/10 up)</td>
+<td>centroid, level, shape</td>
+<td>0/10</td>
+</tr>
+<tr>
+<td>Late Repeats</td>
+<td><code>layer=12 time=2 feedback=0.6 mix=0.6 keepnorm=1</code></td>
+<td>4.6 dB</td>
+<td>−27 Hz (1/10 up)</td>
+<td>−1.2 dB (3/10 up)</td>
+<td>1.9 dB</td>
+<td>+0.029 (lag 2, 6/10 up)</td>
+<td>centroid</td>
+<td>0/10</td>
+</tr>
+</tbody>
+</table></div>
+</details>
+<details class="unitd" id="running-average-1"><summary><span class="dn">Running Average</span><span class="dv">7 presets</span></summary>
+
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Preset</th>
+<th>Setting</th>
+<th>Timbre</th>
+<th>Centroid</th>
+<th>Level</th>
+<th>Shape</th>
+<th>Similarity at own lag</th>
+<th>Consistent after correction</th>
+<th>Broken</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Afterglow</td>
+<td><code>layer=6 decay=0.8 mix=0.2 keepnorm=0</code></td>
+<td>6.1 dB</td>
+<td>−51 Hz (0/10 up)</td>
+<td>−1.5 dB (5/10 up)</td>
+<td>4.0 dB</td>
+<td>+0.170 (lag 1, 10/10 up)</td>
+<td>centroid, shape, time</td>
+<td>1/10 (near silent)</td>
+</tr>
+<tr>
+<td>Wash</td>
+<td><code>layer=12 decay=0.9 mix=0.3 keepnorm=0</code></td>
+<td>8.4 dB</td>
+<td>−75 Hz (1/10 up)</td>
+<td>−2.2 dB (2/10 up)</td>
+<td>5.9 dB</td>
+<td>+0.148 (lag 1, 10/10 up)</td>
+<td>centroid, shape, time</td>
+<td>2/10 (near silent)</td>
+</tr>
+<tr>
+<td>Short Room</td>
+<td><code>layer=10 decay=0.6 mix=0.5 keepnorm=1</code></td>
+<td>5.3 dB</td>
+<td>−23 Hz (2/10 up)</td>
+<td>−0.4 dB (5/10 up)</td>
+<td>2.2 dB</td>
+<td>−0.025 (lag 1, 3/10 up)</td>
+<td>shape</td>
+<td>0/10</td>
+</tr>
+<tr>
+<td>Undertow</td>
+<td><code>layer=2 decay=0.9 mix=0.3 keepnorm=1</code></td>
+<td>5.4 dB</td>
+<td>−7 Hz (5/10 up)</td>
+<td>−3.4 dB (2/10 up)</td>
+<td>2.3 dB</td>
+<td>−0.020 (lag 1, 4/10 up)</td>
+<td>level, shape</td>
+<td>0/10</td>
+</tr>
+<tr>
+<td>Long Tail</td>
+<td><code>layer=6 decay=0.99 mix=0.8 keepnorm=1</code></td>
+<td>6.4 dB</td>
+<td>−57 Hz (1/10 up)</td>
+<td>−0.7 dB (4/10 up)</td>
+<td>3.3 dB</td>
+<td>−0.047 (lag 1, 1/10 up)</td>
+<td>centroid, shape, time</td>
+<td>0/10</td>
+</tr>
+<tr>
+<td>Infinite Hall</td>
+<td><code>layer=6 decay=0.999 mix=1 keepnorm=1</code></td>
+<td>6.0 dB</td>
+<td>−57 Hz (0/10 up)</td>
+<td>+0.4 dB (7/10 up)</td>
+<td>3.1 dB</td>
+<td>−0.061 (lag 1, 1/10 up)</td>
+<td>centroid, shape</td>
+<td>0/10</td>
+</tr>
+<tr>
+<td>Late Bloom</td>
+<td><code>layer=12 decay=0.98 mix=0.8 keepnorm=1</code></td>
+<td>5.6 dB</td>
+<td>−56 Hz (1/10 up)</td>
+<td>+2.8 dB (8/10 up)</td>
+<td>2.9 dB</td>
+<td>−0.035 (lag 1, 2/10 up)</td>
+<td>centroid, shape, time</td>
+<td>0/10</td>
+</tr>
+</tbody>
+</table></div>
+</details>
+<details class="unitd" id="frame-repeat-1"><summary><span class="dn">Frame Repeat</span><span class="dv">6 presets</span></summary>
+
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Preset</th>
+<th>Setting</th>
+<th>Timbre</th>
+<th>Centroid</th>
+<th>Level</th>
+<th>Shape</th>
+<th>Similarity at own lag</th>
+<th>Consistent after correction</th>
+<th>Broken</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Stutter</td>
+<td><code>layer=6 interval=8 length=2 mix=1</code></td>
+<td>4.0 dB</td>
+<td>+7 Hz (6/10 up)</td>
+<td>+1.2 dB (7/10 up)</td>
+<td>1.3 dB</td>
+<td>+0.088 (lag 2, 8/10 up)</td>
+<td>none</td>
+<td>0/10</td>
+</tr>
+<tr>
+<td>Double Time</td>
+<td><code>layer=6 interval=4 length=2 mix=1</code></td>
+<td>6.3 dB</td>
+<td>+7 Hz (6/10 up)</td>
+<td>+1.6 dB (6/10 up)</td>
+<td>1.9 dB</td>
+<td>+0.098 (lag 2, 8/10 up)</td>
+<td>none</td>
+<td>0/10</td>
+</tr>
+<tr>
+<td>Half Bar</td>
+<td><code>layer=6 interval=8 length=4 mix=1</code></td>
+<td>3.6 dB</td>
+<td>−27 Hz (2/10 up)</td>
+<td>+0.9 dB (7/10 up)</td>
+<td>1.0 dB</td>
+<td>+0.119 (lag 4, 10/10 up)</td>
+<td>centroid, time</td>
+<td>0/10</td>
+</tr>
+<tr>
+<td>Tape Catch</td>
+<td><code>layer=6 interval=3 length=1 mix=1</code></td>
+<td>6.1 dB</td>
+<td>−39 Hz (3/10 up)</td>
+<td>+2.1 dB (7/10 up)</td>
+<td>2.0 dB</td>
+<td>+0.087 (lag 1, 7/10 up)</td>
+<td>none</td>
+<td>0/10</td>
+</tr>
+<tr>
+<td>Deep Stutter</td>
+<td><code>layer=2 interval=8 length=4 mix=1</code></td>
+<td>5.3 dB</td>
+<td>−23 Hz (2/10 up)</td>
+<td>+1.5 dB (7/10 up)</td>
+<td>1.7 dB</td>
+<td>+0.237 (lag 4, 10/10 up)</td>
+<td>time</td>
+<td>0/10</td>
+</tr>
+<tr>
+<td>Long Loop</td>
+<td><code>layer=12 interval=16 length=8 mix=1</code></td>
+<td>3.4 dB</td>
+<td>−17 Hz (1/10 up)</td>
+<td>+0.9 dB (7/10 up)</td>
+<td>1.1 dB</td>
+<td>+0.005 (lag 8, 6/10 up)</td>
+<td>none</td>
+<td>0/10</td>
+</tr>
+</tbody>
+</table></div>
+</details>
+<details class="unitd" id="norm-shrink-1"><summary><span class="dn">Norm Shrink</span><span class="dv">6 presets</span></summary>
+
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Preset</th>
+<th>Setting</th>
+<th>Timbre</th>
+<th>Centroid</th>
+<th>Level</th>
+<th>Shape</th>
+<th>Consistent after correction</th>
+<th>Broken</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Glue</td>
+<td><code>layer=6 ratio=4 makeup=1 thresh=1</code></td>
+<td>7.6 dB</td>
+<td>−8 Hz (5/10 up)</td>
+<td>+3.3 dB (6/10 up)</td>
+<td>3.8 dB</td>
+<td>shape</td>
+<td>0/10</td>
+</tr>
+<tr>
+<td>Squeeze</td>
+<td><code>layer=6 ratio=8 makeup=1 thresh=0.8</code></td>
+<td>12.8 dB</td>
+<td>−1 Hz (5/10 up)</td>
+<td>+6.3 dB (8/10 up)</td>
+<td>10.6 dB</td>
+<td>level, shape</td>
+<td>0/10</td>
+</tr>
+<tr>
+<td>Flatten</td>
+<td><code>layer=6 ratio=4 makeup=1 thresh=0.3</code></td>
+<td>19.9 dB</td>
+<td>+32 Hz (7/10 up)</td>
+<td>+10.9 dB (10/10 up)</td>
+<td>16.1 dB</td>
+<td>level, shape</td>
+<td>0/10</td>
+</tr>
+<tr>
+<td>Half Power</td>
+<td><code>layer=6 ratio=4 makeup=0.5 thresh=1</code></td>
+<td>20.3 dB</td>
+<td>+40 Hz (6/10 up)</td>
+<td>+10.0 dB (10/10 up)</td>
+<td>17.6 dB</td>
+<td>level, shape</td>
+<td>0/10</td>
+</tr>
+<tr>
+<td>Crush Wall</td>
+<td><code>layer=6 ratio=20 makeup=1 thresh=0.5</code></td>
+<td>19.2 dB</td>
+<td>+93 Hz (6/10 up)</td>
+<td>+10.4 dB (10/10 up)</td>
+<td>17.0 dB</td>
+<td>level, shape</td>
+<td>0/10</td>
+</tr>
+<tr>
+<td>Top Lid</td>
+<td><code>layer=10 ratio=20 makeup=1 thresh=1</code></td>
+<td>8.5 dB</td>
+<td>−6 Hz (6/10 up)</td>
+<td>+3.0 dB (8/10 up)</td>
+<td>3.9 dB</td>
+<td>none</td>
+<td>0/10</td>
+</tr>
+</tbody>
+</table></div>
+</details>
+<details class="unitd" id="tanh-squash-1"><summary><span class="dn">Tanh Squash</span><span class="dv">7 presets</span></summary>
+
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Preset</th>
+<th>Setting</th>
+<th>Timbre</th>
+<th>Centroid</th>
+<th>Level</th>
+<th>Shape</th>
+<th>Consistent after correction</th>
+<th>Broken</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Gentle</td>
+<td><code>layer=6 mix=1 drive=0.5</code></td>
+<td>7.2 dB</td>
+<td>+9 Hz (7/10 up)</td>
+<td>+6.4 dB (9/10 up)</td>
+<td>2.2 dB</td>
+<td>level</td>
+<td>0/10</td>
+</tr>
+<tr>
+<td>Warm</td>
+<td><code>layer=6 mix=1 drive=1</code></td>
+<td>9.4 dB</td>
+<td>−30 Hz (3/10 up)</td>
+<td>+13.2 dB (10/10 up)</td>
+<td>4.9 dB</td>
+<td>level, shape</td>
+<td>0/10</td>
+</tr>
+<tr>
+<td>Drive</td>
+<td><code>layer=6 mix=1 drive=2</code></td>
+<td>14.0 dB</td>
+<td>−35 Hz (2/10 up)</td>
+<td>+9.1 dB (9/10 up)</td>
+<td>11.0 dB</td>
+<td>level, shape</td>
+<td>1/10 (overdriven)</td>
+</tr>
+<tr>
+<td>Half Melt</td>
+<td><code>layer=6 mix=0.5 drive=4</code></td>
+<td>9.9 dB</td>
+<td>−69 Hz (0/10 up)</td>
+<td>+12.7 dB (10/10 up)</td>
+<td>8.6 dB</td>
+<td>centroid, level, shape</td>
+<td>0/10</td>
+</tr>
+<tr>
+<td>Burn</td>
+<td><code>layer=6 mix=1 drive=4</code></td>
+<td>19.2 dB</td>
+<td>+125 Hz (4/10 up)</td>
+<td>+4.6 dB (8/10 up)</td>
+<td>17.5 dB</td>
+<td>shape</td>
+<td>0/10</td>
+</tr>
+<tr>
+<td>Meltdown</td>
+<td><code>layer=6 mix=1 drive=8</code></td>
+<td>19.3 dB</td>
+<td>+4 Hz (2/10 up)</td>
+<td>+11.3 dB (10/10 up)</td>
+<td>17.4 dB</td>
+<td>level, shape</td>
+<td>0/10</td>
+</tr>
+<tr>
+<td>Glass Fuzz</td>
+<td><code>layer=12 mix=1 drive=4</code></td>
+<td>18.3 dB</td>
+<td>+46 Hz (6/10 up)</td>
+<td>+12.2 dB (10/10 up)</td>
+<td>15.7 dB</td>
+<td>level, shape</td>
+<td>0/10</td>
+</tr>
+</tbody>
+</table></div>
+</details>
+<details class="unitd" id="quantise-1"><summary><span class="dn">Quantise</span><span class="dv">7 presets</span></summary>
+
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Preset</th>
+<th>Setting</th>
+<th>Timbre</th>
+<th>Centroid</th>
+<th>Level</th>
+<th>Shape</th>
+<th>Similarity at own lag</th>
+<th>Consistent after correction</th>
+<th>Broken</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Bitcrush</td>
+<td><code>layer=6 bits=1 hold=1</code></td>
+<td>7.8 dB</td>
+<td>−71 Hz (1/10 up)</td>
+<td>+2.9 dB (6/10 up)</td>
+<td>4.5 dB</td>
+<td></td>
+<td>centroid, shape</td>
+<td>0/10</td>
+</tr>
+<tr>
+<td>Two-Bit</td>
+<td><code>layer=12 bits=2 hold=1</code></td>
+<td>5.9 dB</td>
+<td>+10 Hz (6/10 up)</td>
+<td>+3.2 dB (7/10 up)</td>
+<td>2.6 dB</td>
+<td></td>
+<td>none</td>
+<td>0/10</td>
+</tr>
+<tr>
+<td>Crumble</td>
+<td><code>layer=12 bits=1 hold=4</code></td>
+<td>6.7 dB</td>
+<td>−61 Hz (0/10 up)</td>
+<td>+1.2 dB (5/10 up)</td>
+<td>3.3 dB</td>
+<td>+0.105 (lag 1, 10/10 up)</td>
+<td>centroid, shape, time</td>
+<td>0/10</td>
+</tr>
+<tr>
+<td>Stepped</td>
+<td><code>layer=6 bits=4 hold=4</code></td>
+<td>6.7 dB</td>
+<td>−28 Hz (5/10 up)</td>
+<td>+4.6 dB (8/10 up)</td>
+<td>2.3 dB</td>
+<td>+0.096 (lag 1, 7/10 up)</td>
+<td>time</td>
+<td>0/10</td>
+</tr>
+<tr>
+<td>Freeze 8</td>
+<td><code>layer=6 bits=16 hold=8</code></td>
+<td>5.7 dB</td>
+<td>−35 Hz (4/10 up)</td>
+<td>+1.7 dB (8/10 up)</td>
+<td>2.1 dB</td>
+<td>+0.099 (lag 1, 9/10 up)</td>
+<td>time</td>
+<td>0/10</td>
+</tr>
+<tr>
+<td>Hard Freeze</td>
+<td><code>layer=6 bits=16 hold=16</code></td>
+<td>7.4 dB</td>
+<td>−23 Hz (2/10 up)</td>
+<td>+1.7 dB (7/10 up)</td>
+<td>2.6 dB</td>
+<td>+0.113 (lag 1, 10/10 up)</td>
+<td>time</td>
+<td>0/10</td>
+</tr>
+<tr>
+<td>Late Freeze</td>
+<td><code>layer=12 bits=16 hold=8</code></td>
+<td>4.9 dB</td>
+<td>−47 Hz (1/10 up)</td>
+<td>+2.6 dB (8/10 up)</td>
+<td>2.2 dB</td>
+<td>+0.073 (lag 1, 10/10 up)</td>
+<td>centroid, time</td>
+<td>0/10</td>
+</tr>
+</tbody>
+</table></div>
+</details>
+<details class="unitd" id="sparsify-1"><summary><span class="dn">Sparsify</span><span class="dv">6 presets</span></summary>
+
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Preset</th>
+<th>Setting</th>
+<th>Timbre</th>
+<th>Centroid</th>
+<th>Level</th>
+<th>Shape</th>
+<th>Consistent after correction</th>
+<th>Broken</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Thin</td>
+<td><code>layer=6 keep=0.1</code></td>
+<td>6.7 dB</td>
+<td>−6 Hz (7/10 up)</td>
+<td>+6.8 dB (10/10 up)</td>
+<td>3.0 dB</td>
+<td>level, shape</td>
+<td>0/10</td>
+</tr>
+<tr>
+<td>Skeleton</td>
+<td><code>layer=6 keep=0.02</code></td>
+<td>7.3 dB</td>
+<td>−20 Hz (3/10 up)</td>
+<td>+5.5 dB (9/10 up)</td>
+<td>4.4 dB</td>
+<td>level, shape</td>
+<td>0/10</td>
+</tr>
+<tr>
+<td>Hollow</td>
+<td><code>layer=10 keep=0.05</code></td>
+<td>7.5 dB</td>
+<td>−13 Hz (3/10 up)</td>
+<td>+3.5 dB (8/10 up)</td>
+<td>5.6 dB</td>
+<td>shape</td>
+<td>0/10</td>
+</tr>
+<tr>
+<td>Bones</td>
+<td><code>layer=11 keep=0.05</code></td>
+<td>10.4 dB</td>
+<td>+84 Hz (10/10 up)</td>
+<td>−2.8 dB (4/10 up)</td>
+<td>8.6 dB</td>
+<td>centroid, shape</td>
+<td>0/10</td>
+</tr>
+<tr>
+<td>Sparse Glass</td>
+<td><code>layer=12 keep=0.1</code></td>
+<td>15.3 dB</td>
+<td>+112 Hz (10/10 up)</td>
+<td>+3.8 dB (8/10 up)</td>
+<td>14.3 dB</td>
+<td>centroid, shape</td>
+<td>0/10</td>
+</tr>
+<tr>
+<td>Needlepoint</td>
+<td><code>layer=12 keep=0.03</code></td>
+<td>16.6 dB</td>
+<td>+131 Hz (10/10 up)</td>
+<td>+5.2 dB (9/10 up)</td>
+<td>14.7 dB</td>
+<td>centroid, level, shape</td>
+<td>0/10</td>
+</tr>
+</tbody>
+</table></div>
+</details>
+<details class="unitd" id="component-clamp-1"><summary><span class="dn">Component Clamp</span><span class="dv">6 presets</span></summary>
+
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Preset</th>
+<th>Setting</th>
+<th>Timbre</th>
+<th>Centroid</th>
+<th>Level</th>
+<th>Shape</th>
+<th>Consistent after correction</th>
+<th>Broken</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tame</td>
+<td><code>layer=4 ceiling=0.995</code></td>
+<td>9.6 dB</td>
+<td>+102 Hz (5/10 up)</td>
+<td>+13.3 dB (10/10 up)</td>
+<td>8.3 dB</td>
+<td>level, shape</td>
+<td>1/10 (overdriven)</td>
+</tr>
+<tr>
+<td>Lid</td>
+<td><code>layer=4 ceiling=0.99</code></td>
+<td>14.2 dB</td>
+<td>+124 Hz (5/10 up)</td>
+<td>+11.7 dB (9/10 up)</td>
+<td>12.1 dB</td>
+<td>level, shape</td>
+<td>2/10 (overdriven)</td>
+</tr>
+<tr>
+<td>Clamp Down</td>
+<td><code>layer=4 ceiling=0.98</code></td>
+<td>15.7 dB</td>
+<td>+61 Hz (5/10 up)</td>
+<td>+13.6 dB (10/10 up)</td>
+<td>13.4 dB</td>
+<td>level, shape</td>
+<td>2/10 (overdriven)</td>
+</tr>
+<tr>
+<td>Brickwall</td>
+<td><code>layer=4 ceiling=0.95</code></td>
+<td>17.1 dB</td>
+<td>+80 Hz (4/10 up)</td>
+<td>+15.1 dB (10/10 up)</td>
+<td>16.0 dB</td>
+<td>level, shape</td>
+<td>1/10 (clips, overdriven)</td>
+</tr>
+<tr>
+<td>Flat Top</td>
+<td><code>layer=4 ceiling=0.9</code></td>
+<td>16.8 dB</td>
+<td>−42 Hz (2/10 up)</td>
+<td>+15.8 dB (10/10 up)</td>
+<td>14.8 dB</td>
+<td>level, shape</td>
+<td>1/10 (overdriven)</td>
+</tr>
+<tr>
+<td>Tail Clamp</td>
+<td><code>layer=12 ceiling=0.99</code></td>
+<td>6.7 dB</td>
+<td>−22 Hz (3/10 up)</td>
+<td>+4.1 dB (9/10 up)</td>
+<td>1.7 dB</td>
+<td>level</td>
+<td>0/10</td>
+</tr>
+</tbody>
+</table></div>
+</details>
+<details class="unitd" id="principal-bands-1"><summary><span class="dn">Principal Bands</span><span class="dv">7 presets</span></summary>
+
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Preset</th>
+<th>Setting</th>
+<th>Timbre</th>
+<th>Centroid</th>
+<th>Level</th>
+<th>Shape</th>
+<th>Consistent after correction</th>
+<th>Broken</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tilt Dark</td>
+<td><code>layer=8 low=1.3 mid=1 high=0.7</code></td>
+<td>8.2 dB</td>
+<td>−65 Hz (0/10 up)</td>
+<td>+12.9 dB (10/10 up)</td>
+<td>5.3 dB</td>
+<td>centroid, level, shape</td>
+<td>0/10</td>
+</tr>
+<tr>
+<td>Air</td>
+<td><code>layer=8 low=1 mid=1 high=1.5</code></td>
+<td>12.9 dB</td>
+<td>+2408 Hz (4/10 up)</td>
+<td>−2.0 dB (4/10 up)</td>
+<td>11.6 dB</td>
+<td>shape</td>
+<td>1/10 (near silent)</td>
+</tr>
+<tr>
+<td>Sky</td>
+<td><code>layer=12 low=1 mid=1 high=1.5</code></td>
+<td>22.0 dB</td>
+<td>+3728 Hz (6/10 up)</td>
+<td>+9.9 dB (9/10 up)</td>
+<td>17.5 dB</td>
+<td>level, shape</td>
+<td>4/10 (clips, near silent, overdriven)</td>
+</tr>
+<tr>
+<td>Core Cut</td>
+<td><code>layer=8 low=0 mid=1 high=1</code></td>
+<td>8.7 dB</td>
+<td>+44 Hz (6/10 up)</td>
+<td>−6.1 dB (1/10 up)</td>
+<td>6.4 dB</td>
+<td>level, shape</td>
+<td>0/10</td>
+</tr>
+<tr>
+<td>Mid Push</td>
+<td><code>layer=8 low=1 mid=2 high=1</code></td>
+<td>15.0 dB</td>
+<td>−8 Hz (4/10 up)</td>
+<td>+10.4 dB (10/10 up)</td>
+<td>10.1 dB</td>
+<td>level, shape</td>
+<td>0/10</td>
+</tr>
+<tr>
+<td>Mid Hole</td>
+<td><code>layer=8 low=1 mid=0 high=1</code></td>
+<td>7.0 dB</td>
+<td>−44 Hz (1/10 up)</td>
+<td>+1.0 dB (6/10 up)</td>
+<td>3.4 dB</td>
+<td>centroid, shape</td>
+<td>0/10</td>
+</tr>
+<tr>
+<td>Half Body</td>
+<td><code>layer=8 low=0.5 mid=0.5 high=0.5</code></td>
+<td>7.2 dB</td>
+<td>+37 Hz (7/10 up)</td>
+<td>−1.5 dB (4/10 up)</td>
+<td>4.8 dB</td>
+<td>shape</td>
+<td>0/10</td>
+</tr>
+</tbody>
+</table></div>
+</details>
+<details class="unitd" id="band-shrink-1"><summary><span class="dn">Band Shrink</span><span class="dv">7 presets</span></summary>
+
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Preset</th>
+<th>Setting</th>
+<th>Timbre</th>
+<th>Centroid</th>
+<th>Level</th>
+<th>Shape</th>
+<th>Consistent after correction</th>
+<th>Broken</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Low Squeeze</td>
+<td><code>layer=6 ratio=20 band=low thresh=0.5</code></td>
+<td>7.3 dB</td>
+<td>+16 Hz (6/10 up)</td>
+<td>−3.6 dB (3/10 up)</td>
+<td>3.8 dB</td>
+<td>shape</td>
+<td>0/10</td>
+</tr>
+<tr>
+<td>Early Low</td>
+<td><code>layer=2 ratio=20 band=low thresh=0.5</code></td>
+<td>8.6 dB</td>
+<td>+13 Hz (7/10 up)</td>
+<td>−5.4 dB (1/10 up)</td>
+<td>5.0 dB</td>
+<td>level, shape</td>
+<td>0/10</td>
+</tr>
+<tr>
+<td>Soft Low</td>
+<td><code>layer=10 ratio=8 band=low thresh=0.5</code></td>
+<td>8.5 dB</td>
+<td>+34 Hz (7/10 up)</td>
+<td>−4.1 dB (2/10 up)</td>
+<td>3.9 dB</td>
+<td>none</td>
+<td>0/10</td>
+</tr>
+<tr>
+<td>Floor Lift</td>
+<td><code>layer=10 ratio=20 band=low thresh=0.3</code></td>
+<td>11.6 dB</td>
+<td>+101 Hz (7/10 up)</td>
+<td>−7.5 dB (0/10 up)</td>
+<td>7.6 dB</td>
+<td>level, shape</td>
+<td>0/10</td>
+</tr>
+<tr>
+<td>Deep Low</td>
+<td><code>layer=12 ratio=20 band=low thresh=0.3</code></td>
+<td>12.4 dB</td>
+<td>+287 Hz (10/10 up)</td>
+<td>−18.0 dB (0/10 up)</td>
+<td>10.0 dB</td>
+<td>centroid, level, shape</td>
+<td>5/10 (near silent)</td>
+</tr>
+<tr>
+<td>Top Squeeze</td>
+<td><code>layer=6 ratio=20 band=high thresh=0.5</code></td>
+<td>6.7 dB</td>
+<td>−14 Hz (6/10 up)</td>
+<td>+4.8 dB (7/10 up)</td>
+<td>3.3 dB</td>
+<td>none</td>
+<td>0/10</td>
+</tr>
+<tr>
+<td>All Bands Hard</td>
+<td><code>layer=6 ratio=8 band=all thresh=0.3</code></td>
+<td>6.8 dB</td>
+<td>+46 Hz (8/10 up)</td>
+<td>−3.0 dB (3/10 up)</td>
+<td>4.5 dB</td>
+<td>shape</td>
+<td>0/10</td>
+</tr>
+</tbody>
+</table></div>
+</details>
+<details class="unitd" id="rotate-1"><summary><span class="dn">Rotate</span><span class="dv">8 presets</span></summary>
+
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Preset</th>
+<th>Setting</th>
+<th>Timbre</th>
+<th>Centroid</th>
+<th>Level</th>
+<th>Shape</th>
+<th>Consistent after correction</th>
+<th>Broken</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Turn</td>
+<td><code>layer=6 angle=45</code></td>
+<td>7.7 dB</td>
+<td>+32 Hz (8/10 up)</td>
+<td>−4.1 dB (0/10 up)</td>
+<td>5.0 dB</td>
+<td>level, shape</td>
+<td>0/10</td>
+</tr>
+<tr>
+<td>Quarter Turn</td>
+<td><code>layer=6 angle=90</code></td>
+<td>8.8 dB</td>
+<td>+49 Hz (6/10 up)</td>
+<td>−4.9 dB (2/10 up)</td>
+<td>6.2 dB</td>
+<td>level, shape</td>
+<td>0/10</td>
+</tr>
+<tr>
+<td>Three-Eighths</td>
+<td><code>layer=6 angle=135</code></td>
+<td>10.1 dB</td>
+<td>+73 Hz (8/10 up)</td>
+<td>−6.9 dB (0/10 up)</td>
+<td>7.4 dB</td>
+<td>level, shape</td>
+<td>0/10</td>
+</tr>
+<tr>
+<td>Flip</td>
+<td><code>layer=6 angle=180</code></td>
+<td>9.7 dB</td>
+<td>+85 Hz (7/10 up)</td>
+<td>−10.0 dB (0/10 up)</td>
+<td>7.2 dB</td>
+<td>level, shape</td>
+<td>0/10</td>
+</tr>
+<tr>
+<td>Counter Turn</td>
+<td><code>layer=6 angle=-45</code></td>
+<td>12.3 dB</td>
+<td>+91 Hz (8/10 up)</td>
+<td>−7.4 dB (0/10 up)</td>
+<td>7.4 dB</td>
+<td>level, shape</td>
+<td>0/10</td>
+</tr>
+<tr>
+<td>Back Turn</td>
+<td><code>layer=6 angle=-90</code></td>
+<td>10.8 dB</td>
+<td>+50 Hz (7/10 up)</td>
+<td>−8.8 dB (1/10 up)</td>
+<td>7.4 dB</td>
+<td>level, shape</td>
+<td>1/10 (near silent)</td>
+</tr>
+<tr>
+<td>Early Turn</td>
+<td><code>layer=2 angle=45</code></td>
+<td>12.9 dB</td>
+<td>+26 Hz (7/10 up)</td>
+<td>−1.6 dB (4/10 up)</td>
+<td>9.7 dB</td>
+<td>shape</td>
+<td>0/10</td>
+</tr>
+<tr>
+<td>Late Turn</td>
+<td><code>layer=12 angle=90</code></td>
+<td>15.2 dB</td>
+<td>+424 Hz (10/10 up)</td>
+<td>−10.2 dB (0/10 up)</td>
+<td>11.6 dB</td>
+<td>centroid, level, shape</td>
+<td>1/10 (near silent)</td>
+</tr>
+</tbody>
+</table></div>
+</details>
+<details class="unitd" id="neuron-1"><summary><span class="dn">Neuron</span><span class="dv">6 presets</span></summary>
+
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Preset</th>
+<th>Setting</th>
+<th>Timbre</th>
+<th>Centroid</th>
+<th>Level</th>
+<th>Shape</th>
+<th>Consistent after correction</th>
+<th>Broken</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Bright Push</td>
+<td><code>block=11 n=(32 neurons) op=add value=6</code></td>
+<td>9.5 dB</td>
+<td>−87 Hz (1/10 up)</td>
+<td>+7.2 dB (7/10 up)</td>
+<td>5.3 dB</td>
+<td>centroid, shape</td>
+<td>2/10 (near silent)</td>
+</tr>
+<tr>
+<td>Bright Cells</td>
+<td><code>block=11 n=(64 neurons) op=scale value=20</code></td>
+<td>7.2 dB</td>
+<td>−27 Hz (3/10 up)</td>
+<td>+1.3 dB (6/10 up)</td>
+<td>5.1 dB</td>
+<td>none</td>
+<td>0/10</td>
+</tr>
+<tr>
+<td>Dark Cells</td>
+<td><code>block=11 n=(64 neurons) op=scale value=20</code></td>
+<td>8.1 dB</td>
+<td>−23 Hz (3/10 up)</td>
+<td>+2.6 dB (7/10 up)</td>
+<td>4.9 dB</td>
+<td>shape</td>
+<td>0/10</td>
+</tr>
+<tr>
+<td>Pulse Cells</td>
+<td><code>block=11 n=(64 neurons) op=scale value=20</code></td>
+<td>8.2 dB</td>
+<td>−25 Hz (4/10 up)</td>
+<td>+8.7 dB (10/10 up)</td>
+<td>4.7 dB</td>
+<td>level, shape</td>
+<td>0/10</td>
+</tr>
+<tr>
+<td>Silence Cells</td>
+<td><code>block=11 n=(64 neurons) op=zero</code></td>
+<td>5.8 dB</td>
+<td>+7 Hz (8/10 up)</td>
+<td>+0.4 dB (5/10 up)</td>
+<td>1.8 dB</td>
+<td>none</td>
+<td>0/10</td>
+</tr>
+<tr>
+<td>Ten Set</td>
+<td><code>block=10 n=(32 neurons) op=set value=8</code></td>
+<td>11.2 dB</td>
+<td>+117 Hz (6/10 up)</td>
+<td>−1.5 dB (3/10 up)</td>
+<td>7.9 dB</td>
+<td>shape</td>
+<td>0/10</td>
+</tr>
+</tbody>
+</table></div>
+</details>
+  </section>
+
+  <section class="section wrap reveal" id="findings-in-the-code">
+    <span class="num">09</span>
+    <h2>Findings in the code</h2>
+<p><strong>1. Lookback, Running Average and Frame Repeat keep every past frame.</strong> - <strong>What happens:</strong> each stores the stream for every frame in a dictionary that is never pruned: <code>line[p] = …</code> in <code>delay_edit</code>, <code>tail[p] = …</code> in <code>reverb_edit</code>, <code>kept[p] = …</code> in <code>beatrepeat_edit</code>. The host’s <code>memory()</code> (<code>units.py</code>, line 431) returns a plain dict for the strip and layer. - <strong>When it is cleared:</strong> when modulation re-attaches a strip, the store is carried over (<code>Proc</code> passes <code>store=now.get("store")</code>), so memory goes on growing. Any manual change to the Model layers chain starts a fresh store, which resets every strip’s memory. - <strong>Cost:</strong> at 25 frames a second and 1,024 float32 values a frame, that is about 100 kB a second per unit, or about 360 MB an hour of continuous play. - <strong>Fix:</strong> each needs only the last few frames (Lookback <code>time</code>, Running Average one, Frame Repeat <code>length</code>). - <strong>Status:</strong> not fixed yet; the fix belongs in the VAU package.</p>
+<p><strong>2. “Bias too” on Abliterate does nothing on this model.</strong> - <strong>The weights:</strong> the host gives VAU each block’s output weights with the post-norm scale folded in, and <code>bias = None</code> (<code>Proc._components</code>). - <strong>Where the bias is:</strong> self-attention has no bias in this checkpoint, and the MLP’s bias sits inside what the post-norm writes. VAU’s hook projects the whole output either way, so the switch cannot change anything. - <strong>Since:</strong> the switch is hidden on this host (0.2.9). - <strong>Keep size:</strong> whether Keep size gives the intended rescaling on this model was not tested, and it rescales the MLP bias’s share along with the weights’ share.</p>
+<p><strong>3. Quantise, Sparsify and Component Clamp skip the first frame of a take.</strong> - <strong>What happens:</strong> all three leave position 0 alone (<code>torch.where(pos == 0, h, out)</code>; the MLX Quantise returns early when <code>frame &lt; 1</code>). In a language model, position 0 is the first token, which serves as an attention sink and is kept intact. Here the position is the frame number, so the first 40 ms frame of a take is left as it is. - <strong>Related:</strong> Lookback, Running Average and Frame Repeat first change the stream at frames 5, 2 and 7, since they need earlier frames. - <strong>Not measured:</strong> whether the skipped first frame is audible.</p>
+<p><strong>4. The site measured Abliterate’s placement sweep with other settings than the card’s.</strong> - <strong>Site:</strong> <code>docs/units-media.js</code> swept Abliterate’s placements with VAU’s language-model settings (<code>shape=linear peak=0.7 width=0.4 edge=0.3 size=1</code>). Those reach only blocks 4 to 11, at strength 0.41 at block 4. - <strong>Card:</strong> the card’s default is flat over all blocks, with Keep size off. - <strong>The other twelve units:</strong> their sweep lines are their card defaults. - <strong>Status:</strong> Abliterate’s placement figure on <a href="units.html#inside">Model layers</a> still comes from that sweep.</p>
+<p><strong>5. A few coordinates hold most of the stream’s size, at every layer.</strong> - <strong>The outliers:</strong> in the plain model, the largest 1% of coordinates (about 10 of 1,024) hold a median of 63–84% of the stream’s size at every layer: 1: 81%, 2: 84%, 3: 83%, 4: 82%, 5: 80%, 6: 78%, 7: 79%, 8: 79%, 9: 80%, 10: 77%, 11: 69%, 12: 63%. - <strong>Component Clamp:</strong> its 99th-percentile ceiling is documented as clamping each position’s largest components, and at layer 4 that removes 36–38% of the stream’s size each frame. - <strong>Tanh Squash:</strong> it changes every coordinate a little, but 91–93% of its edit lies on the 2–3% of coordinates beyond three standard deviations. - <strong>Effect:</strong> both units’ large edits come from these outliers.</p>
+  </section>
+
+  <section class="section wrap reveal" id="limits">
+    <span class="num">10</span>
+    <h2>Limits of this review</h2>
+<ul>
+<li><strong>One prompt, one model size.</strong> All sound results are for the Warm drone on Magenta RT 2 small. A unit may behave differently on beats, voices or brighter material.</li>
+<li><strong>Default settings in the main test.</strong> Each unit was tested at the setting the card gave it at 0.2.8. “Not detected” means no consistent shift was found on 20 seeds at that setting; it is not evidence that the unit cannot change the sound. A separate search (<code>tune.py</code>, <code>tune2.py</code>, <code>tune3.py</code>) measured 163 lines across the units’ ranges, the card defaults among them, on six seeds of 4 s each, to choose presets and new defaults, and the presets were then measured on ten other seeds (see <a href="#presets-and-held-out-seeds">Presets and held-out seeds</a>).</li>
+<li><strong>Mostly spectral measures.</strong> Apart from the frame-to-frame similarity in <a href="#time-based-effects">Time-based effects</a>, the measures are spectral centroid, level and the long-term spectrum’s shape. The spectrum’s lowest bands, below about 280 Hz, rest on one FFT bin or none at this resolution. They account for about 46% of the seed-to-seed shape distance, and a drone’s energy sits there. Rhythm and instrumentation were not measured, and no number substitutes for listening.</li>
+<li><strong>Near-silent frames.</strong> Some changes drive frames toward silence (see the per-unit entries), and that lowers the level figures.</li>
+<li><strong>Not exercised in the default-setting tests:</strong> the host features (wet, envelope, Keep size), Quantise with hold above 1, Neuron operations other than scale and clamp, Abliterate with Keep size on, and the second attention branch. Quantise’s hold appears in the time measures and the presets section, Keep size (on Lookback and Running Average) and Neuron’s add, zero and set operations only in the presets section.</li>
+</ul>
+  </section>
+
+  <section class="section wrap reveal" id="review-of-this-review">
+    <span class="num">11</span>
+    <h2>How this review was checked</h2>
+<p>An independent agent checked the review three times, given the code, the data and the text each time.</p>
+<ul>
+<li><strong>First pass.</strong> It re-derived the formula checks for seven units with its own code, Lookback, Running Average and the three MLX units among them, and its results matched. It confirmed that the recorded tensors are the ones the model used, and that the render path and the harness give identical audio with units on. It listed 20 corrections: the coverage had been overstated (only the first call of each frame had been checked); the code shown for the MLX units was not the code that ran; the Neuron neutral check attached no hook; figures from seed 1 had been presented as general; there was no correction for multiple comparisons; the nudge had been used as a baseline for size, which it cannot be; and several findings had factual slips.</li>
+<li><strong>Second pass.</strong> It re-ran every sound test over all 2²⁰ sign patterns and got the same 34 results surviving correction, and it confirmed the checks over all calls. Its 12 corrections included giving Neuron’s and Abliterate’s edit sizes for their first hook only, showing that Lookback’s and Running Average’s “quieter” rests on the takes that drop toward silence, and describing the shape statistic correctly.</li>
+<li><strong>Third pass</strong>, on the time and preset sections. It recomputed every number in the time table, wrote its own version of the preset statistics and reproduced every p and q value, and checked every row of the preset tables. Its 25 findings concerned what the figures were taken to show: two correction families quoted without labels, defaults whose held-out figures had been part of their choice, time results that do not survive the correction used elsewhere, and a replaced-frame measure that does not isolate the repeat for most Frame Repeat presets.</li>
+</ul>
+<p>The corrections from all three passes are in the text above.</p>
+  </section>
+
+
+  <section class="section wrap reveal">
+    <div class="links">
+      <a href="./"><b>Abliterator</b><span>The instrument, its sounds and how it works</span></a>
+      <a href="units.html"><b>Model layers</b><span>Where the units live and act, with each unit's sweep to listen to</span></a>
+      <a href="https://vector-lab-tools.github.io/vector-abliteration-units/"><b>VAU</b><span>The unit standard and its built-in units</span></a>
+      <a href="https://github.com/vector-lab-tools/abliterator"><b>Abliterator on GitHub</b><span>The code, GPL-3.0-or-later</span></a>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="foot">
+      <img src="img/mark.svg" alt="">
+      <div>
+        <p><b>Abliterator</b>, a <a href="https://vector-lab-tools.github.io">Vector Lab</a> tool. David M. Berry, University of Sussex. GPL-3.0-or-later.</p>
+        <p><a href="./">Home</a> · <a href="https://github.com/vector-lab-tools/abliterator">Repository</a> · <a href="https://vector-lab-tools.github.io/vector-abliteration-units/">Vector Abliteration Units</a></p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Screenshot, enlarged" hidden>
+  <button type="button" aria-label="Close">✕</button>
+  <img alt="">
+  <div class="cap"></div>
+</div>
+
+<audio id="player" preload="none"></audio>
+<script src="site.js?v=f8f63539"></script>
+</body>
+</html>

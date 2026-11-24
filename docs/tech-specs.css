@@ -1,0 +1,50 @@
+/* Abliterator: the Technical specs page (code, figure plates, unit entries). Copyright (C) 2026 David M. Berry.
+   SPDX-License-Identifier: GPL-3.0-or-later */
+.content h3 { margin-top: 2.2rem; }
+.content h4 { margin: 1.6rem 0 0.6rem; font-family: var(--mono); font-size: 0.8rem; letter-spacing: 0.5px; color: var(--accent); }
+
+/* code: pandoc's highlighted blocks in the site's colours */
+div.sourceCode { margin: 0.6rem 0 1.4rem; background: var(--code-bg); box-shadow: var(--code-shadow); border: 1px solid var(--line-soft); border-radius: 6px; overflow-x: auto; }
+pre.sourceCode { margin: 0; padding: 0.85rem 1rem; font-family: var(--mono); font-size: 0.78rem; line-height: 1.6; color: var(--ink); }
+pre.sourceCode code { font-size: inherit; white-space: pre; }
+pre.sourceCode > code > span { display: inline; }
+pre.sourceCode > code > span > a:first-child::before { text-decoration: none; }
+code.sourceCode > span > a { display: none; }
+code span.kw, code span.cf, code span.im { color: var(--accent); }
+code span.co { color: var(--ink-dim); font-style: italic; }
+code span.st, code span.ch, code span.vs, code span.ss { color: var(--green); }
+code span.dv, code span.fl, code span.bn, code span.dt { color: var(--blue); }
+code span.fu, code span.bu { color: var(--bright); }
+code span.op, code span.ot { color: var(--ink-dim); }
+code span.al, code span.er { color: var(--red); }
+
+/* the review's figures are drawn on paper: they sit on a paper plate in both themes */
+figure.plate { margin: 1rem 0 1.8rem; }
+figure.plate .shot { display: block; position: relative; background: #fff; border-radius: 6px; padding: 0.6rem; border: 1px solid var(--line-soft); box-shadow: var(--shot-shadow); }
+figure.plate img { display: block; width: 100%; height: auto; }
+figure.plate figcaption { margin-top: 0.7rem; }
+
+/* tables: the review's are wide; numbers stay on one line, the first column too */
+.content .table-wrap table { font-size: 0.82rem; }
+.content .table-wrap td { white-space: nowrap; }
+.content .table-wrap td:last-child, .content .table-wrap td:nth-child(2):not(:last-child) { white-space: normal; min-width: 12em; }
+.content .table-wrap td code { white-space: nowrap; }
+
+/* a unit's entry, or a unit's preset table, folded under its name */
+details.unitd { border: 1px solid var(--line); border-radius: 6px; background: var(--panel); margin: 0.6rem 0; }
+details.unitd > summary { cursor: pointer; list-style: none; display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.3rem 1rem; padding: 0.75rem 1rem; }
+details.unitd > summary::-webkit-details-marker { display: none; }
+details.unitd > summary::before { content: "▸"; color: var(--accent); font-size: 0.8rem; width: 0.8rem; transition: transform 0.15s; }
+details.unitd[open] > summary::before { transform: rotate(90deg); }
+details.unitd > summary .dn { font-family: var(--mono); font-size: 0.85rem; color: var(--bright); letter-spacing: 0.4px; }
+details.unitd > summary .dv { font-size: 0.86rem; color: var(--ink-dim); }
+details.unitd > summary:hover .dn { color: var(--accent); }
+details.unitd[open] { padding-bottom: 0.4rem; }
+details.unitd > :not(summary) { margin-left: 1rem; margin-right: 1rem; }
+details.unitd > div.sourceCode, details.unitd > figure.plate, details.unitd > .table-wrap { margin-left: 1rem; margin-right: 1rem; }
+
+@media (max-width: 640px) {
+  details.unitd > :not(summary), details.unitd > div.sourceCode, details.unitd > figure.plate, details.unitd > .table-wrap { margin-left: 0.6rem; margin-right: 0.6rem; }
+  pre.sourceCode { font-size: 0.72rem; }
+}
+figure.plate { max-width: 920px; }

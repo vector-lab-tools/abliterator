@@ -179,7 +179,7 @@
 <p>The order of the cards matters only among units on the same layer.</p>
 <ul>
 <li>Each unit acts at its own layer or block, wherever its card sits. Lookback at layer 6 and Tanh Squash at layer 10 do the same in either order.</li>
-<li>Units on the same layer run left to right, and at layer 6 after the Steer.</li>
+<li>Units on the same layer run left to right, and at layer 6 after Steer.</li>
 <li>Where their edits do not commute, the order changes the sound: Tanh Squash then Norm Shrink is not Norm Shrink then Tanh Squash. Two Principal Bands cards on one layer scale the same principal directions, so they give the same result in either order.</li>
 <li>Lookback and Running Average record the stream as it reaches them. A unit before them on that layer goes into what they repeat; a unit after them acts on their output, echo included, without being repeated.</li>
 <li>Neuron and Abliterate act inside the blocks, so their place among the stream units makes no difference.</li>

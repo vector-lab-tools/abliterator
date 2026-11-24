@@ -357,7 +357,7 @@ HELP = {
     "compressor": {"how": "A feed-forward compressor, the same gain on both sides. It reads the louder side's peak in dB. "
                           "Above the Threshold the level rises by 1 dB for every Ratio dB in, and the Knee bends the curve over "
                           "that many dB around the threshold. The gain falls over the Attack time and recovers over the "
-                          "Release time. A meter shows the most gain reduction since it last looked. The GR meter above the knobs shows the gain reduction: its cells light at 1, 2, 3, 4, 6, 8, 10, 12, 15 and 20 dB, and the figure is the reduction now.",
+                          "Release time. The GR meter above the knobs shows the gain reduction: its cells light at 1, 2, 3, 4, 6, 8, 10, 12, 15 and 20 dB, and the figure is the reduction now.",
                    "p": {"thresh": "the level above which it acts, -50 to 0 dBFS",
                          "ratio": "how many dB in for each dB out above the threshold; 20:1 acts as a limiter",
                          "attack": "how fast the gain falls when the level rises",

@@ -1156,7 +1156,8 @@ class Rack:
 
     def readings(self) -> List[Dict[str, Any]]:
         """For the page, per effect in the chain: Drive's peak drive into its curve since last read
-        (above 1 it bends, above 3 it is flat at the top). Reading resets it."""
+        (above 1 it bends, above 3 it is flat at the top), and the Compressor's largest gain reduction
+        since last read, in dB. Reading resets both."""
         out = []
         for s, f in zip(self.slots, self.fx):
             r: Dict[str, Any] = {"id": s.get("id"), "type": s["type"]}
@@ -1165,6 +1166,9 @@ class Rack:
                 f.peak = 0.0
             elif isinstance(f, Pan):
                 r["pos"] = round(f.where, 3)                            # where the sound sits now, -1 left to 1 right
+            elif type(f).__name__ == "Compressor":                    # fx_tone.Compressor: dB turned down, the most since last read
+                r["gr"] = round(f.gr, 1)
+                f.gr = 0.0
             elif isinstance(f, Declicker):
                 r["fixed"] = f.dc.repaired                              # bursts redrawn since it was added
             out.append(r)

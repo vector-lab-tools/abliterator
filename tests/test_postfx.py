@@ -548,3 +548,19 @@ def test_trim_mono_input():
     x = _st()[:, :1]
     y = _trim({"phl": 1, "gain": -6, "width": 300, "chans": 3}, x)[fx.SR // 4:]
     assert np.allclose(y[:, 0], -x[fx.SR // 4:, 0] * 10 ** (-6 / 20))
+
+
+def test_compressor_reports_gain_reduction():
+    """The rack reports the Compressor's largest gain reduction since the last reading, in dB, and resets it; a quiet
+    signal under the threshold reads 0."""
+    r = fx.Rack(2)
+    r.update([{"type": "compressor", "on": True, "id": 7, "params": {"thresh": -30.0, "ratio": 4.0, "attack": 1.0, "release": 100.0, "knee": 0.0}}])
+    t = np.arange(48000) / 48000
+    loud = np.stack([0.5 * np.sin(2 * np.pi * 220 * t)] * 2, 1)             # about −9 dBFS RMS: some 20 dB over
+    r.process(loud)
+    gr = next(x for x in r.readings() if x["id"] == 7)["gr"]
+    assert 10.0 < gr < 20.0, gr
+    assert next(x for x in r.readings() if x["id"] == 7)["gr"] == 0.0     # reset by the reading, nothing processed since
+    r.process(loud * 0.001)
+    r.readings(); r.process(loud * 0.001)
+    assert next(x for x in r.readings() if x["id"] == 7)["gr"] < 0.5

@@ -1137,3 +1137,6 @@ html, body { overscroll-behavior-x: none; }
 .setseg button + button { border-left: 1px solid #2c303a; }
 .setseg button:hover { color: #e9eaee; }
 .setseg button[aria-pressed="true"] { color: var(--gold); background: rgba(217,170,63,.14); }
+/* the Compressor's gain reduction: the drive meter's cells, all amber, and the reduction in dB in place of CLIP */
+.fxmeter.grm .cells i.on { background: #c08a2c; }
+.fxmeter.grm b { min-width: 26px; text-align: right; border: 0; padding: 0; color: #9aa0ab; letter-spacing: 0; font-size: 8px; }

@@ -26,14 +26,12 @@ STEP = 480                # auto level moves in 10 ms steps at 48 kHz
 
 
 class Master:
-    """The master chain: auto level, the effect chain (postfx.py, up to eight), one-pole low-pass, tanh
-    soft limiter, volume. Zero latency
-    (IIR, sample by sample). Takes (n,) or (n, channels) blocks.
+    """The master chain: de-click, auto level, the effect chain (postfx.Rack), dynamics, stereo width,
+    one-pole low-pass, tanh soft limiter, volume. No latency except de-click's Declick.AHEAD samples
+    when it is on. Takes (n,) or (n, channels) blocks.
 
     Auto level keeps the loudness steady while the controls move, so that a move is heard as a
-    change of sound more than a change of level: it follows the block's power with a 1.5 s time
-    constant (0.3 s to a rise) and sets a gain toward −20 dBFS RMS (−12 to +18 dB), ramped across the block, held
-    while the sound is near silence. It changes the music's own slow swells as well."""
+    change of sound more than a change of level. It flattens the music's own slow swells as well."""
 
     def __init__(self, sr: int, channels: int = 1):
         self.sr, self.channels = sr, channels
@@ -50,17 +48,16 @@ class Master:
         self.width = 1.0                     # the side's gain: 0 mono, 1 as the model wrote it, 2 twice as wide
         self.spread = 0.0                    # side made from the mid, delayed WIDEN_MS: width from a mono sound
         self.whist = np.zeros(int(sr * WIDEN_MS / 1000))
-        # dynamics, as on a console's channel strip: a compressor and a gate, off by default
         self.dyn_on, self.dyn_fast, self.dyn_peak = False, False, False
         self.dyn_ratio, self.dyn_thresh, self.dyn_release, self.gate_thresh = 4.0, -18.0, 0.3, -80.0
         self.dacc, self.dpos, self.dg0, self.dg1, self.cgr, self.ggr = 0.0, 0, 1.0, 1.0, 0.0, 0.0
-        # De-click (Declick): off in a new Master, so a sound saved before it replays as it was; the
-        # engine turns it on for live play. It always runs, so that turning it on has a past to start from.
+        # Off in a new Master, so a sound saved before de-click existed replays as it was; the engine
+        # turns it on for live play. It always runs, so that turning it on has a past to start from.
         self.declick = False
         self.dc = Declick(channels)
-        # Fades in the effect chain (postfx.Rack): off in a new Master for the same reason, on for live play.
+        # postfx.Rack's fades: off in a new Master for the same reason, on for live play.
         self.fx_fade = False
-        self.fx_on = True                    # the Effects panel's switch; a sound saved before it has none, and played its effects
+        self.fx_on = True                    # the Effects panel's switch; on, since a sound saved before it played its effects
         self.speed = 1.0                     # playback speed of the model's sound (speed.py; the engine runs it, not this class)
         self.speed_mode = "tape"
 
@@ -136,7 +133,7 @@ class Master:
                 if self.p < 0:
                     self.p = ms
                 else:
-                    tau = LEVEL_ATTACK_S if ms > self.p else LEVEL_TAU_S     # quicker to a rise than to a fall
+                    tau = LEVEL_ATTACK_S if ms > self.p else LEVEL_TAU_S
                     self.p += (1 - np.exp(-STEP / (tau * self.sr))) * (ms - self.p)
                 g = self.g1
                 if 10 * np.log10(self.p + 1e-20) > LEVEL_GATE_DB:
@@ -172,7 +169,7 @@ class Master:
                 setattr(self, k, float(min(hi, max(lo, float(v)))))
 
     def process(self, x: np.ndarray) -> np.ndarray:
-        fixed = self.dc.process(x)                 # AHEAD samples late, bursts redrawn
+        fixed = self.dc.process(x)                 # Declick.AHEAD samples late
         if self.declick:
             x = fixed.reshape(x.shape)
         if not self.on:
@@ -264,12 +261,13 @@ class Conceal:
 
 class Declick:
     """Repairs the few-sample bursts a model can write when a unit pushes it hard (Quantise at low bits
-    puts spikes of up to full scale into the codec's output). A sample is a burst where its distance from
-    the line through its neighbours is more than THRESH times the sound's mean step over the LOOK samples
-    before it, and above FLOOR; the burst, widened by PAD samples each side, is redrawn as a straight
-    line between the good samples around it. Bursts longer than MAX are left as written. Every decision
-    reads the original samples only, from LOOK before to AHEAD after, and the output is AHEAD samples
-    late, so any block size gives the same sound."""
+    puts spikes of up to full scale into the codec's output). A sample's curvature is its signed distance
+    from the line through its neighbours. A sample is a burst where the size of its curvature is above FLOOR
+    and more than THRESH times the mean size over the LOOK samples before it, and its curvature has the
+    opposite sign to a neighbour's of at least half that size. The burst, widened by PAD samples each side, is redrawn
+    as a straight line between the good samples around it. Bursts longer than MAX are left as written.
+    Every decision reads the original samples only, from LOOK before to AHEAD after, and the output is
+    AHEAD samples late, so any block size gives the same sound."""
 
     THRESH, FLOOR, PAD, MAX, LOOK, AHEAD = 6.0, 0.04, 3, 48, 256, 64
 

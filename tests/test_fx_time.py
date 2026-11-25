@@ -72,8 +72,7 @@ def test_blocks_equal_whole(kind):
 
 @pytest.mark.parametrize("kind", list(T.CLASSES_NEW))
 def test_blocks_equal_whole_with_knob_moves(kind):
-    """Params set between blocks at samples every block size shares (multiples of 480 and 97 * 333 do not mix, so
-    use sizes that divide 0.5 s): the glides and the grids give the same output."""
+    """Params change at 0.5 s and 1 s, between blocks, so the block sizes all divide 0.5 s (97 and 333 do not)."""
     x = noise()
     moves = {"pitch": [{"shift": 5, "window": 120.0}, {"feedback": 0.2, "fine": -40.0, "mix": 0.3}],
              "shimmer": [{"interval": 4, "decay": 3.0}, {"shimmer": 0.2, "damp": 0.8, "mix": 0.4}],
@@ -274,7 +273,7 @@ def test_freeze_drift_moves_the_bands_and_keeps_the_level():
     b = run(e, np.zeros((6 * SR, 2)), 480)
     ref = bands_db(x[SR // 2:SR])
     d = [bands_db(b[int((0.2 + i) * SR):int((1.2 + i) * SR)]) - ref for i in range(5)]
-    assert max(np.max(np.abs(q)) for q in d) > 3.0                  # the bands move
+    assert max(np.max(np.abs(q)) for q in d) > 3.0
     assert all(abs(rms_db(b[int((0.5 + i) * SR):int((1.0 + i) * SR)]) - rms_db(x[SR // 2:SR])) < 2.5 for i in range(5))
 
 
@@ -301,7 +300,6 @@ def test_freeze_blocks_equal_whole_with_the_switch():
 
 
 def test_freeze_switch_fades_without_a_click():
-    """The switch crossfades over at least 50 ms, and no sample-to-sample step around it exceeds the signal's own."""
     assert T.Freeze.FADE >= 0.05 * SR
     x = chordnoise(3.0)
     e = make("freeze", blur=2, drift=0.0, mix=1.0)

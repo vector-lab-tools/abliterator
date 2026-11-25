@@ -18,8 +18,7 @@ HOST_KEYS = {"keepnorm", "wet", "env", "wfrom", "wto", "control"}
 
 
 def test_presets_name_real_settings_in_range():
-    """Every preset sets only settings its unit has (or the host's own), within their ranges, at a place the unit can act;
-    the review's new defaults are presets of their unit."""
+    """Also: each unit's HOST_HEARD start is one of its presets and matches the manifest defaults."""
     cat = {u["id"]: u for u in units.catalogue()}
     for uid, ps in units.HOST_PRESETS.items():
         u = cat[uid]; prm = {p["key"]: p for p in u["params"]}
@@ -43,9 +42,9 @@ def test_presets_name_real_settings_in_range():
 
 
 def test_vau_presets_match_ours():
-    """VAU 0.3 carries the presets measured here (src/vau/presets/magenta-rt-2-small.json). Ours stay the source for the
-    cards (they carry params, block and the search figures); VAU's must keep every one of them, unchanged, and start
-    each unit where this host does."""
+    """VAU (0.3 on) ships these presets in src/vau/presets/magenta-rt-2-small.json. data/presets/mrt2_small.json stays
+    the source; VAU's copy must hold every preset with the same line, tip and held_out, and start each unit where
+    HOST_HEARD does."""
     import json
     import vau
     theirs = vau.presets_for("mrt2_small")
@@ -67,8 +66,8 @@ def test_vau_presets_match_ours():
 
 
 def test_no_sink_on_this_model():
-    """Magenta RT 2 has no attention sink: the host says so, Sink too is hidden, and Abliterate's envelope settings
-    are dimmed while its Shape is flat (the manifest's `when`, read as the card reads it)."""
+    """Magenta RT 2 has no attention sink, so the sink settings are hidden. The `when` rule is the manifest's, as the
+    card reads it."""
     host = units.AudioHost.__new__(units.AudioHost)
     assert host.sink() is False
     reg = units.registry().units

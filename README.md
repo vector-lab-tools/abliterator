@@ -19,7 +19,7 @@
 
 **Author:** David M. Berry
 **Institution:** University of Sussex
-**Version:** 0.3.0
+**Version:** 0.3.1
 **Status:** alpha
 **Licence:** GPL-3.0-or-later
 **DOI:** [10.5281/zenodo.24517766](https://doi.org/10.5281/zenodo.24517766)

@@ -122,7 +122,7 @@ def test_move_knob_log_and_clamp():
 def test_amount_scales_an_lfo_and_old_specs_keep_full_swing():
     full = mod.clean({"sources": {"lfo1": {"shape": "square"}}})
     half = mod.clean({"sources": {"lfo1": {"shape": "square", "amount": 0.5}}})
-    assert full["sources"]["lfo1"]["amount"] == 1.0                     # a recipe from before Amount: unchanged
+    assert full["sources"]["lfo1"]["amount"] == 1.0
     assert mod.value(half, "lfo1", 0.1) == pytest.approx(0.5 * mod.value(full, "lfo1", 0.1))
     r = mod.clean({"sources": {"rand1": {"amount": 0}}})
     assert mod.value(r, "rand1", 3.3) == 0.0
@@ -153,4 +153,4 @@ def test_follower_reads_only_frames_before():
     assert tr.at(f, 30) < tr.at(f, 21) and tr.at(f, 99) == tr.at(f, 40)          # falls after; past the end, the last
     assert mod.value(spec(), "follow", 0.6, None, None) == 0.0                    # no track: still
     inv = {**f, "invert": 1}
-    assert tr.at(inv, 10) == 1.0 and abs(tr.at(inv, 18) - (1 - tr.at(f, 18))) < 1e-12   # inverted: quiet high, loud low
+    assert tr.at(inv, 10) == 1.0 and abs(tr.at(inv, 18) - (1 - tr.at(f, 18))) < 1e-12

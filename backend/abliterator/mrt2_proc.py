@@ -14,7 +14,7 @@ copy of stdout; anything else written to stdout, by this program or the librarie
     callback            the sound card: plays the ring through the master chain, logs DAC times
 
 MLX evaluates on the thread that made its streams, so generation stays on the main thread. The
-sampler holds at most `lead` frames beyond what has been played, as in the MusicGen engine.
+sampler holds at most lead_eff() frames beyond what the Speed stage has read.
 
 The Steer strip adds ‖h‖ · Σ dose_i · v_i to the stream after block `layer` of the temporal
 transformer (12 blocks, d = 1024), the doses read at every step: latency class live. Magenta RT 2
@@ -38,7 +38,10 @@ from pathlib import Path  # noqa: E402
 from typing import Any, Dict, List, Optional, Tuple  # noqa: E402
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-sys.setswitchinterval(0.001)          # the callback should not wait long for the interpreter
+# The sound card's callback is Python and needs the interpreter lock; a thread running Python holds it for up to the
+# switch interval (5 ms by default) before handing it over. At 1 ms the callback starts on time while the model's
+# step runs its Python between MLX calls (measured with Smear: the longest wait between callbacks fell from 47 to 24 ms).
+sys.setswitchinterval(0.001)
 
 import numpy as np  # noqa: E402
 
@@ -335,7 +338,7 @@ class Proc:
         self.stream_stats = None
         self.freezing = None
         self.stream = None
-        self.spectro = Spectro(SR)                        # the spectrogram of what is heard, for the page
+        self.spectro = Spectro(SR)
         self.meters = scp.Scope(self._scope_layer)        # the scopes on the model path: meters, recorded nowhere
         self._reset()
 
@@ -719,8 +722,8 @@ class Proc:
         self.measured: "collections.deque" = collections.deque(maxlen=20)
         self.moves: List[Dict[str, Any]] = []
         self.recorded: List[np.ndarray] = []
-        self.scope_hist: collections.deque = collections.deque()   # the sound as played, after Speed and before the output section: the scope's
-        self.scope_n = 0                                             # last seconds, which scroll at the speed heard
+        self.scope_hist: collections.deque = collections.deque()   # the scope's last SCOPE_S seconds as played: after Speed, before the output section
+        self.scope_n = 0                                             # samples in scope_hist
         self.field_blocks: "collections.deque" = collections.deque(maxlen=2)
         self.field_sums: "collections.deque" = collections.deque(maxlen=24)
 
@@ -740,7 +743,7 @@ class Proc:
         self.meters.reset()
         self.spectro.reset()
         from abliterator.speed import Speed, clamp
-        self.speed = Speed(CHANNELS)                     # playback speed: read the model's sound slower than it is made
+        self.speed = Speed(CHANNELS)
         r0, m0 = heard_speed(self.master_base)
         r0 = clamp(r0)
         self.speed.set(r0, m0)
@@ -774,10 +777,6 @@ class Proc:
     def run(self):
         """The main loop: tasks between steps, and one step whenever the lead allows."""
         interactive()
-        # The sound card's callback is Python and needs the interpreter lock; a thread running Python holds it for up to the
-        # switch interval (5 ms by default) before handing it over. At 1 ms the callback starts on time while the model's
-        # step runs its Python between MLX calls (measured with Smear: the longest wait between callbacks fell from 47 to 24 ms).
-        sys.setswitchinterval(0.001)
         while True:
             try:
                 while True:
@@ -864,7 +863,7 @@ class Proc:
             self.eff = {"doses": dict(d), "sampling": dict(smp)}
             self.cond = self._apply(d, smp, self.prompt, self.memo)
         t0 = time.perf_counter(); self._ph("step")
-        reading = self.gen % READ_EVERY == 0                    # the strips' readings, every third frame (120 ms)
+        reading = self.gen % READ_EVERY == 0
         self.hooks.meas, self.hooks.probes, self.hooks.measuring = [], {}, reading
         try:
             if TEST_SRC is not None:
@@ -1083,7 +1082,6 @@ class Proc:
         self.scope_lr = [pairs(y[:, c].reshape(points, n)) for c in range(min(2, y.shape[1]))]   # each channel, for the L and R view
         return self.scope_last
 
-    # ------------------------------------------------------------------ readings
     def latency(self) -> Dict[str, Any]:
         dev_ms = (self.stream.latency * 1000) if (self.playing and self.stream) else DEVICE_S * 1000 + 10.0
         parts = {"generation lead": self.lead_eff() * FRAME_MS, "codec (declared by the sampler; not yet checked by ear)": 0,

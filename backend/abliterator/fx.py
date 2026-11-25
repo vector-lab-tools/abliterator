@@ -9,7 +9,7 @@ delays they are set to make.
 
 Chain, in order: high-pass, low-pass (2nd-order Butterworth), delay (feedback), reverb (four
 feedback combs and two allpasses per channel, after Schroeder and Moorer, without damping), gain,
-pan (equal power). Every delay line is longer than CHUNK, so each chunk is computed as whole
+pan (equal power). Every delay is at least CHUNK samples, so each chunk is computed as whole
 arrays from the line's past.
 """
 from __future__ import annotations
@@ -92,7 +92,7 @@ class Reverb:
             acc = np.zeros((n, 1), np.float32)
             for i, d in enumerate(c[ch] for c in self.combs):
                 past = self.cl[i][ch].read(d, n)
-                y = xi + g * past                            # y[n] = x[n] + g · y[n - d]
+                y = xi + g * past
                 self.cl[i][ch].write(y)
                 acc += y
             for i, d in enumerate(a[ch] for a in self.aps):
@@ -107,8 +107,6 @@ class Reverb:
 
 
 class Chain:
-    """One track's effects, with their state."""
-
     def __init__(self):
         self.hp, self.lp = Filter("highpass"), Filter("lowpass")
         self.dl = Line(SR * 2)

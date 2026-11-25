@@ -1,14 +1,10 @@
 // Abliterator. Copyright (C) 2026 David M. Berry. SPDX-License-Identifier: GPL-3.0-or-later
 //
-// The page: a control surface only. The sound is played by the backend through the sound card;
-// this page sends moves and reads the engine's and the desk's state a few times a second.
-// Two views: Synth (the model as a synth panel: engine, steer, output, strips, modulation; saving sounds) and Session (the saved sounds on eight
-// tracks, triggered and layered). The browser on the left holds the saved sounds for both.
-// Laid out as Abliterton Lens's page; the knobs and faders follow Lens's desk.js (after Video Kintsugi).
+// The page is a control surface. The backend plays the sound through the sound card; this page sends
+// moves and polls the engine's and the desk's state a few times a second.
+// Four views: Synth, Session, Tune and Listen. The browser on the left holds the saved sounds for all of them.
 "use strict";
 const $ = (s) => document.querySelector(s);
-// a fault on the page is reported, not hidden: a short notice with its message, and the last twenty kept in this
-// browser (localStorage "aa-errors") so they can be read after the fact
 const PAGE_ERR = { last: 0 };
 function pageError(msg) {
   try { const a = JSON.parse(localStorage.getItem("aa-errors") || "[]"); a.push({ t: new Date().toISOString(), msg: String(msg).slice(0, 500) }); localStorage.setItem("aa-errors", JSON.stringify(a.slice(-20))); } catch (e) { /* storage blocked */ }
@@ -16,7 +12,7 @@ function pageError(msg) {
 }
 window.addEventListener("error", (e) => pageError(`${e.message} (${(e.filename || "").split("/").pop()}:${e.lineno})`));
 window.addEventListener("unhandledrejection", (e) => pageError(e.reason?.stack || e.reason));
-const STILL = (() => { try { return matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (e) { return false; } })();   // the system asks for less motion
+const STILL = (() => { try { return matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (e) { return false; } })();
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const h = (html) => { const t = document.createElement("template"); t.innerHTML = html.trim(); return t.content.firstElementChild; };
 
@@ -28,8 +24,7 @@ async function api(path, body) {
   return j;
 }
 
-// Sending while a control moves: the first change goes at once, then at most one every `ms`
-// while it keeps moving, and the last one always goes.
+// The first call runs at once, then at most one per `ms` while calls keep coming, and the last always runs.
 function throttle(fn, ms) {
   let last = 0, timer = null;
   return () => {
@@ -154,10 +149,10 @@ function knob(p) {
     if (assigning()) { const dd = Math.max(-1, Math.min(1, routeDepth(MOD.assign, p.mod) - e.deltaY / (e.shiftKey ? 2400 : 600))); setRoute(MOD.assign, p.mod, Math.abs(dd) < 0.005 ? 0 : +dd.toFixed(3)); el.paintMod(); clearTimeout(idle); idle = setTimeout(drawEditor, 300); return; }
     mine = true; nudge(-e.deltaY / (e.shiftKey ? 3000 : 600)); clearTimeout(idle); idle = setTimeout(() => { acc = null; mine = false; }, 500);
   }, { passive: false });
-  // on the knob itself: pointerdown captures the pointer, so the clicks go to the knob, not to its drawing
+  // on el: pointerdown captures the pointer, so dblclick fires on the knob element
   el.addEventListener("dblclick", () => {
     acc = null;
-    if (assigning()) {                         // a source chosen: its link to this knob goes
+    if (assigning()) {
       setRoute(MOD.assign, p.mod, 0); drawEditor(); el.paintMod();
       info(`${SRC[MOD.assign].label} → ${p.label}: link removed`, "ok", 2500);
     } else put(p.reset);
@@ -168,12 +163,11 @@ function knob(p) {
     e.preventDefault(); e.stopPropagation(); acc = null;
     put(p.int ? Math.min(p.max, Math.max(p.min, Math.round(p.get()) + d)) : rnd(val(clamp01(pos(p.get()) + d * (e.shiftKey ? 0.005 : 0.025))), p));
   });
-  // the modulation ring and the live dot
   el.paintMod = () => {
     if (!p.mod) return;
     const routes = MOD.spec.routes.filter((r) => r.tgt === p.mod);
     el.classList.toggle("target", !!assigning());
-    el.classList.toggle("linked", !!assigning() && Math.abs(routeDepth(MOD.assign, p.mod)) >= 0.001);   // the source already moves it
+    el.classList.toggle("linked", !!assigning() && Math.abs(routeDepth(MOD.assign, p.mod)) >= 0.001);
     if (assigning()) el.style.setProperty("--assign", SRC[MOD.assign].color);
     const ring = el.querySelector(".kmod"), dot = el.querySelector(".kdot");
     if (assigning()) {                         // the knob is the selected source's send: its arc from 12 o'clock, its readout
@@ -261,7 +255,7 @@ function meter(label, cells = false) {
       const H = hold[i], fall = H.db - Math.max(0, (now - H.at - 1500) / 1000) * 20;
       if (d >= fall) { H.db = d; H.at = now; H.zone = d > -1 ? "r" : d > -6 ? "o" : ""; } else { H.db = fall; H.at = now - 1500; }
       hs[i].style.bottom = `${pos(H.db)}%`; hs[i].style.display = isFinite(H.db) && H.db > -60 ? "block" : "none";
-      hs[i].classList.toggle("r", H.zone === "r");        // within 1 dB of full scale: red; from −6 to −1 dB: amber; kept while held and falling
+      hs[i].classList.toggle("r", H.zone === "r");
       hs[i].classList.toggle("o", H.zone === "o");
     });
     const top = Math.max(hold[0].db, hold[1].db);
@@ -270,23 +264,24 @@ function meter(label, cells = false) {
   if (cells) el.classList.add("cells");
   return el;
 }
-// a menu by a button, as Lens's add menu
+// items: {label, sub, title, run(), check, danger, disabled, del()} (del() returning false keeps the item; the menu stays open),
+// or {head}, {where}, {sep}, {scroll: [items]}, {filter: placeholder} (a Find box over the scroll list), {input: placeholder, button, run(text)}
 let openMenu = null;
 function menu(anchor, items, cls = "") {
-  if (openMenu && openMenu._anchor === anchor) { closeMenu(); return; }   // its button again: close it
+  if (openMenu && openMenu._anchor === anchor) { closeMenu(); return; }
   closeMenu();
   const m = h(`<div class="addmenu ${cls}" role="menu"></div>`);
   m._anchor = anchor;
-  let list = null, focus = null;                                    // the scrolled list a Find box filters
+  let list = null, focus = null;
   const put = (box, it) => {
     if (it.where) return box.appendChild(h(`<div class="am-where">${esc(it.where)}</div>`));
     if (it.head) return box.appendChild(h(`<div class="am-h">${esc(it.head)}</div>`));
     if (it.sep) return box.appendChild(h(`<div class="am-sep" role="separator"></div>`));
-    if (it.scroll) {                                                // a long list scrolls on its own; what follows stays in view
+    if (it.scroll) {
       list = box.appendChild(h(`<div class="am-scroll"></div>`));
       it.scroll.forEach((x) => put(list, x)); return;
     }
-    if (it.filter) {                                                // a Find box over the scrolled list
+    if (it.filter) {
       const f = box.appendChild(h(`<input class="am-find" type="search" placeholder="${esc(it.filter)}" aria-label="${esc(it.filter)}">`));
       f.addEventListener("input", () => {
         const q = f.value.trim().toLowerCase(); let head = null, any = false;
@@ -298,19 +293,19 @@ function menu(anchor, items, cls = "") {
       });
       focus = f; return;
     }
-    if (it.input) {                                                 // a name and a button: Enter or the button runs it
+    if (it.input) {
       const row = box.appendChild(h(`<div class="am-in"><input type="text" maxlength="40" placeholder="${esc(it.input)}" aria-label="${esc(it.input)}"><button type="button">${esc(it.button || "OK")}</button></div>`));
       const inp = row.querySelector("input"), go = () => { const v = inp.value.trim(); if (v) { closeMenu(); it.run(v); } };
       row.querySelector("button").addEventListener("click", go);
       inp.addEventListener("keydown", (e) => { if (e.key === "Enter") go(); e.stopPropagation(); });
       return;
     }
-    const ck = "check" in it;                                       // an on/off item: a tick when on
+    const ck = "check" in it;
     const b = h(`<button role="${ck ? "menuitemcheckbox" : "menuitem"}"${ck ? ` aria-checked="${!!it.check}"` : ""}>${ck ? `<i class="am-ck">${it.check ? "✓" : ""}</i>` : ""}<b>${esc(it.label)}</b>${it.sub ? `<span>${esc(it.sub)}</span>` : ""}</button>`);
     if (it.title) b.title = it.title;
     if (it.danger) b.classList.add("am-danger");
     b.disabled = !!it.disabled;
-    if (it.del) {                                                   // a small × deletes the item, and the menu stays open
+    if (it.del) {
       const x = h(`<i class="am-x" role="button" aria-label="Delete ${esc(it.label)}" title="Delete">×</i>`);
       x.addEventListener("click", async (e) => {
         e.stopPropagation();
@@ -355,7 +350,7 @@ async function delMine(kind, id, q) {
   try { const j = await api("/api/mypresets/delete", { kind, id, name: q.name }); Object.assign(MY, j.all); info(`deleted ${q.name}`, "ok"); return true; }
   catch (e) { fail(e); return false; }
 }
-function presetItems(builtIn, mine, apply, del) {                    // the card's presets, then yours; long lists scroll, with a Find box
+function presetItems(builtIn, mine, apply, del) {
   const list = [];
   if (builtIn?.length) list.push({ head: "Presets" }, ...builtIn.map((q) => ({ label: q.name, title: q.tip || "", run: () => apply(q) })));
   if (mine?.length) list.push({ head: "User Presets" }, ...mine.map((q) => ({ label: q.name, title: `Saved ${q.made || ""}`, run: () => apply(q), del: () => del(q) })));
@@ -379,7 +374,7 @@ const SRC = {};
 [["lfo1", "LFO 1", "lfo"], ["lfo2", "LFO 2", "lfo"], ["lfo3", "LFO 3", "lfo"], ["env", "ENV 1", "env"], ["env2", "ENV 2", "env"], ["env3", "ENV 3", "env"], ["rand1", "RAND 1", "rand"], ["rand2", "RAND 2", "rand"], ["steps", "STEPS", "steps"], ["follow", "FOLLOW", "follow"], ["drift", "DRIFT", "drift"], ["chaos", "CHAOS", "chaos"],
  ["m1", "M 1", "macro"], ["m2", "M 2", "macro"], ["m3", "M 3", "macro"], ["m4", "M 4", "macro"]]
   .forEach(([id, label, kind]) => (SRC[id] = { id, label, kind, color: `var(--c-${kind})`, bipolar: ["lfo", "rand", "steps", "drift", "chaos"].includes(kind) }));
-const tabOf = (k) => (k === "drift" || k === "chaos" ? "wild" : k);           // Drift and Chaos share the Wild tab
+const tabOf = (k) => (k === "drift" || k === "chaos" ? "wild" : k);
 const CSSCOL = { lfo: "#d9aa3f", env: "#f08a4b", rand: "#a78bfa", macro: "#4ac6e8", steps: "#5fd38d", follow: "#ef6f8f", drift: "#7fb8ff", chaos: "#ff6a4c" };
 const MOD = { spec: { sources: {}, routes: [] }, assign: null, on: false, touched: 0, t0: 0, tAt: performance.now(), playing: false, tab: "lfo", folHist: [] };
 const TGT = { guidance: { label: "Strength", span: 8 }, temperature: { label: "Temperature", span: 1.5 }, lowpass_hz: { label: "Low-pass", span: 4, oct: true }, volume: { label: "Volume", span: 1 }, width: { label: "Width", span: 2 }, spread: { label: "Spread", span: 1 } };
@@ -407,7 +402,7 @@ function randV(p, t) {
   const a = hash01(seed, k) * 2 - 1, b = hash01(seed, k + 1) * 2 - 1, f = x - k, e = 0.5 - 0.5 * Math.cos(Math.PI * f);
   return ((1 - p.smooth) * a + p.smooth * (a + (b - a) * e)) * (p.amount ?? 1);
 }
-function envV(p, t, len) {                 // as mod.env: with Loop on, Sustain for Hold, Release to zero, and round again
+function envV(p, t, len) {                 // as mod.env
   const { attack_s: a, decay_s: d, sustain: s, release_s: r } = p;
   if (p.loop) {
     const hold = p.hold_s ?? 4, cyc = a + d + hold + r;
@@ -432,7 +427,7 @@ function driftV(p, t) {                    // as mod.drift
   for (let o = 0; o < 4; o++) { const w = r ** o; tot += w * vnoise(seed + 7919 * o, x * 2 ** o); ws += w; }
   return Math.max(-1, Math.min(1, (tot / ws) * 1.4)) * (p.amount ?? 1);
 }
-const CHT = new Map();                      // as mod._chaos_track, for drawing: the attractor integrated once a seed
+const CHT = new Map();                      // as mod._chaos_track, cached per system and seed
 function chaosTrack(system, seed, upto) {
   const key = `${system}:${seed}`;
   let T = CHT.get(key);
@@ -464,11 +459,11 @@ function srcV(id, t, len = null) {
     : k === "drift" ? driftV(p, t) : k === "chaos" ? chaosV(p, t) : k === "follow" ? followV(t) : +p.value;
 }
 function modTime() { return MOD.playing ? MOD.t0 + (performance.now() - MOD.tAt) / 1000 : performance.now() / 1000; }
-const START_SEND = 0.5;                     // a new link's send, however it is made: drag the knob for another
+const START_SEND = 0.5;
 const routeDepth = (src, tgt) => MOD.spec.routes.find((r) => r.src === src && r.tgt === tgt)?.depth || 0;
 function setRoute(src, tgt, depth, send = true) {
   const had = MOD.spec.routes.find((r) => r.src === src && r.tgt === tgt);
-  if (had && depth) had.depth = depth;                                       // changed in place: the routes keep their order
+  if (had && depth) had.depth = depth;                                       // in place, so the routes keep their order
   else {
     MOD.spec.routes = MOD.spec.routes.filter((r) => r !== had);
     if (depth) MOD.spec.routes.push({ src, tgt, depth });
@@ -477,10 +472,10 @@ function setRoute(src, tgt, depth, send = true) {
   if (send) sendMod();
   drawTiles();
 }
-// a target with a curve is moved along the knob's travel (as mod.py does), else by value
+// the scale a modulation offset moves along, the knob's travel as in mod.py; null: the offset adds to the value
 function onCurve(tgt, base) {
   const q = MODTGT[tgt];
-  if (q) {                                             // a unit or effect knob: moved along its travel, as mod.py moves it
+  if (q) {
     const lg = q.log && q.min > 0;
     return { pos: (v) => (lg ? Math.log(Math.max(v, q.min) / q.min) / Math.log(q.max / q.min) : (v - q.min) / (q.max - q.min)),
       val: (t) => (lg ? q.min * Math.pow(q.max / q.min, t) : q.min + t * (q.max - q.min)), lo: q.min, hi: q.max };
@@ -494,7 +489,7 @@ function modRange(tgt, base, routes) {
   const sc = onCurve(tgt, base);
   let lo = 0, hi = 0;
   for (const r of routes) {
-    const amp = SRC[r.src].bipolar ? (MOD.spec.sources[r.src]?.amount ?? 1) : 1;            // an LFO's Amount narrows its ring
+    const amp = SRC[r.src].bipolar ? (MOD.spec.sources[r.src]?.amount ?? 1) : 1;
     const span = (sc ? 1 : tgtOf(r.tgt).span) * amp, a = r.depth * span * (SRC[r.src].bipolar ? -1 : 0), b = r.depth * span;
     lo += Math.min(a, b); hi += Math.max(a, b);
   }
@@ -515,21 +510,20 @@ const flushMod = throttle(async () => {
   try { const r = await api("/api/mod", MOD.spec); if (!holding && MOD.touched === sent) { MOD.spec = r.mod; MOD.touched = Date.now(); } } catch (e) { fail(e); }
 }, 80);
 function sendMod() { MOD.touched = Date.now(); flushMod(); }
-// the hint under the tabs shows while the pointer is over a source
 function hintOn(el) {
   el.addEventListener("pointerenter", () => $("#assignnote").classList.add("hover"));
   el.addEventListener("pointerleave", () => $("#assignnote").classList.remove("hover"));
 }
-// while a source is chosen, the info bar at the foot says what the knobs now do (and comes back to it after other messages)
+// shown in the info bar while a source is chosen, and again after other messages (see the poll)
 const assignText = () => `${SRC[MOD.assign].label}: each knob it can move is now its send. Click links it at ${START_SEND}; drag up for more, down for less; double-click removes. Esc to finish.`;
 function assign(src) {
   MOD.assign = MOD.assign === src ? null : src;
   if (MOD.assign) info(assignText(), "", 0); else if (Date.now() > infoUntil) { $("#infotext").textContent = ""; $("#infotext").className = ""; }
   if (MOD.assign) { MOD.tab = tabOf(SRC[MOD.assign].kind); drawEditor(); }
-  drawTiles(); MODKNOBS.forEach((k) => k.paint());          // every knob it can move turns into its send, or back
+  drawTiles(); MODKNOBS.forEach((k) => k.paint());
 }
 
-// ------------------------------------------------------------- the two views
+// ------------------------------------------------------------- the views
 let view = "make";
 try { view = localStorage.getItem("aa-view") || "make"; } catch (e) { /* private window */ }
 function setView(v) {
@@ -571,7 +565,6 @@ $("#brrail").addEventListener("click", () => $("#browser").classList.remove("fol
 const S = { presets: [], dirs: [], ranges: {}, doses: {}, preset: null, playing: false, engine: null, frameMs: 40, status: {}, sampling: {}, master: {} };
 function range() { return S.ranges[$("#full").checked ? "full" : "musical"] || [-0.4, 0.4]; }
 
-// sending moves, at most every 30 ms
 let pendingDoses = null, sendTimer = null, dosesTouched = 0;
 function sendDoses(d) {
   Object.assign(S.doses, d); dosesTouched = Date.now();
@@ -654,7 +647,6 @@ function drawXY() {
   cx.beginPath(); cx.arc(px, py, 14, 0, 2 * Math.PI); cx.fill(); cx.shadowBlur = 0;
   cx.fillStyle = "#0d0f13"; cx.beginPath(); cx.arc(px, py, 5, 0, 2 * Math.PI); cx.fill();
 }
-// a dose's place on the pad: along its curve when calibrated, else across the range
 function doseT(name, v) { const c = curveOf(`dose:${name}`); if (c) return clamp01(curveScale(c).pos(v)); const [lo, hi] = range(); return clamp01((v - lo) / (hi - lo)); }
 function doseV(name, t) { const c = curveOf(`dose:${name}`); if (c) return curveScale(c).val(t); const [lo, hi] = range(); return lo + t * (hi - lo); }
 function padMove(e) {
@@ -684,7 +676,7 @@ $("#preset").addEventListener("change", () => {
   pickPreset(false);
   if (S.playing && S.engine === "mrt2") api("/api/control", { preset: S.preset.id }).catch(fail);
 });
-// a style of your own: kept under Your prompts, embedded by the engine, then played (or switched to, if playing)
+// a typed prompt: the server keeps it under Your prompts and embeds it
 $("#pform").addEventListener("submit", async (e) => {
   e.preventDefault();
   const text = $("#ptype").value.trim();
@@ -705,7 +697,7 @@ $("#pdel").addEventListener("click", async () => {
   if (!S.preset?.user) return;
   try { await api(`/api/prompts/${encodeURIComponent(S.preset.id)}/delete`, {}); await loadPresets(); info("removed from Your prompts", "ok"); } catch (err) { fail(err); }
 });
-// The model is chosen in Settings (⚙), Model: it is seldom changed, so the Engine panel only names it
+// the model is chosen in Settings, Model; the Engine panel only names it
 async function switchEngine(id) {
   if (!id || id === S.engine) return;
   try { await api("/api/engine", { engine: id }); dirsKnown = -1; S.engine = null; listSessions(); } catch (e) { fail(e); }
@@ -726,8 +718,6 @@ const engKnobs = [
 const speedKnob = knob({ label: "Speed", min: 0.125, max: 1, log: true, step: 0.005, reset: 1, get: () => +(S.master.speed ?? 1), put: (v) => sendMaster({ speed: +v.toFixed(3) }),
   fmt: (v) => ({ 1: "1×", 0.5: "½×", 0.25: "¼×", 0.125: "⅛×" }[+v.toFixed(3)] || `${v.toFixed(2)}×`),
   tip: "how fast the model's sound is played, from 1× down to ⅛×. The model writes only as fast as it is used. A saved sound replays its speed exactly" });
-// how Speed slows the sound: Tape lets the pitch fall; Stretch keeps it (a phase vocoder); Smear keeps it and
-// washes it out over long windows (after Paulstretch), for very slow ambient; Off plays at 1× and keeps the Speed knob's value
 const SPEED_MODES = [["off", "Off", "plays at 1×; Speed keeps its setting"], ["tape", "Tape", "pitch falls with speed, as a slowed tape"],
   ["stretch", "Stretch", "pitch kept: a phase vocoder with locked phases"], ["smear", "Smear", "pitch kept, washed out over 0.34 s windows: for very slow ambient"]];
 const modeAt = () => Math.max(0, SPEED_MODES.findIndex(([k]) => k === (S.master.speed_mode || "tape")));
@@ -735,8 +725,7 @@ const speedModes = knob({ label: "Mode", min: 0, max: SPEED_MODES.length - 1, st
   put: (v) => { const k = SPEED_MODES[Math.round(v)][0]; if (k !== S.master.speed_mode) { S.master.speed_mode = k; sendMaster({ speed_mode: k }); paintSpeedModes(); } },
   fmt: (v) => SPEED_MODES[Math.round(v)][1],
   tip: "how Speed slows the sound. " + SPEED_MODES.map(([, l, t]) => `${l}: ${t}`).join(". ") + ". Double-click: Off" });
-// while Mode is Off, Speed is dimmed and does not turn: its value is kept for when a mode is chosen again
-// MusicGen's output is one channel and has no Speed stage, so there all four are dimmed too
+// MusicGen's output is mono and has no Speed stage, so all four are dimmed there; Mode Off dims Speed and keeps its value
 const dimKnob = (k, off) => { k.classList.toggle("disabled", off); k.setAttribute("aria-disabled", String(off)); k.tabIndex = off ? -1 : 0; };
 const paintSpeedModes = () => {
   speedModes.paint?.();
@@ -747,7 +736,7 @@ const paintSpeedModes = () => {
 };
 const speedPair = h(`<div class="seedpair speedpair kgroup" data-label="SPEED CONTROL"></div>`);
 speedPair.append(speedModes, speedKnob);
-// the seed as a knob beside them (its value is #seed, read at the next ▶); the die picks one at random
+// the seed's value is #seed, read at the next ▶
 const seedKnob = knob({ label: "Seed", min: 0, max: 999, int: true, reset: 1, get: () => +$("#seed").value || 0,
   put: (v) => { $("#seed").value = String(Math.round(v)); }, fmt: (v) => String(Math.round(v)),
   tip: "the seed the model starts from; it takes effect at the next ▶. Double-click: seed 1" });
@@ -756,15 +745,14 @@ dice.addEventListener("click", () => { $("#seed").value = String(Math.floor(Math
 const seedPair = h(`<div class="seedpair"></div>`);
 seedPair.append(seedKnob, dice);
 $("#engknobs").appendChild(seedPair);
-// Strength (the model's guidance) in the row of the prompt it weighs; under them Seed, then Temperature and Top-k as a pair under SAMPLING
 const [guidKnob, tempKnob, topkKnob] = engKnobs;
-$("#pform").appendChild(guidKnob); guidKnob.classList.add("kmini");     // in the Prompt box's row, after ↵
+$("#pform").appendChild(guidKnob); guidKnob.classList.add("kmini");
 const sampPair = h(`<div class="kgroup samppair" data-label="SAMPLING"></div>`);
 sampPair.append(tempKnob, topkKnob);
 $("#engknobs").appendChild(sampPair);
 
 // Output: the master, after the model
-let hdrVol = null;                                               // the header's Volume, the same as the Output panel's
+let hdrVol = null;                                               // the header's Volume knob; Output's Volume repaints it
 const outKnobs = [
   knob({ label: "Low-pass", min: 500, max: 16000, log: true, step: 10, reset: 16000, get: () => +(S.master.lowpass_hz ?? 16000), put: (v) => sendMaster({ lowpass_hz: v }), fmt: (v) => `${(v / 1000).toFixed(1)}k`, mod: "lowpass_hz", tip: "a low-pass filter on the model's output" }),
   knob({ label: "Volume", min: 0, max: 1, step: 0.01, reset: 0.5, get: () => +(S.master.volume ?? 0.5), put: (v) => { sendMaster({ volume: v }); hdrVol?.paint(); }, fmt: (v) => v.toFixed(2), mod: "volume" }),
@@ -776,20 +764,18 @@ outToggles[0].title = "Bypass: the model straight to Volume, skipping auto level
 outToggles[1].title = "Auto level: holds the loudness steady (−20 dBFS) while the controls move, so a move is heard as a change of sound more than of level. Saved sounds keep it.";
 const leadKnob = knob({ label: "Buffer", min: 1, max: 12, int: true, reset: 2, get: () => +(S.status.lead || 2), put: (v) => { S.status.lead = v; api("/api/lead", { lead: v }).catch(fail); }, fmt: (v) => `${(v + (S.status.lead_boost || 0)) * S.frameMs} ms`, tip: "frames made ahead of the sound card: shorter answers sooner and risks dropouts. Shown in gold when the engine has added frames by itself after a step ran long (given back one at a time after a quiet minute); the readout is then the total" });
 outKnobs.forEach((k) => $("#outknobs").appendChild(k));
-// the stereo field's knobs, beside its scope at the foot of the Engine panel
 const widenKnobs = [
   knob({ label: "Width", min: 0, max: 2, step: 0.01, reset: 1, get: () => +(S.master.width ?? 1), put: (v) => sendMaster({ width: v }), fmt: (v) => `${Math.round(v * 100)}%`, mod: "width",
     tip: "the side's gain: 0% mono, 100% as the model wrote it, 200% twice as wide" }),
   knob({ label: "Spread", min: 0, max: 1, step: 0.01, reset: 0, get: () => +(S.master.spread ?? 0), put: (v) => sendMaster({ spread: v }), fmt: (v) => `${Math.round(v * 100)}%`, mod: "spread",
     tip: "width from a mono sound: the mid, delayed 12 ms, added to the left and taken from the right; the mono sum is unchanged" }),
 ];
-// Speed and its Mode, then Width and Spread: each pair under a bracket with its name; all four act on the sound the model has written
 const stereoPair = h(`<div class="stereopair kgroup" data-label="STEREO"></div>`);
 widenKnobs.forEach((k) => stereoPair.appendChild(k));
 $("#widen").append(speedPair, stereoPair);
 $("#outknobs").appendChild(leadKnob);
 $("#outknobs").appendChild((() => { const r = h(`<div class="outtg"></div>`); outToggles.forEach((t) => r.appendChild(t)); return r; })());
-// Dynamics: the master's compressor and gate (dsp.Master._dynamics), after the effects, with their reduction on LEDs
+// Dynamics: the master's compressor and gate (dsp.Master._dynamics)
 const dynKnobs = [
   knob({ label: "Ratio", min: 1, max: 20, log: true, step: 0.1, reset: 4, get: () => +(S.master.dyn_ratio ?? 4), put: (v) => sendMaster({ dyn_ratio: v }), fmt: (v) => `${v < 10 ? v.toFixed(1) : Math.round(v)}:1`, tip: "how hard the level above the threshold is pulled down: 4:1 lets 1 dB out for every 4 dB over" }),
   knob({ label: "Thresh", min: -40, max: 0, step: 0.5, reset: -18, get: () => +(S.master.dyn_thresh ?? -18), put: (v) => sendMaster({ dyn_thresh: v }), fmt: (v) => v.toFixed(0), tip: "the compressor's threshold, dBFS" }),
@@ -800,20 +786,23 @@ const dynToggles = [toggle("Dyn", () => !!S.master.dyn_on, (v) => sendMaster({ d
 dynToggles[0].title = "Dynamics on: a compressor and a gate after the effects, before Width and the limiter";
 dynToggles[1].title = "Fast attack: 3 ms instead of 30 ms";
 dynToggles[2].title = "Peak: the compressor and gate follow the peak instead of the average (RMS) level";
+// compressor gain reduction steps, dB: Dynamics' Comp LEDs and the Compressor card's gr meter.
+// Defined here because DYN below reads it while the script first runs.
+const GR_CELLS = [1, 2, 3, 4, 6, 8, 10, 12, 15, 20];
 const DYN = (() => {
-  const el = $("#dyn"), COMP = [1, 2, 3, 4, 6, 8, 10, 12, 15, 20], GATE = [2, 4, 6, 8, 10, 15, 20, 25, 30, 40];   // COMP as the Compressor card's GR meter (GR_CELLS); the gate drops up to 40 dB
+  const el = $("#dyn"), GATE = [2, 4, 6, 8, 10, 15, 20, 25, 30, 40];   // dB; the gate drops at most 40 dB
   el.innerHTML = `<div class="dyh"></div><div class="dyk"></div>`;
   dynToggles.forEach((t) => el.querySelector(".dyh").appendChild(t));
   dynKnobs.forEach((k) => el.querySelector(".dyk").appendChild(k));
   // the reduction LEDs sit in Output's stage rows, above Auto and Limit
-  const rows = h(`<div class="dyrows"><div class="sg"><span>Comp</span><div class="dled c">${COMP.map((d) => `<i title="${d} dB"></i>`).join("")}</div><span class="sv"></span></div><div class="sg"><span>Gate</span><div class="dled g">${GATE.map((d) => `<i title="${d} dB"></i>`).join("")}</div><span class="sv"></span></div></div>`);
+  const rows = h(`<div class="dyrows"><div class="sg"><span>Comp</span><div class="dled c">${GR_CELLS.map((d) => `<i title="${d} dB"></i>`).join("")}</div><span class="sv"></span></div><div class="sg"><span>Gate</span><div class="dled g">${GATE.map((d) => `<i title="${d} dB"></i>`).join("")}</div><span class="sv"></span></div></div>`);
   let cl = null, gl = null;
   return { set(s) {
     if (!cl) { $("#stages").prepend(rows); [cl, gl] = [...rows.querySelectorAll(".dled")].map((x) => [...x.querySelectorAll("i")]); }
     const sv = rows.querySelectorAll(".sv");
     const st = s.playing && S.master.dyn_on ? s.stages || {} : {};
     const c = -(st.comp_db || 0), g = -(st.gate_db || 0);
-    COMP.forEach((d, i) => cl[i].classList.toggle("on", c >= d));
+    GR_CELLS.forEach((d, i) => cl[i].classList.toggle("on", c >= d));
     GATE.forEach((d, i) => gl[i].classList.toggle("on", g >= d));
     sv[0].textContent = S.master.dyn_on ? (st.comp_db != null ? (c >= 0.05 ? `−${c.toFixed(1)}` : "0.0") : "–") : "off";
     sv[1].textContent = S.master.dyn_on ? (st.gate_db != null ? (g >= 0.05 ? `−${g.toFixed(1)}` : "0.0") : "–") : "off";
@@ -822,7 +811,6 @@ const DYN = (() => {
 })();
 const engMeter = meter("OUT", true);
 $("#outmeter").appendChild(engMeter);
-// the output level and Volume at the top right of the header, as on a synth's top bar: always in view
 const hdrMeter = meter("OUT", true);
 hdrMeter.classList.add("hdrmeter");
 hdrMeter.title = "The output level: each channel's peak, with a hold line; the figure is the held peak (dBFS). The same as the Output panel's OUT meter";
@@ -863,8 +851,7 @@ function sortable(item, handle, row, k, move) {
   });
 }
 const moved = (list, from, to) => { const [x] = list.splice(from, 1); list.splice(to, 0, x); };
-// A + in the gap before item `slot`, shown when the pointer is over the gap, as Abliterton Lens has it;
-// open(button, slot) shows the menu of what can go there.
+// A + in the gap before item `slot`; open(button, slot) shows the menu of what can go there.
 function gapAdd(slot, title, open) {
   const b = h(`<button type="button" class="addgap" aria-haspopup="menu" title="${esc(title)}" aria-label="${esc(title)}"><span class="plus">+</span></button>`);
   b.addEventListener("click", () => open(b, slot));
@@ -872,7 +859,7 @@ function gapAdd(slot, title, open) {
 }
 const whereIn = (slot, n, what) => (slot >= n ? (n ? `Add after ${what} ${n}` : `Add the first ${what}`) : slot === 0 ? `Add before ${what} 1` : `Add between ${what}s ${slot} and ${slot + 1}`);
 
-// the effect chain (postfx.py): none to eight effects, in order, on the model's output. Each has an
+// the effect chain (postfx.py): up to PFX.max effects, in order, on the model's output. Each has an
 // id, so the engine keeps its tail when others are added, removed or moved around it.
 const PFX = { types: {}, order: [], slots: [], ctl: [], touched: 0, max: 8, uid: 0, sent: null };
 const fxId = (x) => (x.id ??= ++PFX.uid);
@@ -915,8 +902,7 @@ function addFx(type, slot = PFX.slots.length) {
   PFX.touched = Date.now(); flushFx(); drawFx();
 }
 function fxDefaults(type) { const o = {}; for (const q of PFX.types[type].params) o[q.key] = q.default; return o; }
-// How each effect's card is laid out: rows of knobs (Mix last), then a bottom row of its menus and
-// switches. The display at the top draws what the settings do (fxGraph).
+// each effect card's rows of knobs; its menus and switches go in a row below them
 const FX_ROWS = {
   reverb: [["size", "predelay", "damp", "mix"]],
   plate: [["decay", "size", "predelay"], ["damp", "mod", "mix"]],
@@ -965,7 +951,6 @@ function biquadDb(kind, f0, q, g, f) {
 const GW = 200, GH = 44;                                         // the display's drawing units
 const gpath = (pts) => pts.map(([x, y], i) => `${i ? "L" : "M"}${x.toFixed(1)},${y.toFixed(1)}`).join("");
 const clampY = (y) => Math.max(1, Math.min(GH - 1, y));
-// What the settings do, drawn: the filter's or EQ's response.
 function fxGraph(type, p) {
   const fx = (i, n) => 20 * Math.pow(1000, i / n);                // 20 Hz to 20 kHz, log
   if (type === "eq8") {                                             // as postfx.EQ8: Butterworth cuts, bells of Q 1.2
@@ -1000,7 +985,7 @@ function drawFx() {
       <b class="fxn" title="Drag to move it in the chain">${esc(T.label)}</b><span class="fxi">${i + 1}</span><button class="spre" title="This effect's menu" aria-label="Effect menu" aria-haspopup="menu">▾</button></div>
       ${FX_GRAPH.has(sl.type) ? `<div class="fxg"><svg viewBox="0 0 ${GW} ${GH}" preserveAspectRatio="none" aria-hidden="true"></svg></div>` : ""}<div class="fxk"></div><div class="fxb"></div><button class="qhelp" type="button" aria-label="Help: ${esc(T.label)}" title="What ${esc(T.label)} does: how it works and its controls">?</button></div>`);
     el.querySelector(".pw").addEventListener("click", () => { fxSet(i, { on: !sl.on }); drawFx(); });
-    const fm = el.querySelector(".spre");                         // the effect's menu: Remove for now, presets to come
+    const fm = el.querySelector(".spre");
     fm.addEventListener("click", () => menu(fm, [
       ...presetItems(T.presets, MY.fx[sl.type], (q) => { fxSet(i, { params: { ...PFX.slots[i].params, ...q.params } }); drawFx(); }, (q) => delMine("fx", sl.type, q)),
       ...mineItems("fx", sl.type, () => ({ ...PFX.slots[i].params }), () => undefined),
@@ -1013,19 +998,19 @@ function drawFx() {
     const params = () => { const o = {}; for (const q of T.params) o[q.key] = +(PFX.slots[i].params[q.key] ?? q.default); return o; };
     const paintG = () => { if (svg) svg.innerHTML = fxGraph(sl.type, params()); };
     paintG(); if (svg) PFX.ctl.push({ paint: paintG });
-    if (sl.type === "drive" || sl.type === "tape") {                // how hard the input drives the curve, in cells, as Output's meters
-      const m = h(`<div class="fxmeter" title="How hard the input drives the curve: green bends it, amber flattens it, red holds it flat at the top (CLIP)"><span>drive</span><div class="cells">${"<i></i>".repeat(10)}</div><b>clip</b></div>`);
+    if (sl.type === "drive" || sl.type === "tape") {
+      const m = h(`<div class="fxmeter" title="How hard the input drives the curve: green bends it, amber flattens it, red holds it flat at the top (CLIP)"><span>drive</span><div class="cells">${DRIVE_CELLS.map(() => "<i></i>").join("")}</div><b>clip</b></div>`);
       el.querySelector(".fxk").before(m); PFX.leds[fxId(sl)] = { cells: [...m.querySelectorAll("i")], clip: m.querySelector("b"), hold: 0 };
     }
-    if (sl.type === "compressor") {                                 // gain reduction: how far it turns the sound down, in cells
-      const m = h(`<div class="fxmeter grm" title="Gain reduction: how far the compressor is turning the sound down. The cells light at 1, 2, 3, 4, 6, 8, 10, 12, 15 and 20 dB; the figure is the reduction now, in dB"><span>gr</span><div class="cells">${"<i></i>".repeat(10)}</div><b>0.0</b></div>`);
+    if (sl.type === "compressor") {
+      const m = h(`<div class="fxmeter grm" title="Gain reduction: how far the compressor is turning the sound down. The cells light at 1, 2, 3, 4, 6, 8, 10, 12, 15 and 20 dB; the figure is the reduction now, in dB"><span>gr</span><div class="cells">${GR_CELLS.map(() => "<i></i>").join("")}</div><b>0.0</b></div>`);
       el.querySelector(".fxk").before(m); PFX.leds[fxId(sl)] = { gr: [...m.querySelectorAll("i")], grv: m.querySelector("b") };
     }
-    if (sl.type === "pan") {                                        // where the sound sits now, L to R
+    if (sl.type === "pan") {
       const m = h(`<div class="fxpan" title="Where the sound sits now, left to right, the auto-pan included"><span>L</span><div class="track"><i></i></div><span>R</span></div>`);
       el.querySelector(".fxk").before(m); PFX.leds[fxId(sl)] = { pan: m.querySelector(".track i") };
     }
-    if (sl.type === "declick") {                                    // how many bursts it has redrawn
+    if (sl.type === "declick") {
       const c = h(`<div class="fxcount" title="Bursts redrawn since this De-click was added"><span>fixed</span><b>0</b></div>`);
       el.querySelector(".fxk").before(c); PFX.leds[fxId(sl)] = { count: c.querySelector("b") };
     }
@@ -1047,7 +1032,7 @@ function drawFx() {
       kbox.appendChild(r);
     }
     const bot = el.querySelector(".fxb");
-    for (const q of T.params) {                                     // menus as segmented buttons, switches as toggles
+    for (const q of T.params) {
       if (q.scale === "toggle") { const t = toggle(q.label, () => get(q) >= 0.5, (v) => put(q, v ? 1 : 0)); bot.appendChild(t); PFX.ctl.push(t); continue; }
       if (!q.scale.startsWith("choice:")) continue;
       const opts = q.scale.slice(7).split(",");
@@ -1069,11 +1054,9 @@ function drawFx() {
   row.appendChild(h(`<div class="io" title="On to Dynamics, Width, the low-pass, the limiter and the volume">out</div>`));
   drawEditor();                                                 // its links name the effects' knobs, which may have moved
 }
-// Drive's meter from the engine's readings: the peak drive into its curve, 0.25 to 8 on a log scale in
-// ten cells; below 1 the curve is nearly straight, from 1 it bends, from 2 it flattens, above 4 it holds flat
-// (CLIP, held for a second).
+// Drive's peak drive into its curve, per cell: below 1 the curve is nearly straight, from 1 it bends,
+// from 2 it flattens, above 4 it holds flat (CLIP)
 const DRIVE_CELLS = [0.25, 0.5, 0.75, 1, 1.4, 2, 2.8, 4, 5.6, 8];
-const GR_CELLS = [1, 2, 3, 4, 6, 8, 10, 12, 15, 20];                // the Compressor's gain reduction, dB
 function paintFxLeds(s) {
   const by = {};
   for (const r of (s.playing && s.stages && s.stages.fx) || []) if (r.id != null) by[r.id] = r;
@@ -1110,7 +1093,7 @@ async function playModel() {
   try { await api("/api/play", body); } catch (e) { fail(e); }
 }
 $("#play").addEventListener("click", () => (view !== "session" ? playModel() : deskCall("/api/desk/play")));
-// Space plays or stops, as on a DAW's transport, except while typing in a field or a menu
+// Space plays or stops, except while typing in a field or a menu
 document.addEventListener("keydown", (e) => {
   if (e.key !== " " || e.repeat || e.defaultPrevented || e.metaKey || e.ctrlKey || e.altKey) return;
   const t = e.target;
@@ -1242,7 +1225,7 @@ function followStrips() {
   const was = U.sentOn;
   U.sentOn = now;
   if (!was) return {};
-  const ends = { anchor: now.filter((u) => !was.includes(u)), snap: was.filter((u) => !now.includes(u) && !U.noSnap.has(u)) };   // snap-back
+  const ends = { anchor: now.filter((u) => !was.includes(u)), snap: was.filter((u) => !now.includes(u) && !U.noSnap.has(u)) };
   let moved = false;
   const routes = [];
   for (const r of MOD.spec.routes) {
@@ -1355,8 +1338,7 @@ function paintAct(c) {
   }
   a.dot.style.opacity = last > 1e-3 ? String(0.35 + 0.65 * actLevel(last)) : "0.12";
 }
-// Neuron's cell: the body swells with the value the unit leaves in the neuron it changes most (its value before,
-// faint, inside), and pulses run down the axon at a rate set by how far that value is from its usual size.
+// N.show(v): v is [the neuron's index, its value before, its value after], for the neuron the unit changes most
 function neuronAnim(c, box) {
   const el = box.appendChild(h(`<div class="sneu" title="The neuron this unit changes most, this frame: its value before (faint) and after (the body), and pulses at a rate set by how hard it is driven"><svg viewBox="0 0 120 46" aria-hidden="true">
     <g class="dend"><path d="M14 20 L4 10 M14 22 L2 22 M14 25 L5 36 M9 15 L6 7"/></g><path class="axon" d="M30 22 C 54 14, 78 30, 116 22"/>
@@ -1371,7 +1353,7 @@ function neuronAnim(c, box) {
     const v = N.v, live = !!v;
     if (live) { N.peak = Math.max(N.peak * 0.999, Math.abs(v[1]), Math.abs(v[2])); }
     const out = live ? Math.min(1, Math.abs(v[2]) / N.peak) : 0, inn = live ? Math.min(1, Math.abs(v[1]) / N.peak) : 0;
-    N.lvl += (out - N.lvl) * Math.min(1, dt * 2.5);                  // about 0.4 s to follow, so it swells rather than flickers
+    N.lvl += (out - N.lvl) * Math.min(1, dt * 2.5);                  // about 0.4 s to follow
     soma.setAttribute("r", (4 + 9 * N.lvl).toFixed(2)); soma.style.opacity = String(0.25 + 0.75 * N.lvl);
     sin.setAttribute("r", (1.5 + 9 * inn).toFixed(2));
     N.acc += dt * (live && !STILL ? 1 + 5 * N.lvl : 0);             // pulses a second: 1 to 6, none if the system asks for less motion
@@ -1388,13 +1370,13 @@ function neuronAnim(c, box) {
 const svgEl = (w, hgt, inner = "", fit = "none") => `<svg viewBox="0 0 ${w} ${hgt}" preserveAspectRatio="${fit}" aria-hidden="true">${inner}</svg>`;
 const viewBox = (st, cls, tip, html) => st.appendChild(h(`<div class="uview ${cls}" title="${esc(tip)}">${html}</div>`));
 const dbOf = (g) => 20 * Math.log10(Math.max(g, 1e-6));
-function numberRows(st, tip, pick, n = 5) {                       // values in (grey) and out (amber), a row each
+function numberRows(st, tip, pick, n = 5) {
   const el = viewBox(st, "sq", tip, `${"<div><span>·</span><b>·</b></div>".repeat(n)}`);
   const rows = [...el.children].map((r) => [r.querySelector("span"), r.querySelector("b"), r]);
   let n0 = 0;
   return (p) => { if (!p || n0++ % 2) return; pick(p).forEach(([a, b], j) => { if (!rows[j]) return; rows[j][0].textContent = numQ(a); rows[j][1].textContent = numQ(b); rows[j][2].classList.toggle("hit", Math.abs(b) < Math.abs(a) - 1e-4); }); };
 }
-function grLeds(st, tip, bipolar) {                             // the stream's size after against before, in dB, on LEDs
+function grLeds(st, tip, bipolar) {
   const n = bipolar ? 9 : 8;
   const el = viewBox(st, "sgr", tip, `<div class="leds">${"<i></i>".repeat(n)}</div><b>·</b>`);
   const cells = [...el.querySelectorAll("i")], txt = el.querySelector("b");
@@ -1417,7 +1399,7 @@ const UNIT_VIEW = {
   compressor: (c, st) => grLeds(st, "How much it shrinks the stream's size this frame: an LED for each 1.5 dB", false),
   multiband: (c, st) => grLeds(st, "How much it shrinks the stream's size this frame: an LED for each 1.5 dB", false),
   eq: (c, st) => grLeds(st, "The stream's size after the bands against before: cut to the left, boost to the right, 1.5 dB an LED", true),
-  gate: (c, st) => {                                            // 32 values as pixels: lit by their size after, dark where zeroed
+  gate: (c, st) => {
     const el = viewBox(st, "spx", "32 of the stream's values as pixels, lit by their size after the unit; the ones it set to zero are dark with an outline", `<div class="px">${"<i></i>".repeat(32)}</div><b>·</b>`);
     const px = [...el.querySelectorAll("i")], txt = el.querySelector("b");
     let n0 = 0;
@@ -1429,7 +1411,7 @@ const UNIT_VIEW = {
       txt.textContent = `${kept} of 32 kept`;
     };
   },
-  saturator: (c, st) => {                                       // the values out against in, the last ten frames, fading
+  saturator: (c, st) => {
     const el = viewBox(st, "sxy", "32 of the stream's values: out (up) against in (across), over the last ten frames; the bend is the squash", svgEl(100, 60, `<line class="ax" x1="50" y1="0" x2="50" y2="60"/><line class="ax" x1="0" y1="30" x2="100" y2="30"/><line class="id" x1="20" y1="60" x2="80" y2="0"/><g class="pts"></g>`));
     const g = el.querySelector(".pts"), hist = [];
     return (p) => {
@@ -1439,7 +1421,7 @@ const UNIT_VIEW = {
       g.innerHTML = hist.map((q, t) => q[0].map((a, j) => `<circle cx="${(50 + 50 * a / m).toFixed(1)}" cy="${(30 - 30 * q[1][j] / m).toFixed(1)}" r="1.4" opacity="${((t + 1) / hist.length).toFixed(2)}"/>`).join("")).join("");
     };
   },
-  reverb: (c, st) => {                                          // one value over the last three seconds: in jagged, out smoothed
+  reverb: (c, st) => {
     const el = viewBox(st, "str", "One of the stream's values over the last few seconds: going in (grey) and after the average (amber)", svgEl(100, 40, `<polyline class="tin"/><polyline class="tout"/>`));
     const pin = el.querySelector(".tin"), pout = el.querySelector(".tout"), hin = [], hout = [];
     return (p) => {
@@ -1450,12 +1432,12 @@ const UNIT_VIEW = {
       pin.setAttribute("points", pts(hin)); pout.setAttribute("points", pts(hout));
     };
   },
-  beatrepeat: (c, st) => {                                      // a lamp a reading: lit when it is playing a repeat
+  beatrepeat: (c, st) => {
     const el = viewBox(st, "sstep", "Lights on each reading where the unit is repeating frames instead of passing the stream through", `<div class="leds">${"<i></i>".repeat(16)}</div>`);
     const cells = [...el.querySelectorAll("i")], hist = [];
     return (p, a) => { hist.push(a != null && a > 0.02); if (hist.length > 16) hist.shift(); cells.forEach((x, j) => x.classList.toggle("on", !!hist[hist.length - 16 + j])); };
   },
-  delay: (c, st) => {                                           // the frames behind this one, the taps lit: Time back, and again for each pass of feedback
+  delay: (c, st) => {
     const el = viewBox(st, "stape", "The last 32 frames, newest on the left: the frames it reads back (Time, then each pass of Feedback) light as it acts", `<div class="leds">${"<i></i>".repeat(32)}</div><b>·</b>`);
     const cells = [...el.querySelectorAll("i")], txt = el.querySelector("b");
     return (p, a) => {
@@ -1464,7 +1446,7 @@ const UNIT_VIEW = {
       txt.textContent = `${t} frames · ${t * 40} ms`;
     };
   },
-  shifter: (c, st) => {                                         // the turn in the plane of the two directions; a point runs the arc while it acts
+  shifter: (c, st) => {
     const el = viewBox(st, "sdial", "The turn in the plane of the two directions: the arc is the angle, and a point runs along it while the unit acts", svgEl(60, 60, `<circle class="ring" cx="30" cy="30" r="22"/><line class="ax" x1="30" y1="30" x2="52" y2="30"/><path class="arc"/><circle class="run" r="2.4"/>`, "xMidYMid meet"));
     const arc = el.querySelector(".arc"), run = el.querySelector(".run");
     let ph = 0, t0 = performance.now(), lv = 0;
@@ -1481,17 +1463,16 @@ const UNIT_VIEW = {
     return (p, a) => { lv = a == null ? 0 : actLevel(a); };
   },
 };
-const shortWord = (w) => (String(w).length > 7 ? String(w).slice(0, 6) + "." : String(w));   // a word on a knob, cut to fit its width
+const shortWord = (w) => (String(w).length > 7 ? String(w).slice(0, 6) + "." : String(w));
 const numQ = (v) => (v < 0 ? "−" : "+") + Math.abs(v).toFixed(3);
-// The Signal path panel, in Steer's old place: the stream through the model's twelve layers (Steer and each unit
-// marked where it acts, lit by its reading), the codec, the model's sound and the effects, on to the Output panel
-// beside it. Dots run along both paths while it plays. A stage scrolls to its panel when clicked.
+// The Signal path panel: the stream through the model's layers (Steer and each unit marked where it acts, lit by
+// its reading), the codec, the model's sound and the effects. A stage scrolls to its panel when clicked.
 const FLOW = { el: null, key: null };
 function flowInit(N = 12, codec = "SpectroStream") {
   const host = $("#flow");
   if (!host) return;
   const dots = (path, n, dur, cls) => Array.from({ length: n }, (_, j) => `<circle class="${cls}" r="2"><animateMotion dur="${dur}s" repeatCount="indefinite" begin="${(-j * dur / n).toFixed(2)}s"><mpath href="#${path}"/></animateMotion></circle>`).join("");
-  const X0 = 24, MW = 352;                                       // the model's box: twelve columns, a block each
+  const X0 = 24, MW = 352;                                       // the model's box: a column per layer
   const cols = Array.from({ length: N + 1 }, (_, L) => `<line class="fcol" x1="${X0 + L * MW / N}" y1="24" x2="${X0 + L * MW / N}" y2="152"/>`).join("");
   FLOW.n = N; FLOW.codec = codec; FLOW.key = null;
   host.innerHTML = `<svg viewBox="0 0 400 292" aria-label="The signal path, live">
@@ -1509,8 +1490,8 @@ function flowInit(N = 12, codec = "SpectroStream") {
   </svg>`;
   host.querySelectorAll(".fnode[data-go]").forEach((g) => g.addEventListener("click", () => $(g.dataset.go)?.scrollIntoView({ behavior: "smooth", block: "center" })));
   FLOW.el = host;
-  // a frame passing through the layers, slowed to 1.6 s a pass: each unit's dots flash as it passes, by the unit's
-  // reading; Steer's diamond by the size of its doses
+  // a frame's pass through the layers, slowed to 1.6 s: each unit's dots flash as it passes, by the unit's
+  // reading; Steer's by the size of its doses
   const sweep = host.querySelector("#fl-sweep"), t0 = performance.now();
   const tick = (now) => {
     if (!host.isConnected) return;
@@ -1519,7 +1500,7 @@ function flowInit(N = 12, codec = "SpectroStream") {
     sweep.setAttribute("x", (x - 5).toFixed(1));
     host.querySelectorAll(".fu").forEach((g) => {
       const lv = live ? +g.dataset.lv || 0 : 0;
-      const pulse = live && g.classList.contains("hi") ? lv * (0.5 + 0.5 * Math.sin((now - t0) / 1400 * 2 * Math.PI)) : 0;   // the unit picked out pulses, by its reading
+      const pulse = live && g.classList.contains("hi") ? lv * (0.5 + 0.5 * Math.sin((now - t0) / 1400 * 2 * Math.PI)) : 0;
       g.querySelectorAll("circle").forEach((c) => { const f = Math.exp(-((((+c.getAttribute("cx")) - x) / 9) ** 2)) * lv; c.style.opacity = String(0.3 + 0.5 * lv + 0.2 * Math.max(f, pulse)); c.setAttribute("r", (3.2 + 2.6 * f + 1.6 * pulse).toFixed(2)); });
     });
     const cells = host.querySelectorAll("#fl-fx rect.on"), n = cells.length;   // the sound passing through the effects in turn
@@ -1556,25 +1537,25 @@ function drawFlow(s) {
   const svg = host.querySelector("svg"), playing = !!s.playing;
   if (playing && !STILL) svg.unpauseAnimations(); else svg.pauseAnimations();
   host.classList.toggle("live", playing);
-  // where Steer and the units act: a lane each, Steer's diamond at layer 6
+  // a lane each for Steer (at its layer, SL) and the units
   const W = 352 / N, xL = (L) => 24 + L * W, xB = (b) => 24 + (b + 0.5) * W, SL = s.model?.steer_layer ?? 6;
   const rep = (s.chain_report || []).filter((r) => !r.error), key = JSON.stringify(rep.map((r) => [r.title, r.at])) + s.steer_on + s.layers_on + SL + N;
 
   if (key !== FLOW.key) {
     FLOW.key = key;
-    const n = rep.length + 1, lane = (k) => 28 + (k + 0.5) * 120 / n;   // Steer on the top lane, then a lane a unit
+    const n = rep.length + 1, lane = (k) => 28 + (k + 0.5) * 120 / n;
     host.querySelector("#fl-units").innerHTML = `<g class="fu fs ${s.steer_on === false ? "off" : ""}" data-k="steer"><title>Steer: layer ${SL}</title><circle cx="${xL(SL).toFixed(1)}" cy="${lane(0).toFixed(1)}" r="3.2"/>${laneTag(xL(N) - 2, lane(0), "Steer")}</g>`
       + rep.map((r, k) => `<g class="fu ${s.layers_on === false ? "off" : ""}" data-k="${k + 1}"><title>${esc(r.title)}: ${esc((r.at || []).join(", "))}</title>${(r.at || []).map((a) => { const b = /^block (\d+)$/.exec(String(a)); return `<circle cx="${(b ? xB(+b[1]) : xL(+a)).toFixed(1)}" cy="${lane(k + 1).toFixed(1)}" r="3.2"/>`; }).join("")}${laneTag(xL(N) - 2, lane(k + 1), r.short || r.title)}</g>`).join("");
   }
-  flowHi();                                                       // the lanes were redrawn: keep the highlight
+  flowHi();                                                       // reapplied after the lanes are redrawn
   const act = playing ? s.activity || {} : {};
   FLOW.live = playing;
   host.querySelectorAll(".fu:not(.fs)").forEach((g) => { const v = act[g.dataset.k]; g.dataset.lv = v ? actLevel(v).toFixed(3) : "0"; });
   const d = Object.values(s.doses || {}).reduce((m, v) => Math.max(m, Math.abs(+v || 0)), 0);
   FLOW.dose = s.steer_on === false ? 0 : Math.min(1, d / 0.15);
   const st = host.querySelector(".fu.fs");
-  if (st) st.dataset.lv = FLOW.dose.toFixed(3);                  // Steer flashes and pulses by the size of its doses
-  // the model's sound, its effects, the output section and OUT
+  if (st) st.dataset.lv = FLOW.dose.toFixed(3);
+  // the model's sound and its effects
   const sc = playing && s.scope ? s.scope : [];
   const pts = []; for (let j = 0; j < sc.length; j += 4) pts.push(`${(114 + j * 116 / Math.max(1, sc.length - 1)).toFixed(1)},${(244 - Math.max(-1, Math.min(1, sc[j][1] * 4)) * 14).toFixed(1)}`);
   host.querySelector("#fl-wave").setAttribute("points", pts.join(" ") || "114,244 230,244");
@@ -1601,7 +1582,7 @@ function stripEl(c, k) {
     <button class="led" aria-pressed="${c.on}" title="On or bypassed"></button><span class="st" title="${esc((u.short !== u.title ? `${u.title}. ` : "") + u.what + (u.note ? "\n" + u.note : ""))}">${esc(u.short || u.title)}</span></div></div>`);
   c.fresh = false;
   const uid = (c.uid ??= ++U.uid);
-  {                                                            // the card's menu, by its name: presets, then the card's own switches
+  {
     const mb = h(`<button class="spre" title="Presets and settings for this card" aria-label="Card menu" aria-haspopup="menu">▾</button>`);
     const apply = (q) => { Object.assign(c.params, q.params); if (q.block !== undefined) c.layer = q.block; drawStrips(); sendChain(); };
     mb.addEventListener("click", () => menu(mb, [
@@ -1640,7 +1621,7 @@ function stripEl(c, k) {
     const set = (v) => { c.params[p.key] = v; sendChain(); if (redraw) drawStrips(); };
     const k0 = krow.children.length, b0 = box.children.length;
     const words = p.kind === "choice" ? p.choices.map(String) : p.kind === "direction" && S.dirs.length ? S.dirs.map((d) => d.name) : null;
-    if (p.kind === "direction" && words && words.length >= 2 && words.length <= 4) {   // a few directions: one button each, the chosen one lit
+    if (p.kind === "direction" && words && words.length >= 2 && words.length <= 4) {
       const g = h(`<div class="dseg" role="group" aria-label="${esc(p.label)}" title="${esc(p.tip || "")}"><span class="dsl">${esc(p.label)}</span><div class="dsb">${words.map((x) =>
         `<button type="button" data-v="${esc(x)}" title="${esc(x)}" aria-pressed="${x === String(c.params[p.key])}">${esc(x.charAt(0).toUpperCase() + x.slice(1))}</button>`).join("")}</div></div>`);
       g.querySelectorAll("button").forEach((btn) => btn.addEventListener("click", () => {
@@ -1649,7 +1630,7 @@ function stripEl(c, k) {
         set(btn.dataset.v);
       }));
       box.appendChild(g);
-    } else if (words) {                                                  // a list of words: a stepped knob that reads the word
+    } else if (words) {
       const ch = words, at = () => Math.max(0, ch.indexOf(String(c.params[p.key])));
       krow.appendChild(knob({ label: p.label, min: 0, max: Math.max(1, ch.length - 1), step: 1, int: true, reset: Math.max(0, ch.indexOf(String(p.default ?? ch[0]))),
         get: at, put: (v) => { const x = ch[Math.min(ch.length - 1, Math.round(v))]; if (x !== String(c.params[p.key])) set(x); }, fmt: (v) => shortWord(ch[Math.min(ch.length - 1, Math.round(v))]), tip: p.tip || "" }));
@@ -1688,9 +1669,9 @@ function stripEl(c, k) {
   else if (krow.children.length) st.appendChild(krow);
   c._act = c._view = null;
   if (c.on) flowLink(st, U.chain.filter((x) => x.on).indexOf(c) + 1);
-  if (c.on && c.id === "neuron") neuronAnim(c, st);               // the unit's own live display
+  if (c.on && c.id === "neuron") neuronAnim(c, st);
   else if (c.on && UNIT_VIEW[c.id]) c._view = UNIT_VIEW[c.id](c, st);
-  else if (c.on) {                                              // no display of its own: a light in the header that breathes while it acts
+  else if (c.on) {
     const led = h(`<i class="sled" title="Breathes while this unit changes the model's stream: quicker the more it changes it"></i>`);
     st.querySelector(".sh").appendChild(led);
     c._act = { dot: led, bars: [] };
@@ -1701,9 +1682,9 @@ function stripEl(c, k) {
   st.appendChild(q);
   return st;
 }
-// A unit's help, as Abliterton Lens shows it: what it does, the animated figure VAU ships for it
-// (vau.explain, served from /vau/explain/ and loaded the first time it is needed), its parameters
-// with their tips, and VAU's own text; then where it sits here, and its sweep on the site.
+// A unit's help: what it does, the animated figure VAU ships for it (vau.explain, served from
+// /vau/explain/ and loaded the first time it is needed), its parameters, VAU's own text, where it
+// sits here, and its sweep on the site.
 const EXPLAIN = "/vau/explain/", SITE = "https://vector-lab-tools.github.io/abliterator/", VAUSITE = "https://vector-lab-tools.github.io/vector-abliteration-units/";
 const loadingX = {};
 function loadX(src, css) {
@@ -1863,7 +1844,7 @@ function adoptSpec(kind, sp, playing) {
   const fresh = Math.min(sp.n, sp.end - L.end);
   if (fresh > 0) {
     const bin = atob(sp.data), rows = sp.rows, first = sp.n - fresh;
-    L.g.drawImage(L.off, -fresh, 0);                                 // the older columns move left
+    L.g.drawImage(L.off, -fresh, 0);
     const img = L.g.createImageData(fresh, rows);
     for (let c = 0; c < fresh; c++) for (let r = 0; r < rows; r++) {
       const v = bin.charCodeAt((first + c) * rows + r), o = ((rows - 1 - r) * fresh + c) * 4;
@@ -2029,8 +2010,9 @@ function drawTiles() {
   for (const el of box.children) {
     const id = el.dataset.s, n = MOD.spec.routes.filter((r) => r.src === id).length;
     el.classList.toggle("sel", MOD.assign === id); el.classList.toggle("used", n > 0); el.classList.toggle("off", !MOD.on);
-    if (SRC[id].kind === "macro") el.hidden = !n && MOD.assign !== id;      // a macro's tile shows once it moves something; take one from the Macros tab
-    if (id === "env2" || id === "env3") el.hidden = !n && MOD.assign !== id;   // one envelope shown; the other two from the Envelope tab, once they move something
+    // the macros' tiles and ENV 2 and 3 show only once they move something or are being assigned
+    if (SRC[id].kind === "macro") el.hidden = !n && MOD.assign !== id;
+    if (id === "env2" || id === "env3") el.hidden = !n && MOD.assign !== id;
     el.querySelector("span").textContent = n ? `→ ${n}` : "";
   }
 }
@@ -2154,19 +2136,19 @@ function drawEditor() {
       }
       col.appendChild(sh);
     }
-    if (s.kind === "env") {                                  // Loop: Hold and Release only act with it on
+    if (s.kind === "env") {
       const sh = h(`<div class="shapes"></div>`);
       const b = h(`<button class="loopbtn" aria-pressed="${!!p.loop}" title="Loop: hold at Sustain for Hold, fall over Release, and start again">Loop</button>`);
       b.addEventListener("click", () => { setSrc(id, "loop", p.loop ? 0 : 1); drawEditor(); });
       sh.appendChild(b); col.appendChild(sh);
     }
-    if (s.kind === "follow") {                                // Invert: loud moves the knob down
+    if (s.kind === "follow") {
       const sh = h(`<div class="shapes"></div>`);
       const b = h(`<button class="loopbtn" aria-pressed="${!!+p.invert}" title="Invert: quiet reads high and loud reads low, so the sound getting louder moves a knob down">Invert</button>`);
       b.addEventListener("click", () => { setSrc(id, "invert", +p.invert ? 0 : 1); drawEditor(); });
       sh.appendChild(b); col.appendChild(sh);
     }
-    if (s.kind === "chaos") {                                 // which attractor
+    if (s.kind === "chaos") {
       const sh = h(`<div class="shapes"></div>`);
       for (const [k, name] of [["lorenz", "Lorenz"], ["rossler", "Rössler"]]) {
         const b = h(`<button class="loopbtn" aria-pressed="${p.system === k}" title="${name}'s attractor">${name}</button>`);
@@ -2177,7 +2159,7 @@ function drawEditor() {
     }
     const g = h(`<canvas class="graph" width="600" height="92" data-g="${id}"></canvas>`);
     col.appendChild(g);
-    if (s.kind === "steps") {                                 // draw the steps: press and drag across the bars
+    if (s.kind === "steps") {
       g.classList.add("stepsed"); g.title = "Press and drag to draw the steps; up is positive";
       const at = (e) => { const r = g.getBoundingClientRect(), n = Math.round(p.length);
         const i = Math.max(0, Math.min(n - 1, Math.floor(((e.clientX - r.left) / r.width) * n))), v = Math.max(-1, Math.min(1, 1 - 2 * (e.clientY - r.top) / r.height));
@@ -2224,14 +2206,14 @@ function drawGraphs() {
     g.strokeStyle = "#23272f"; g.lineWidth = 1; g.beginPath(); g.moveTo(0, hh / 2); g.lineTo(w, hh / 2); g.stroke();
     const p = MOD.spec.sources[id];
     const cyc = p.attack_s + p.decay_s + (p.hold_s ?? 4) + p.release_s;
-    if (s.kind === "steps") {                                 // the steps as bars, the ones past Length dimmed
+    if (s.kind === "steps") {
       const n = Math.round(p.length), bw = w / 16;
       for (let i = 0; i < 16; i++) { const v = +p[`s${i}`], y0 = hh / 2, y1 = hh / 2 - v * hh * 0.42;
         g.fillStyle = i < n ? col : "#2a2e37"; g.fillRect(i * bw + 3, Math.min(y0, y1), bw - 6, Math.max(2, Math.abs(y1 - y0))); }
       g.fillStyle = "#5a606d"; g.font = FONT; g.textAlign = "right"; g.fillText(`${n} steps · ${(n / p.rate_hz).toFixed(1)} s`, w - 6, hh - 4); g.textAlign = "left";
       return;
     }
-    if (s.kind === "follow") {                                // what it has read in the last 20 s of play
+    if (s.kind === "follow") {
       const H = MOD.folHist, t1 = H.length ? H[H.length - 1][0] : 0;
       g.strokeStyle = col; g.lineWidth = 2 * dpr; g.beginPath();
       H.filter((q) => q[0] >= t1 - 20).forEach((q, i) => { const x = w - ((t1 - q[0]) / 20) * w, y = hh * 0.92 - q[1] * hh * 0.84; i ? g.lineTo(x, y) : g.moveTo(x, y); });
@@ -2308,12 +2290,11 @@ function paintSwitches() {
   }
   $("#steercard").title = SW.steer ? "" : "Steer is off: every dose plays at 0. Its light turns it back on, with the doses as you left them.";
 }
-// Steer's card folds to a narrow strip and back, on or off; the page remembers it for this viewer
 function foldSteer(f) {
   $("#steercard").classList.toggle("folded", f);
   $("#steerfold").textContent = f ? "›" : "‹"; $("#steerfold").setAttribute("aria-expanded", String(!f));
   $("#steerfold").title = f ? "Unfold Steer" : "Fold Steer to a narrow strip; it keeps playing";
-  try { localStorage.setItem("aa-steer-fold", f ? "1" : ""); } catch (e) { /* storage blocked: folding still works */ }
+  try { localStorage.setItem("aa-steer-fold", f ? "1" : ""); } catch (e) { /* storage blocked */ }
 }
 $("#steerfold").addEventListener("click", () => foldSteer(!$("#steercard").classList.contains("folded")));
 flowLink($("#steercard"), "steer");
@@ -2343,8 +2324,7 @@ async function poll() {
     setTimeout(poll, S.playing ? 120 : 250);
     return;
   }
-  // each part on its own: a fault in one is reported (pageError) and the others still run, so one bad part
-  // cannot leave the panels unpainted
+  // each part runs on its own: a fault in one is reported (pageError) and the others still run
   const part = (name, fn) => { try { fn(); } catch (e) { console.error(name, e); pageError(`${name}: ${e.message}`); } };
   part("engine", () => {
       S.status = s;
@@ -2368,7 +2348,7 @@ async function poll() {
       S.playing = !!s.playing;
       MOD.playing = !!s.playing;
       if (s.playing) { MOD.t0 = s.seconds; MOD.tAt = performance.now(); }
-      if (s.playing && s.mod_values && s.mod_values.follow != null) {      // the Follower is read from the engine, not computed here
+      if (s.playing && s.mod_values && s.mod_values.follow != null) {      // the Follower's values come from the engine
         MOD.folHist.push([s.seconds, s.mod_values.follow]);
         while (MOD.folHist.length && MOD.folHist[0][0] < s.seconds - 60) MOD.folHist.shift();
       } else if (!s.playing && MOD.folHist.length) MOD.folHist = [];
@@ -2388,14 +2368,13 @@ async function poll() {
   });
   part("readout", () => {
       if (!holding) leadKnob.paint();
-      {                                                            // the automatic buffer: the total in gold, the split on hover
+      {
         const b = S.status.lead_boost || 0, set = (S.status.lead || 2) * S.frameMs;
         leadKnob.classList.toggle("boosted", b > 0);
         leadKnob.querySelector(".kv").title = b ? `${set} ms set, +${b * S.frameMs} ms added by the engine after a step ran long` : "";
       }
       if (s.frame_ms) S.frameMs = s.frame_ms;
       const name = s.model?.model_id || (s.engines || []).find((e) => e.id === s.engine)?.label || "";
-      // the top bar says something only when it needs attention (an error, freezing, loading); the Engine panel names the model
       $("#modelchip").innerHTML = s.error ? `<span class="busy">${esc(s.error)}</span>` : s.freezing ? `<span class="busy">freezing ${s.freezing[0]} / ${s.freezing[1]} frames</span>` : (s.playing || s.state === "ready") ? "" : `<span class="busy">${esc(name)}: ${esc(s.state)}</span>`;
       if (s.model) $("#modelinfo").textContent = `${s.model.dtype} · ${s.model.sample_rate / 1000} kHz ${s.model.channels === 2 ? "stereo" : "mono"}`;
       const L = s.latency || { measured_ms: [] };
@@ -2424,8 +2403,8 @@ async function poll() {
       OM.set(s);
       drawDoseHist(s); ST.set(s); DYN.set(s); paintFxLeds(s); paintSpeedModes();
   });
-    try { paintActivity(s); } catch (e) { console.error("unit displays", e); pageError(`unit displays: ${e.message}`); }   // a fault here leaves the rest of the panel updating
-    try { drawFlow(s); } catch (e) { console.error("Signal path", e); pageError(`Signal path: ${e.message}`); }   // a fault here leaves the rest of the panel updating
+  part("unit displays", () => paintActivity(s));
+  part("Signal path", () => drawFlow(s));
   part("Listen and status line", () => {
       if (s.meters) adoptMeters(s.meters);
       adoptSpec("model", s.spec, s.playing);
@@ -2504,9 +2483,8 @@ const D = { state: null, sessKey: null, mixBuilt: false, ctl: [], meters: [], to
 const LEVEL_TAPER = [[0, -60], [0.1, -50], [0.2, -40], [0.31, -30], [0.43, -20], [0.57, -10], [0.67, -5], [0.77, 0], [0.87, 5], [0.96, 10], [1, 12]];
 const LEVEL_TICKS = [[10, "10"], [5, "5"], [0, "0"], [-5, "5"], [-10, "10"], [-20, "20"], [-30, "30"], [-40, "40"], [-50, "50"], [-60, "∞"]];
 async function deskCall(path, body = {}) { try { D.state = await api(path, body); showDesk(); } catch (e) { fail(e); } }
-// While a fader or knob on a track moves, its changes go at most one every 40 ms and the last
-// always goes (a debounce sent nothing until the hand stopped). The answer is not adopted, since
-// it may be older than the cap: the poll brings the desk's state once the track rests.
+// A track's moves go through throttle (40 ms). The answer is not adopted, since it may be older than
+// what is on the page: the poll brings the desk's state once the track rests.
 const trackPending = {}, trackFlush = {};
 function sendTrack(i, body) {
   const t = D.state.tracks[i];
@@ -2730,7 +2708,7 @@ function sparkline(vals) {
 function drawSettings() {
   document.querySelectorAll("#setpanel .settabs button").forEach((b) => b.setAttribute("aria-selected", b.dataset.t === SET.tab));
   const box = $("#setbody"), d = SET.data;
-  if (SET.tab === "display") {                                  // the theme, set once and kept in this browser
+  if (SET.tab === "display") {
     box.innerHTML = `<h4>Theme</h4><div class="setseg" role="group" aria-label="Theme">${THEMES.map((t) => `<button type="button" data-th="${t}" aria-pressed="${t === theme}">${t === "system" ? "System" : t === "light" ? "Light" : "Dark"}</button>`).join("")}</div>
       <p class="setnote">System follows this computer's light or dark setting. The choice is kept in this browser.</p>`;
     box.querySelectorAll("[data-th]").forEach((b) => b.addEventListener("click", () => { theme = b.dataset.th; setTheme(theme); drawXY(); drawSettings(); }));

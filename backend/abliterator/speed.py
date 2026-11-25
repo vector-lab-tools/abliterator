@@ -85,7 +85,7 @@ class Spectral:
             rng = np.random.default_rng(1000003 + self.k)
             Y = mag * np.exp(1j * rng.uniform(0, 2 * np.pi, mag.shape))
         y = np.fft.irfft(Y, n=N, axis=0) * w[:, None] / self.norm
-        if self.mode == "smear":                                     # random phases add as power, not amplitude
+        if self.mode == "smear":                                     # random phases add as power
             y *= math.sqrt(self.norm / float((w ** 2).mean()))
         self.acc += y
         self.ready = np.concatenate([self.ready, self.acc[:H]])
@@ -107,7 +107,6 @@ class Speed:
         self.spec: Optional[Spectral] = None
         self.changes: List[Tuple[int, float, str]] = []   # (output sample, target, mode) as each was taken
 
-    # -------------------------------------------------------------------- settings
     def set(self, target: float, mode: str = "tape"):
         self._want = (clamp(target), mode if mode in MODES else "tape")
 
@@ -143,7 +142,6 @@ class Speed:
         """Model samples the stage has read up to: the engine keeps the model this far ahead and more."""
         return int(math.floor(self.pos)) + max(self.ahead(), self.ahead(self._next()[1]))   # the mode about to be taken too
 
-    # -------------------------------------------------------------------- the stage
     def _seg(self, a: int, n: int) -> np.ndarray:
         """n model samples from model sample a; zeros before the start of the sound."""
         out = np.zeros((n, self.ch))
@@ -160,7 +158,7 @@ class Speed:
             H = FRAME[mode] // 4
             k = max(0, math.ceil((CHUNK - have) / H))
             if k == 0:
-                return 0                                          # enough made already: no new frame, nothing to read
+                return 0
             last = self.pos + (k - 1) * r * H
             top = int(round(last)) + FRAME[mode] // 2 + 1
         else:
@@ -233,7 +231,6 @@ class Speed:
         y, self.spare = self.spare[:n], self.spare[n:]
         return y
 
-    # -------------------------------------------------------------------- offline
     @staticmethod
     def render(pre: np.ndarray, start: float, mode: str, changes: List[Tuple[int, float, str]],
                marks: Optional[List[int]] = None) -> Tuple[np.ndarray, List[int]]:

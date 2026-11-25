@@ -1,12 +1,11 @@
 # Abliterator. Copyright (C) 2026 David M. Berry. SPDX-License-Identifier: GPL-3.0-or-later
-"""Phaser, Flanger and Tremolo for the effect chain (draft, kept out of the package until reviewed).
+"""Phaser, Flanger and Tremolo for the effect chain.
 
 Each gives the same output at any block size: LFOs are phase accumulators carried from sample to sample (the
 phaser's at control rate, on sub-blocks tied to the absolute sample count), and every filter and delay line carries
 its state across chunks. Knob moves are smoothed over about 10 ms."""
 import math
 import sys
-from pathlib import Path
 
 import numpy as np
 from scipy.signal import lfilter
@@ -14,7 +13,7 @@ from scipy.signal import lfilter
 from . import postfx as fx  # noqa: E402  (imported from the end of postfx.py, once its base classes exist)
 
 SR = fx.SR
-SMOOTH = math.exp(-1.0 / (0.010 * SR))                       # 10 ms, as Trim's
+SMOOTH = fx.SMOOTH
 
 
 class _Mod(fx.Effect):
@@ -321,6 +320,8 @@ TYPES_NEW = {
 }
 
 CLASSES_NEW = {"phaser": Phaser, "flanger": Flanger, "tremolo": Tremolo}
+
+JUMPS_NEW = {"phaser": {"stages"}}                             # a new stage count changes the chain's response at once
 
 ROWS = {
     "phaser": [["rate", "depth", "centre"], ["feedback", "spread", "mix"]],

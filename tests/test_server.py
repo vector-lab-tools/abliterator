@@ -48,7 +48,7 @@ def test_typed_prompts_are_kept_and_removed(tmp_path, monkeypatch):
     monkeypatch.setattr(pr, "USER", tmp_path / "prompts.json")
     p = pr.add("  dusty   jazz trio, brushed drums ")
     assert p["prompt"] == "dusty jazz trio, brushed drums" and p["user"] and p["group"] == pr.GROUP
-    assert pr.add("Dusty jazz trio, brushed drums")["id"] == p["id"]                 # the same prompt, not a second
+    assert pr.add("Dusty jazz trio, brushed drums")["id"] == p["id"]                 # case and spacing ignored: same id
     assert pr.add(pr.builtin()[0]["prompt"])["id"] == pr.builtin()[0]["id"]         # a preset's own prompt is the preset
     assert [x["id"] for x in pr.presets()][-1] == p["id"]
     with pytest.raises(ValueError):

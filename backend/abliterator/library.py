@@ -4,7 +4,7 @@
 """
 The sound library: every sound saved from the instrument (a snapshot of what was played, or a
 freeze rendered offline), as a WAV and its recipe in data/snapshots/. The tracks play sounds
-from here. A sound's name is kept in its recipe; a deleted sound is moved to data/snapshots/trash/.
+from here.
 """
 from __future__ import annotations
 

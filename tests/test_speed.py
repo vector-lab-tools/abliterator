@@ -168,7 +168,7 @@ def test_engine_pacing_never_starves_a_mode_change():
             sp.set(0.5, "stretch")
         if b == 400:
             sp.set(0.25, "smear")
-        if b % 2 == 0 and made[0] - sp.consumed // HOP <= LEAD and made[0] * HOP < len(src):   # about the model's pace
+        if b % 2 == 0 and made[0] - sp.consumed // HOP <= LEAD and made[0] * HOP < len(src):
             buf[0] = np.concatenate([buf[0], src[made[0] * HOP:(made[0] + 1) * HOP]])
             made[0] += 1
         if sp.idle():

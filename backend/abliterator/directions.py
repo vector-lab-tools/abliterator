@@ -2,14 +2,15 @@
 # Copyright (C) 2026 David M. Berry
 # SPDX-License-Identifier: GPL-3.0-or-later
 """
-Directions in MusicGen's residual stream, by difference of means over contrast prompt sets.
+Directions in a model's residual stream, by difference of means over contrast prompt sets. `make`
+runs MusicGen (without guidance); Magenta RT 2 averages its own stream (mrt2_proc.make_direction)
+and calls `record`.
 
 A contrast set (backend/config/contrasts/*.md) lists positive and negative prompts, as
-Abliterton Lens's sets list sentences. For each prompt the model writes FRAMES frames without guidance, from
-a fixed seed, and the stream at every layer is averaged over the frames after the first SKIP. The
-direction at each layer is the mean over positive prompts less the mean over negative prompts.
-The prompts differ in the text, so the direction is the change that the text conditioning makes
-in the stream: what "with drums" does to the stream, set against "without drums", on this model.
+Abliterton Lens's sets list sentences. For each prompt the model writes from a fixed seed, and the
+stream at every layer is averaged over steps SKIP to FRAMES + 3. The direction at each layer is the
+mean over positive prompts less the mean over negative prompts: the change the text conditioning
+makes in the stream ("with drums" against "without drums") on this model.
 
 The file follows Abliterton Lens's direction format (shared with Ablation Bench): a `layers` array
 of shape (n_layers + 1, d), numbered as hidden states (layer l is block l-1's output), with a
@@ -69,7 +70,7 @@ def contrasts() -> List[Dict[str, Any]]:
 
 
 def _stream_means(mg, prompt: str, seed: int) -> np.ndarray:
-    """The stream at every layer, averaged over generated frames SKIP..FRAMES: (n_layers + 1, d)."""
+    """The stream at every layer, averaged over steps SKIP to FRAMES + 3: (n_layers + 1, d)."""
     import torch
     from .musicgen import Stepper
     sums = [None] * (mg.n_layers + 1)

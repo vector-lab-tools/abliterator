@@ -17,7 +17,6 @@ the shifter's oscillators carry their phase.
 from __future__ import annotations
 
 import math
-import os
 import sys
 from typing import Any, Dict
 
@@ -27,8 +26,8 @@ from scipy.signal import lfilter, sosfilt
 from . import postfx as fx  # noqa: E402  (imported from the end of postfx.py, once its base classes exist)
 
 SR, CHUNK = fx.SR, fx.CHUNK
-SMOOTH = math.exp(-1.0 / (0.010 * SR))          # 10 ms, as Trim's
-POW = SMOOTH ** np.arange(1, CHUNK + 1)         # SMOOTH ** (k + 1)
+SMOOTH = fx.SMOOTH
+POW = SMOOTH ** np.arange(1, CHUNK + 1)
 LN10_20 = math.log(10.0) / 20.0
 
 
@@ -309,6 +308,8 @@ TYPES_NEW: Dict[str, Dict[str, Any]] = {
 }
 
 CLASSES_NEW = {"compressor": Compressor, "resonator": Resonator, "freqshift": FreqShift}
+
+JUMPS_NEW = {"resonator": {"root", "chord"}}    # a new root or chord changes the combs' delays at once
 
 CANDIDATES = {
     "compressor": [

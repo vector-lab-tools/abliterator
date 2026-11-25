@@ -3,8 +3,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """
 The effect slots: audio effects on the model's output, after auto level and before the output
-section's low-pass, limiter and volume. Four slots, each holding one effect, worked in order.
-numpy and scipy only.
+section's low-pass, limiter and volume. Up to MAX_SLOTS slots, each holding one effect, worked in
+order. numpy and scipy only.
 
 Every effect gives the same output whatever block size it is fed (512 live, a 40 ms frame
 offline, a whole file in a test). Loops run in chunks of at most CHUNK samples and every loop's
@@ -13,13 +13,13 @@ state; anything that varies over time (the chorus's sweep, the crusher's hold, t
 hall's modulation) counts samples from the start. The plate's two short input allpasses (173 and
 229 samples) are outside any loop and run in pieces no longer than their delay.
 
-The plate and the hall have three colours (COLOURS). Now reads the modulated delays by cubic
+The plate and the hall have three colours (COLOURS). 2020s reads the modulated delays by cubic
 interpolation. 1980s adds a high shelf in each loop, set from that loop's length so every loop's
 high-frequency T60 is the same fraction of the Decay (after Jot and Chaigne 1991), and mixes random
 segments into the modulation. 1970s does the same with more random modulation and runs the tank at
 24 kHz, band-limited to 10 kHz by an elliptic low-pass on the way in and out. A plate or hall slot
 saved before the colours existed (0.1.5) has no "colour" param; clean_slot leaves it out, and the
-effect then runs the 0.1.5 code path (linear reads, _flush), bit for bit.
+effect then runs as 0.1.5 did (linear reads, _flush), bit for bit.
 
   reverb   a feedback delay network of eight lines with a Householder mix, damping in the loop,
            four allpass diffusers before it and a pre-delay (after Signalsmith's "Let's write a
@@ -35,6 +35,9 @@ effect then runs the 0.1.5 code path (linear reads, _flush), bit for bit.
   eq       low shelf, mid peak and high shelf (RBJ biquads)
   filter   low-pass, high-pass or band-pass (RBJ biquad) with resonance
   crush    bit reduction and sample-rate reduction
+
+eq8, tape, pan, abliterated, trim and declick are described in their classes; fx_mod, fx_tone and fx_time
+register further types.
 """
 from __future__ import annotations
 
@@ -50,11 +53,12 @@ from . import ROOT
 SR = 48000
 CHUNK = 240                     # 5 ms: no loop here is shorter
 MAX_SLOTS = 8                   # effects in the chain at most: eight reverbs cost about 3 ms of the 10.7 ms block
+SMOOTH = math.exp(-1.0 / (0.010 * SR))   # the one-pole coefficient for knob moves smoothed over 10 ms
 
-# type: [(key, label, low, high, default, scale)]; scale "log" knobs travel in ratios
 EQ8_BANDS = [("b60", "60 Hz"), ("b150", "150 Hz"), ("b400", "400 Hz"), ("b1k", "1 kHz"), ("b2k5", "2.5 kHz"), ("b6k", "6 kHz")]
 EQ8_HZ = [60.0, 150.0, 400.0, 1000.0, 2500.0, 6000.0]
 EQ8_Q = 1.2                                                          # each band about 1.2 octaves wide
+# TYPES[name]["params"]: [(key, label, low, high, default, scale, unit)]; scale "log" knobs travel in ratios
 TYPES: Dict[str, Dict[str, Any]] = {
     "reverb": {"label": "Reverb", "params": [("size", "Decay", 0.3, 20.0, 4.0, "log", "s"), ("damp", "Damp", 0.0, 1.0, 0.5, "lin", ""),
                                              ("predelay", "Pre-delay", 0.0, 200.0, 20.0, "lin", "ms"), ("mix", "Mix", 0.0, 1.0, 0.3, "lin", "")]},
@@ -125,14 +129,13 @@ def clean_slot(s: Optional[Dict[str, Any]], i: int) -> Dict[str, Any]:
 
 
 def clean(slots: Optional[List[Dict[str, Any]]]) -> List[Dict[str, Any]]:
-    """The effect chain, in order: none to MAX_SLOTS effects. Sounds saved before 0.1.6 carry four
-    slots (some off) and keep them; a chain that was never set is empty, which plays the same."""
+    """The effect chain, in order: none to MAX_SLOTS effects."""
     slots = list(slots or [])[:MAX_SLOTS]
     return [clean_slot(s, i) for i, s in enumerate(slots)]
 
 
-# Named presets for each type, measured offline (2026-11-23) with the figures each was kept on: data/presets/fx.json.
-# Applying one merges its params into the slot's. Read once; a type has none if the file is missing.
+# Named presets for each type, measured offline; data/presets/fx.json holds how, and the figures each was kept on.
+# Applying one merges its params into the slot's. A type has none if the file is missing.
 PRESETS_FILE = ROOT / "data" / "presets" / "fx.json"
 
 
@@ -178,7 +181,7 @@ class Line:
 
 
 def onepole(cut_hz: float) -> float:
-    return 1.0 - math.exp(-2 * math.pi * min(cut_hz, SR / 2 - 1) / SR)
+    return _onepole_fs(cut_hz, SR)
 
 
 def damp_hz(d: float) -> float:
@@ -224,8 +227,8 @@ class Reverb(Effect):
         n = len(x)
         self.pre.write(x)
         d = max(CHUNK, int(self.p["predelay"] / 1000 * SR))
-        v = self.pre.read(d + n, n) if d else x                      # the pre-delayed input
-        for i, dl in enumerate(self.DIFF):                           # allpass diffusers, g 0.6
+        v = self.pre.read(d + n, n)
+        for i, dl in enumerate(self.DIFF):
             xp, yp = self.dx[i].read(dl, n), self.dy[i].read(dl, n)
             y = -0.6 * v + xp + 0.6 * yp
             self.dx[i].write(v)
@@ -273,7 +276,6 @@ def _cubic(xm1: np.ndarray, x0: np.ndarray, x1: np.ndarray, x2: np.ndarray, f: n
 
 
 def _onepole_fs(cut_hz: float, fs: int) -> float:
-    """onepole() at another sample rate; at fs = SR it gives the same value."""
     return 1.0 - math.exp(-2 * math.pi * min(cut_hz, fs / 2 - 1) / fs)
 
 
@@ -372,7 +374,7 @@ class Colour(NamedTuple):
 
 COLOURS = {
     None: Colour(1, False, False, 0.0, 0.0, 0.0, 0.0),     # a slot saved before the colours existed: as in 0.1.5
-    0: Colour(1, True, True, 0.0, 0.0, 0.0, 0.0),          # Now
+    0: Colour(1, True, True, 0.0, 0.0, 0.0, 0.0),          # 2020s
     1: Colour(1, True, True, 0.55, 4500.0, 0.4, 0.04),     # 1980s
     2: Colour(2, True, True, 0.7, 3500.0, 0.5, 0.07),      # 1970s
 }
@@ -763,7 +765,6 @@ class Pan(Effect):
     """Equal-power balance of a stereo signal: at Pan 0 both sides pass at unity, at ±1 one side is silent and the
     other 3 dB up. Auto rate and depth swing the position on a sine whose phase is carried from sample to sample, so
     the swing is the same at any block size. Moves are smoothed over 10 ms. A mono signal passes as it is."""
-    SMOOTH = math.exp(-1.0 / (0.010 * SR))
 
     def __init__(self, ch):
         super().__init__(ch)
@@ -779,7 +780,7 @@ class Pan(Effect):
         ph = self.ph + w * np.arange(n)
         self.ph = float((self.ph + w * n) % (2 * math.pi))
         target = np.clip(self.p["pos"] + self.p["depth"] * np.sin(ph), -1.0, 1.0)
-        a = self.SMOOTH
+        a = SMOOTH
         if self.z is None:
             self.z = np.array([target[0] * a])
         pos, self.z = lfilter([1 - a], [1, -a], target, zi=self.z)
@@ -963,7 +964,6 @@ class Trim(Effect):
     high-pass), then Gain, Balance (the far side turned down, the near side kept at unity) and Mute. Every switch and
     knob moves over 10 ms, so none of them clicks, and the output is the same at any block size. A mono signal takes
     the phase flip on L, DC, Gain and Mute."""
-    SMOOTH = math.exp(-1.0 / (0.010 * SR))
     MATS = {0: (1.0, 0.0, 0.0, 1.0), 1: (1.0, 0.0, 1.0, 0.0), 2: (0.0, 1.0, 0.0, 1.0), 3: (0.0, 1.0, 1.0, 0.0)}   # L' = a L + b R, R' = c L + d R
 
     def __init__(self, ch):
@@ -975,7 +975,7 @@ class Trim(Effect):
         self.dc = np.array(_sos("hp", 5.0, 1))
 
     def _sm(self, key: str, target: float, n: int) -> np.ndarray:
-        a = self.SMOOTH
+        a = SMOOTH
         if key not in self.z:
             self.z[key] = np.array([target * a])
         y, self.z[key] = lfilter([1 - a], [1, -a], np.full(n, target), zi=self.z[key])
@@ -1034,7 +1034,7 @@ CLASSES = {"reverb": Reverb, "plate": Plate, "hall": Hall, "delay": Delay, "chor
 
 
 # Params whose change jumps a delay line's read point. With fades on, the effect's wet signal is
-# taken out before such a change and brought back after it, rather than clicking.
+# taken out before such a change and brought back after it, so the jump is not heard as a click.
 JUMPS = {"plate": {"size", "predelay", "colour"}, "reverb": {"predelay"}, "hall": {"predelay", "colour"}, "delay": {"time"}}
 FADE = 960                      # 20 ms: an effect's wet signal in or out (on, off, or around a jump)
 JUMP_HOLD = 2880                # 60 ms out after the last jump, so a turning knob is not heard in steps
@@ -1078,11 +1078,12 @@ class Rack:
     chain: matched by the slot's id where the page gives one, else by place; a new one, or one whose
     type changes, starts fresh.
 
-    With fades on (a Master's fx_fade, set for live play and for sounds saved from 0.1.6), a change
+    With fades on (a Master's fx_fade, set for live play and saved with the sound), a change
     to the chain itself (an effect added, removed, moved or retyped) dips the whole output and is
     made at the bottom of the dip; switching an effect on or off crossfades it; and a param in JUMPS
     is changed while that effect's wet signal is faded out. Every event falls on an exact sample, so
-    the output is the same at any block size. With fades off the rack behaves as before 0.1.6."""
+    the output is the same at any block size. With fades off every change is made at once, as sounds
+    saved before fades existed expect."""
 
     def __init__(self, ch: int):
         self.ch = ch
@@ -1155,22 +1156,23 @@ class Rack:
         return any(s["on"] for s in self.slots) or self.next is not None
 
     def readings(self) -> List[Dict[str, Any]]:
-        """For the page, per effect in the chain: Drive's peak drive into its curve since last read
-        (above 1 it bends, above 3 it is flat at the top), and the Compressor's largest gain reduction
-        since last read, in dB. Reading resets both."""
+        """For the page, per effect in the chain: Drive's and Tape's peak drive into the curve since last
+        read (above 1 it bends, above 3 it is flat at the top); Pan's position now, -1 left to 1 right; the
+        Compressor's largest gain reduction since last read, in dB; De-click's bursts redrawn since it was
+        added. Reading resets the peak and the reduction."""
         out = []
         for s, f in zip(self.slots, self.fx):
             r: Dict[str, Any] = {"id": s.get("id"), "type": s["type"]}
             if isinstance(f, (Drive, Tape)):
-                r["drive"] = round(f.peak, 2)                           # Tape's too: how hard the curve is driven
+                r["drive"] = round(f.peak, 2)
                 f.peak = 0.0
             elif isinstance(f, Pan):
-                r["pos"] = round(f.where, 3)                            # where the sound sits now, -1 left to 1 right
-            elif type(f).__name__ == "Compressor":                    # fx_tone.Compressor: dB turned down, the most since last read
+                r["pos"] = round(f.where, 3)
+            elif isinstance(f, fx_tone.Compressor):
                 r["gr"] = round(f.gr, 1)
                 f.gr = 0.0
             elif isinstance(f, Declicker):
-                r["fixed"] = f.dc.repaired                              # bursts redrawn since it was added
+                r["fixed"] = f.dc.repaired
             out.append(r)
         return out
 
@@ -1260,7 +1262,7 @@ class Rack:
         return out
 
 
-# The effects in their own modules (written for 0.2.20): Phaser, Flanger, Tremolo (fx_mod); Compressor, Resonator, Freq Shift
+# The effects in their own modules: Phaser, Flanger, Tremolo (fx_mod); Compressor, Resonator, Freq Shift
 # (fx_tone); Pitch, Shimmer, Freeze (fx_time). Each imports this module for its base classes and, once it has loaded,
 # registers its types here with _register, so it works whichever is imported first.
 def _register(m) -> None:
@@ -1270,5 +1272,4 @@ def _register(m) -> None:
     PRESETS.update({t: v for t, v in _file_presets().items() if t in m.TYPES_NEW})
 
 
-JUMPS.update({"phaser": {"stages"}, "resonator": {"root", "chord"}})   # a change faded around, as a reverb's size is
 from . import fx_mod, fx_time, fx_tone  # noqa: E402,F401

@@ -5,33 +5,24 @@
 Modulation: sources that move the instrument's controls over time, and the routes that join a
 source to a control with a depth.
 
-Sources: three LFOs, three envelopes, two random sources, Steps, the Follower, Drift and Chaos, and four
-macros. Every source but the Follower is a function of time from the start of play (frame f is at
-f × 40 ms) alone, so live play and a replay of a recipe compute the same values at the same frame;
-Chaos integrates its attractor once and reads it back (_chaos_track). The Follower follows the
-loudness of the model's own output, frame by frame, from the frames written before the one it moves
-(FollowTrack): live play, a render and the output section's re-render each build the track from the
-same model output, so it replays too (exactly at Speed 1; a Follower moving an output or effect knob
-while Speed is slowed is read in output frames and replays close to, not exactly as, it was heard).
-LFOs, random sources, Steps, Drift and Chaos are bipolar (−1 to 1, times their Amount, which scales
-every route from them at once); the envelopes, the Follower and the macros are unipolar (0 to 1).
+Every source but the Follower is a function of time from the start of play alone (frame f is at
+f × 40 ms), so live play and a replay of a recipe compute the same values at the same frame. The
+Follower reads the loudness of the model's output from the frames before the one it moves
+(FollowTrack); it replays exactly at Speed 1, and approximately when it moves an output or effect
+knob while Speed is slowed. LFOs, random sources, Steps, Drift and Chaos are bipolar (−1 to 1); the
+envelopes, the Follower and the macros are unipolar (0 to 1). A source's Amount scales every route
+from it.
 
-Targets: the Steer doses (`dose:<direction>`), guidance and temperature (the model's
-conditioning), the master's low-pass and volume (after the model), the knobs of the Model layers
-units (`unit:<strip>:<key>`, the strip counted among those playing, from 0) and of the effect
-slots (`pfx:<slot>:<key>`). A unit or effect knob is moved along its travel: depth is a share of
-the knob's travel (log knobs travel in ratios), clamped to its ends. A route's depth (−1 to 1)
-is a share of the target's span, so depth 0.5 on a bipolar source swings the control by a quarter
-of its span either side of where its knob is set; the low-pass is moved in octaves (depth 1 is
-four octaves). The result is clamped to the control's range (for doses, the full range).
+Targets: the Steer doses (`dose:<direction>`), guidance, temperature, the master's low-pass,
+volume, width and spread, unit knobs (`unit:<strip>:<key>`, the strip counted among those playing,
+from 0) and effect knobs (`pfx:<slot>:<key>`). A route's depth (−1 to 1) is a share of the target's
+span, so depth 0.5 on a bipolar source swings it a quarter of its span either side of its setting;
+the low-pass moves in octaves (depth 1 is four). Unit and effect knobs move along their travel (log
+knobs in ratios). A control with a calibrated curve (calibrate.py) moves along the knob's travel
+and is read back through the curve; a setting off the curve moves by value. Results are clamped to
+the control's range (for doses, the full range).
 
-The model makes a frame every 40 ms and a move is heard about 100 ms later, so useful rates are
-slow: LFO rates run from 0.01 to 4 Hz.
-
-A control with a calibrated curve (calibrate.py: knob travel laid out over its musical range) is
-moved along the knob's travel, not along its value: the offset is a share of the travel, and the
-result is read back through the curve, so modulation stays in the musical range and covers it as
-evenly as the knob does. A setting outside the curve (the full range unlocked) is moved by value.
+The model makes a frame every 40 ms and a move is heard about 100 ms later, so LFO rates stop at 4 Hz.
 """
 from __future__ import annotations
 
@@ -44,7 +35,7 @@ SHAPES = ["sine", "triangle", "square", "saw", "ramp"]
 LFOS = ["lfo1", "lfo2", "lfo3"]
 RANDS = ["rand1", "rand2"]
 MACROS = ["m1", "m2", "m3", "m4"]
-ENVS = ["env", "env2", "env3"]                # "env" is envelope 1 (its id from before there were three)
+ENVS = ["env", "env2", "env3"]                # "env" is envelope 1
 STEPS, FOLLOWS, WILDS = ["steps"], ["follow"], ["drift", "chaos"]
 SOURCES = LFOS + ENVS + RANDS + STEPS + FOLLOWS + WILDS + MACROS
 BIPOLAR = set(LFOS + RANDS + STEPS + WILDS)
@@ -52,7 +43,7 @@ STEP_N = 16
 STEP_DEFAULT = [1.0, -1.0, 0.5, -0.5, 0.75, -0.25, 0.25, -0.75, 1.0, 0.0, -0.5, 0.5, -1.0, 0.25, 0.75, -0.25]
 CHAOS_SYSTEMS = ["lorenz", "rossler"]
 
-# each source's settings: (default, low, high); a string default is a choice
+# each source's settings: (default, low, high), or (default, choices) for a string, choices None for free text
 PARAMS: Dict[str, Dict[str, Tuple]] = {
     "lfo": {"shape": ("sine", SHAPES), "rate_hz": (0.1, 0.01, 4.0), "amount": (1.0, 0.0, 1.0), "phase": (0.0, 0.0, 1.0),
             "symmetry": (0.5, 0.05, 0.95), "smooth": (0.0, 0.0, 1.0)},
@@ -67,12 +58,13 @@ PARAMS: Dict[str, Dict[str, Tuple]] = {
     "drift": {"rate_hz": (0.05, 0.005, 1.0), "rough": (0.4, 0.0, 1.0), "amount": (1.0, 0.0, 1.0), "seed": (1, 0, 9999)},
     "chaos": {"system": ("lorenz", CHAOS_SYSTEMS), "rate_hz": (0.2, 0.01, 4.0), "amount": (1.0, 0.0, 1.0), "seed": (1, 0, 9999)},
 }
-SOURCE_DEFAULTS = {"rand2": {"rate_hz": 0.25}}   # a source whose default differs from its kind's: RAND 2 slow beside RAND 1
+SOURCE_DEFAULTS = {"rand2": {"rate_hz": 0.25}}
 TARGETS = {"guidance": (0.0, 8.0), "temperature": (0.5, 2.0), "lowpass_hz": (1000.0, 16000.0), "volume": (0.0, 1.0), "width": (0.0, 2.0), "spread": (0.0, 1.0)}
 DOSE_SPAN = (-0.4, 0.4)
+DOSE_FULL = (-3.0, 3.0)
 LP_OCTAVES = 4.0
 PARAM_TGT = re.compile(r"(unit:\d{1,2}|pfx:[0-7]):[a-z][a-z0-9_]{0,23}")
-QUANT = 512                                  # unit knobs move in 1/512ths of their travel: a re-attach only on a real change
+QUANT = 512                                  # unit knobs move in 1/QUANT of their travel, so a strip re-attaches only on a real change
 
 
 def is_param(tgt: str) -> bool:
@@ -191,7 +183,7 @@ def lfo(p: Dict[str, Any], t: float) -> float:
         v = 1 - 2 * ph
     if p["smooth"] > 0:                                   # toward a sine of the same rate and phase
         v = (1 - p["smooth"]) * v + p["smooth"] * -math.cos(2 * math.pi * ph)
-    return v * p.get("amount", 1.0)                       # the amplitude: every route from this source scaled
+    return v * p.get("amount", 1.0)
 
 
 def rand(p: Dict[str, Any], t: float) -> float:
@@ -199,7 +191,7 @@ def rand(p: Dict[str, Any], t: float) -> float:
     k = int(math.floor(x))
     a, b = _hash01(int(p["seed"]), k) * 2 - 1, _hash01(int(p["seed"]), k + 1) * 2 - 1
     f = x - k
-    e = 0.5 - 0.5 * math.cos(math.pi * f)                 # an eased glide to the next value
+    e = 0.5 - 0.5 * math.cos(math.pi * f)
     glide = a + (b - a) * e
     return ((1 - p["smooth"]) * a + p["smooth"] * glide) * p.get("amount", 1.0)
 
@@ -262,6 +254,7 @@ def drift(p: Dict[str, Any], t: float) -> float:
 
 import threading as _threading  # noqa: E402
 _CH: Dict[Tuple[str, int], List[float]] = {}
+_CH_STATE: Dict[Tuple[str, int], List[float]] = {}
 _CH_LOCK = _threading.Lock()
 CH_DT = 0.01                      # attractor time between stored samples; 1 Hz reads 1 unit of attractor time a second
 
@@ -270,15 +263,15 @@ def _chaos_track(system: str, seed: int, upto: int) -> List[float]:
     """The attractor's first coordinate, normalised to about ±1, integrated (RK4, two steps a sample) from a
     starting point set by the seed, past its first 2,000 samples, and kept: extended as play needs more."""
     with _CH_LOCK:
-        tr = _CH.get((system, seed))
+        key = (system, seed)
+        tr = _CH.get(key)
         if tr is None:
-            tr = _CH[(system, seed)] = []
-            st = [1.0 + 0.001 * seed, 1.0, 1.0 + 0.0007 * (seed % 97)]
-            tr.append(st)                                   # the integrator's state rides at the front
+            tr = _CH[key] = []
+            _CH_STATE[key] = [1.0 + 0.001 * seed, 1.0, 1.0 + 0.0007 * (seed % 97)]
             need = 2000
         else:
             need = 0
-        st = tr[0]
+        st = _CH_STATE[key]
         if system == "lorenz":
             f = lambda x, y, z: (10.0 * (y - x), x * (28.0 - z) - y, x * y - (8.0 / 3.0) * z)
             scale = 20.0
@@ -286,7 +279,7 @@ def _chaos_track(system: str, seed: int, upto: int) -> List[float]:
             f = lambda x, y, z: (-y - z, x + 0.2 * y, 0.2 + z * (x - 5.7))
             scale = 11.0
         h = CH_DT / 2
-        while len(tr) - 1 < upto + 1 or need:
+        while len(tr) < upto + 1 or need:
             for _ in range(2):
                 x, y, z = st
                 k1 = f(x, y, z)
@@ -299,7 +292,7 @@ def _chaos_track(system: str, seed: int, upto: int) -> List[float]:
                 need -= 1
                 continue
             tr.append(max(-1.0, min(1.0, st[0] / scale)))
-        tr[0] = st
+        _CH_STATE[key] = st
         return tr
 
 
@@ -308,8 +301,11 @@ def chaos(p: Dict[str, Any], t: float) -> float:
     x = t * p["rate_hz"] / CH_DT
     i = int(x)
     tr = _chaos_track(p["system"], int(p["seed"]), i + 2)
-    a, b = tr[1 + i], tr[2 + i]
+    a, b = tr[i], tr[i + 1]
     return (a + (b - a) * (x - i)) * p.get("amount", 1.0)
+
+
+SILENT_DB = -100.0
 
 
 class FollowTrack:
@@ -325,7 +321,7 @@ class FollowTrack:
         import numpy as np
         a = np.asarray(frame, np.float64)
         with self.lock:
-            self.db.append(max(-100.0, 20 * math.log10(math.sqrt(float((a * a).mean())) + 1e-9)) if a.size else -100.0)
+            self.db.append(max(SILENT_DB, 20 * math.log10(math.sqrt(float((a * a).mean())) + 1e-9)) if a.size else SILENT_DB)
 
     def at(self, p: Dict[str, Any], f: int) -> float:
         key = (round(p["attack_s"], 4), round(p["release_s"], 4))
@@ -335,7 +331,7 @@ class FollowTrack:
             if e is None:
                 if len(self.env) >= 4:
                     self.env.pop(next(iter(self.env)))
-                e = self.env[key] = [-100.0]                    # the follower before any frame: silence
+                e = self.env[key] = [SILENT_DB]
             f = max(0, min(int(f), len(self.db)))
             while len(e) <= f:
                 d, cur = self.db[len(e) - 1], e[-1]
@@ -343,7 +339,7 @@ class FollowTrack:
                 e.append(cur + (1 - a) * (d - cur))
             lvl = e[f]
         v = max(0.0, min(1.0, (lvl - p["floor_db"]) / 30.0))
-        return (1.0 - v if p.get("invert") else v) * p.get("amount", 1.0)      # inverted: quiet reads high, loud low
+        return (1.0 - v if p.get("invert") else v) * p.get("amount", 1.0)
 
 
 def value(spec: Dict[str, Any], src: str, t: float, length: Optional[float] = None, track: Optional[FollowTrack] = None) -> float:
@@ -402,7 +398,7 @@ def offsets(spec: Dict[str, Any], t: float, length: Optional[float] = None, curv
 
 
 def _clamp(tgt: str, x: float) -> float:
-    lo, hi = (-3.0, 3.0) if tgt.startswith("dose:") else target_range(tgt)     # doses: the full range
+    lo, hi = DOSE_FULL if tgt.startswith("dose:") else target_range(tgt)
     return min(hi, max(lo, x))
 
 
@@ -460,8 +456,7 @@ def has_units(spec: Dict[str, Any]) -> bool:
 def apply_units(spec: Dict[str, Any], lines: List[str], t: float, length: Optional[float], info,
                 track: Optional[FollowTrack] = None) -> List[str]:
     """The strips with their routed knobs moved. info(kind, key) gives (low, high, scale, default) for a
-    numeric knob, or None. Values move in 1/QUANT of the travel, so the lines change only when a move
-    is large enough to matter."""
+    numeric knob, or None."""
     off = param_offsets(spec, t, length, "unit:", track)
     if not off:
         return list(lines)

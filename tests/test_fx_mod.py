@@ -58,7 +58,6 @@ def test_blocks_equal_whole(t):
 
 @pytest.mark.parametrize("t", list(m.CLASSES_NEW))
 def test_blocks_equal_while_knobs_move(t):
-    """Knob changes made at the same samples give the same output at any block size."""
     x = noise(0.6)
     def go(block):
         e = m.CLASSES_NEW[t](2)
@@ -189,7 +188,6 @@ def test_tremolo_square_does_not_click():
 
 
 def test_knob_moves_do_not_click():
-    """A large knob move while playing: no sample-to-sample jump larger than the signal's own."""
     x = st()
     for t, a, b in (("phaser", dict(centre=200.0, feedback=0.0), dict(centre=3000.0, feedback=0.85)),
                     ("flanger", dict(delay=0.5, feedback=0.0), dict(delay=8.0, feedback=0.9)),

@@ -23,7 +23,7 @@ def test_a_tone_lights_its_own_row():
     row = int(np.argmax(c))
     f0 = S.FLO * (S.FHI / S.FLO) ** (row / S.ROWS)
     f1 = S.FLO * (S.FHI / S.FLO) ** ((row + 1) / S.ROWS)
-    assert f0 <= 1000 <= f1 * 1.05                         # the brightest band is the tone's
+    assert f0 <= 1000 <= f1 * 1.05
     assert c[row] > 200 and np.median(c) < 60
 
 

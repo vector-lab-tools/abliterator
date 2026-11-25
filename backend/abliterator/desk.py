@@ -13,12 +13,11 @@ about 11 ms, plus the device's). MusicGen sounds (32 kHz mono) are resampled to 
 both channels when loaded.
 
 Everything can be exported as a WAV with a JSON sidecar (exports in data/exports/):
-  clip pre    a snapshot as the engine made it
+  clip pre    the sound as its track loads it (load_clip)
   clip post   the same through its track's effects, level and pan, with the effects' tail
   track pre   the track's current clip, looped to the mix length, before its effects
   track post  the same after its effects, level and pan
   mix         all tracks that would be heard (mute and solo applied), through the mix bus
-The desk's state is kept in data/tracks/desk.json.
 """
 from __future__ import annotations
 
@@ -134,10 +133,9 @@ class Desk:
         self.peak = 0.0                            # the mix's peak, with the same release as the tracks'
         self.underruns = 0
         from abliterator.spectro import Spectro
-        self.spectro = Spectro(SR)                 # the spectrogram of the mix, for the page
+        self.spectro = Spectro(SR)
         self._load()
 
-    # ------------------------------------------------------------------ state
     def state(self) -> Dict[str, Any]:
         return {"playing": self.playing, "mix_volume": self.mix_volume, "limit": self.limit, "level": round(self.level, 4), "level_lr": [round(v, 4) for v in self.level_lr], "peak": round(self.peak, 4),
                 "tracks": [{**t.state(), **t.play_state()} for t in self.tracks], "fx_defaults": fx.DEFAULTS, "fx_ranges": fx.RANGES,
@@ -166,7 +164,6 @@ class Desk:
             import traceback
             traceback.print_exc()
 
-    # ------------------------------------------------------------------ edits
     def add_clip(self, ti: int, snap: Dict[str, Any]):
         audio = load_clip(snap["snapshot"])
         with self.lock:
@@ -248,7 +245,6 @@ class Desk:
             self.limit = bool(b["limit"])
         self._save()
 
-    # ------------------------------------------------------------------ playback
     def heard(self) -> List[Track]:
         """The tracks that would be heard: a clip chosen, not muted, soloed if any track is."""
         solo = any(t.solo for t in self.tracks)
@@ -316,7 +312,6 @@ class Desk:
         for t in self.tracks:
             t.peak = 0.0
 
-    # ------------------------------------------------------------------ exports (offline)
     def mix_length(self) -> int:
         ls = [len(t.audio) for t in self.heard()]
         return max(ls) if ls else 0

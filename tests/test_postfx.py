@@ -38,7 +38,7 @@ def test_reverb_tail_and_delay_echo():
     r = fx.Rack(2); r.update([{"type": "reverb", "on": True, "params": {"size": 2.0, "mix": 1.0, "predelay": 0}}])
     y = r.process(imp)
     e = lambda a, b: float(np.sqrt(np.mean(y[int(a * 48000):int(b * 48000)] ** 2)))
-    assert e(0.1, 0.3) > 10 * e(2.4, 2.6) > 0                       # it decays, and is still there at 2.5 s
+    assert e(0.1, 0.3) > 10 * e(2.4, 2.6) > 0
     d = fx.Rack(2); d.update([{"type": "delay", "on": True, "params": {"time": 250, "feedback": 0.0, "mix": 1.0, "pingpong": 0}}])
     y = d.process(imp)
     assert int(np.argmax(np.abs(y[100:, 0]))) + 100 == 12000
@@ -66,7 +66,6 @@ def test_removing_an_effect_keeps_the_others_tails():
     b = {"type": "hall", "on": True, "id": 2, "params": {}}
     r, ref = fx.Rack(2), fx.Rack(2)
     r.update([b, a]); ref.update([a])
-    r2 = fx.Rack(2); r2.update([b])                                     # what the hall alone did to the impulse, to take out
     r.process(imp); ref.process(imp)
     r.update([a])                                                       # the hall is removed; the delay keeps ringing
     y, want = r.process(sil), ref.process(sil)
@@ -217,7 +216,7 @@ def test_reverb_types_round_trip():
     assert s[0]["params"]["decay"] == 7 and s[0]["params"]["size"] == 2.0 and s[0]["params"]["mix"] == 0.3
     assert "colour" not in s[0]["params"]                            # named params but no colour: saved by 0.1.5
     assert s[1]["params"]["mod"] == 0.2 and s[1]["params"]["size"] == 3.0 and s[1]["params"]["colour"] == 2
-    assert fx.clean(s) == s                                          # what the rack keeps reads back as itself
+    assert fx.clean(s) == s
     r2 = fx.Rack(2)
     r2.update(s)
     x = noise(0.5)
@@ -229,7 +228,7 @@ def test_reverb_types_round_trip():
         assert q["scale"] == "choice:2020s,1980s,1970s" and q["default"] == 0.0
         new = {q["key"]: q["default"] for q in cat[k]["params"]}      # a slot made in the UI (fxDefaults in app.js)
         assert fx.clean([{"type": k, "params": new}])[0]["params"]["colour"] == 0
-        assert fx.clean([{"type": k}])[0]["params"]["colour"] == 0   # no params at all: the defaults
+        assert fx.clean([{"type": k}])[0]["params"]["colour"] == 0
     r.update([{"type": "reverb", "on": True}] + s[1:])               # a slot whose type changes starts fresh
     assert type(r.fx[0]) is fx.Reverb
 
@@ -264,9 +263,9 @@ def test_a_change_to_the_chain_dips_the_output():
     y, x = _played([480], [(0, [A]), (9600, [A, P])])
     lvl = lambda a, b: float(np.sqrt(np.mean(y[a:b] ** 2)))
     assert lvl(9600 + 720, 9600 + 720 + 1920) < 0.3 * lvl(4800, 9600)    # at the bottom: about -16 dB
-    assert lvl(30000, 40000) > 0.5 * lvl(4800, 9600)                     # back up
+    assert lvl(30000, 40000) > 0.5 * lvl(4800, 9600)
     jump = np.abs(np.diff(y[9000:12000], axis=0)).max()
-    assert jump < 4 * np.abs(np.diff(x[9000:12000], axis=0)).max()       # no step bigger than the noise's own
+    assert jump < 4 * np.abs(np.diff(x[9000:12000], axis=0)).max()
 
 
 def test_a_plate_size_change_waits_until_its_wet_is_out():
@@ -382,8 +381,8 @@ def test_the_panel_switch_passes_the_sound_by_and_keeps_the_tails():
     a = r.process(x[:4800])
     r.on = False
     b = r.process(x[4800:])
-    assert np.array_equal(b[fx.FADE:], x[4800 + fx.FADE:])            # after the crossfade, the dry sound
-    assert np.abs(b[:fx.FADE] - x[4800:4800 + fx.FADE]).max() > 0      # during it, still some of the chain
+    assert np.array_equal(b[fx.FADE:], x[4800 + fx.FADE:])
+    assert np.abs(b[:fx.FADE] - x[4800:4800 + fx.FADE]).max() > 0
     r2 = fx.Rack(2); r2.on = False; r2.update([{"type": "drive", "on": True, "params": {}}])
     assert np.array_equal(r2.process(x), x)
 
@@ -473,8 +472,6 @@ def test_abliterated_keeps_the_level_and_any_block_size(p):
 
 
 def test_presets_fit_their_types():
-    """Every type has at least five presets from data/presets/fx.json, named uniquely within the type (16 characters at
-    most), and every preset's params are keys of its type and within their ranges; the catalogue serves them."""
     assert fx.PRESETS_FILE.exists()
     cat = fx.catalogue()
     for t, spec in fx.TYPES.items():
@@ -507,7 +504,6 @@ def _st(seconds=1.0, seed=4):
 
 
 def test_trim_neutral_and_block_size():
-    """At its defaults Trim passes the sound unchanged; with everything on, its output is the same at any block size."""
     x = _st()
     assert np.max(np.abs(_trim({}, x) - x)) < 1e-12
     p = {"width": 230, "bass": 1, "bassf": 180, "dc": 1, "gain": -6, "balance": 0.3, "chans": 3, "phr": 1}
@@ -536,7 +532,6 @@ def test_trim_controls():
 
 
 def test_trim_switches_do_not_click():
-    """A switch flipped while it plays moves over about 10 ms: no sample-to-sample jump larger than the signal's own."""
     x = _st(); e = fx.Trim(2); base = fx.clean_slot({"type": "trim"}, 0)["params"]
     e.set(base); a = e.process(x[:fx.SR // 2])
     e.set({**base, "phl": 1, "chans": 3, "mute": 0, "mono": 1}); b = e.process(x[fx.SR // 2:])
@@ -560,7 +555,7 @@ def test_compressor_reports_gain_reduction():
     r.process(loud)
     gr = next(x for x in r.readings() if x["id"] == 7)["gr"]
     assert 10.0 < gr < 20.0, gr
-    assert next(x for x in r.readings() if x["id"] == 7)["gr"] == 0.0     # reset by the reading, nothing processed since
+    assert next(x for x in r.readings() if x["id"] == 7)["gr"] == 0.0
     r.process(loud * 0.001)
     r.readings(); r.process(loud * 0.001)
     assert next(x for x in r.readings() if x["id"] == 7)["gr"] < 0.5

@@ -15,8 +15,8 @@ Measures of a stretch of the model's output, for finding where each control stay
   flux         mean spectral change between frames (movement), level-normalised
 
 `timbre_distance(a, b)` compares two measures' spectra with their levels taken out: the root
-mean square difference, in dB, of the band levels after each spectrum's mean is subtracted. It
-says how far the spectral shape has moved, not how much louder or quieter it is.
+mean square difference, in dB, of the band levels after each spectrum's mean is subtracted, over
+the bands above −100 dB in both.
 """
 from __future__ import annotations
 
@@ -45,7 +45,6 @@ def measure(x: np.ndarray, sr: int = SR) -> Dict[str, Any]:
     n = len(mono) // fr
     frms = np.sqrt((mono[:n * fr].reshape(n, fr) ** 2).mean(1)) if n else np.zeros(1)
     silence = float((20 * np.log10(frms + 1e-12) < -55).mean())
-    # spectra
     win = np.hanning(N_FFT)
     k = max(0, (len(mono) - N_FFT) // HOP + 1)
     if k == 0:

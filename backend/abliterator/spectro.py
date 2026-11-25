@@ -8,9 +8,9 @@ A sound-card callback hands each block it plays to `feed` (a copy goes on a queu
 the callback stays cheap). `payload`, called when the page asks for the status, turns what has
 arrived into columns: a Hann window of N samples every HOP (20 ms at 48 kHz), each column the
 largest power in ROWS log-spaced bands from 40 Hz to 20 kHz, in dB, scaled from TOP − RANGE to
-TOP into 0 to 255. The calculation and the scale are the website's (docs/spectro.js), so the app's
-pictures and the site's compare. The page asks again every quarter of a second and keeps the
-columns it has not seen, by their index.
+TOP into 0 to 255. The window, bands and dB scale are the website's (docs/spectro.js, whose hop is
+512), so the app's pictures and the site's compare. The page asks again every quarter of a second
+and keeps the columns it has not seen, by their index.
 """
 from __future__ import annotations
 
@@ -36,7 +36,7 @@ class Spectro:
         self.lo = np.maximum(1, np.floor(edges[:-1] / sr * N)).astype(int)
         self.hi = np.maximum(self.lo + 1, np.ceil(edges[1:] / sr * N)).astype(int)
         self.hi = np.minimum(self.hi, len(f))
-        self.dead = self.lo >= len(f)                      # bands above the Nyquist frequency (MusicGen's 32 kHz stops at 16 kHz): drawn empty
+        self.dead = self.lo >= len(f)                      # bands above Nyquist (a 32 kHz engine stops at 16 kHz), drawn empty
         self.lo = np.minimum(self.lo, len(f) - 1)
         self.q: "collections.deque" = collections.deque()
         self.lock = threading.Lock()
@@ -67,7 +67,7 @@ class Spectro:
         idx = np.arange(N)[None, :] + HOP * np.arange(k)[:, None]
         X = np.fft.rfft(self.buf[idx] * self.win, axis=1)
         P = (X.real ** 2 + X.imag ** 2) * self.norm
-        m = np.maximum.reduceat(P[:, : self.hi[-1]], self.lo, axis=1)       # each band's largest power
+        m = np.maximum.reduceat(P[:, : self.hi[-1]], self.lo, axis=1)
         m[:, self.dead] = 0.0
         db = 10 * np.log10(m + 1e-14)
         for c in np.clip((db - (TOP - RANGE)) / RANGE * 255, 0, 255).astype(np.uint8):

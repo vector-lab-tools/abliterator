@@ -126,7 +126,7 @@ def replay(a):
     spec = {"prompt": rec["start"]["prompt"], "seed": rec["seed"], "start": rec["start"], "moves": rec["moves"]}
     t0 = time.time()
     out = p.render(spec, frames, _progress)
-    if snap:                                           # keep the snapshot's frame range
+    if snap:
         out = {k: v[rec["frames"][0] * M.HOP:] for k, v in out.items()}
     RENDERS.mkdir(parents=True, exist_ok=True)
     name = f"{path.stem}.replay"

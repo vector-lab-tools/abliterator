@@ -36,8 +36,7 @@ def blocks(mrt):
 
 def hook(block, state):
     """Wrap one block's step so that its output stream is steered."""
-    # The temporal transformer's Serial calls step_with_emits. A first version of this benchmark
-    # wrapped `step`, which is never called, so its "hooked" times measured no hook at all.
+    # The temporal transformer's Serial calls step_with_emits; wrapping `step` hooks nothing.
     orig = block.step_with_emits
 
     def step(x, st, *a, **k):

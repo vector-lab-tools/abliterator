@@ -38,9 +38,9 @@ def test_move_heard_from_its_frame(p):
     a = p.render({"prompt": P, "seed": 3}, F)["pre"]
     b = p.render({"prompt": P, "seed": 3, "moves": [{"frame": k, "doses": {name: 0.5}}]}, F)["pre"]
     d = np.abs(a - b).max(axis=1)
-    assert not d[:k * M.HOP].any()                       # nothing changes before the move's frame
+    assert not d[:k * M.HOP].any()
     first = int(np.argmax(d > 1e-6))
-    assert k * M.HOP <= first < k * M.HOP + 48           # and the change starts within 1 ms of it
+    assert k * M.HOP <= first < k * M.HOP + 48           # 48 samples: within 1 ms of the frame
 
 
 def test_style_move_changes_sound(p):
@@ -169,7 +169,7 @@ def test_mod_constant_macro_equals_the_dose(p):
 def test_follower_moves_the_sound_and_its_post_replays(p):
     """The Follower reads the model's own output: a render with it routed to a dose and to the volume differs from
     the plain one, repeats exactly, and the output section's re-render from the model output (post_of, as a saved
-    sound is made) matches the render's own output, so the track is built the same way in both."""
+    sound is made) matches the render's own output."""
     name = sorted(p.vectors)[0]
     spec = _modspec(p, [{"src": "follow", "tgt": f"dose:{name}", "depth": 0.5}, {"src": "follow", "tgt": "volume", "depth": -0.5}],
                     {"follow": {"floor_db": -60.0, "attack_s": 0.05, "release_s": 0.3}})
@@ -255,7 +255,7 @@ def test_scope_reads_without_changing_the_sound(p):
     try:
         a, _ = run(0.0, False)
         b, m0 = run(0.0, True)
-        assert np.array_equal(a, b)                                  # a meter: the sound is the same
+        assert np.array_equal(a, b)
         assert p.status()["meters"]["6"]["frame"] == F - 1 and p.status()["scopes"] == [6]
         assert m0["6"]["frame"] == F - 1 and len(m0["6"]["size"]) == F
         assert 0.3 < m0["6"]["size"][0] < 3                          # the stream near its typical size

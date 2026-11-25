@@ -22,7 +22,6 @@ from __future__ import annotations
 
 import math
 import sys
-from pathlib import Path
 from typing import Dict
 
 import numpy as np
@@ -31,7 +30,7 @@ from scipy.signal import lfilter
 from . import postfx as fx  # noqa: E402  (imported from the end of postfx.py, once its base classes exist)
 
 SR, CHUNK = fx.SR, fx.CHUNK
-_A = math.exp(-1.0 / (0.010 * SR))                                 # 10 ms, as Trim's _sm
+_A = fx.SMOOTH
 _POW = _A ** np.arange(1, CHUNK + 1)
 _K = np.arange(CHUNK)
 _K1 = np.arange(1, CHUNK + 1, dtype=float)

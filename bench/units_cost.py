@@ -68,9 +68,6 @@ for u in U.catalogue():
     line = at6(u["example"]) if u.get("example") else f"{u['id']} layer=6"
     unit = U.registry().get(u["id"])
     neutral = " ".join(f"{k}={v}" for k, v in unit.neutral_params().items() if k not in ("layer",))
-    target = "layer=6" if "layer" in u.get("example", "layer") or u["site"] == "stream" else "block=all"
-    if u["site"] == "output":
-        line = line.replace("block=all", "block=all")
     r = {"line": line}
     try:
         edits, _ = p.attach_chain([line])

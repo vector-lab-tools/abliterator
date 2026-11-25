@@ -48,7 +48,7 @@ class Engine:
         self.error: Optional[str] = None
         self.playing = False
         self.master = Master(SR, 1)
-        self.spectro = Spectro(SR)                 # the spectrogram of what is heard, for the page (as Magenta RT 2's)
+        self.spectro = Spectro(SR)
         self.scope_last = None
         self.steer_layer: Optional[int] = None
         self.lead = 8
@@ -57,7 +57,6 @@ class Engine:
         self._lock = threading.RLock()
         self._reset_counters()
 
-    # ------------------------------------------------------------------ loading
     def load(self, directions: Dict[str, Any], layer: int = 12):
         from .musicgen import MusicGen, Steer
         self.status_text = "starting the decoder"
@@ -78,14 +77,13 @@ class Engine:
         threading.Thread(target=self._reader, daemon=True).start()
         self.status_text = "ready"
 
-    # ------------------------------------------------------------------ play and stop
     def _reset_counters(self):
         self.ring: "collections.deque" = collections.deque()
         self.buf = np.zeros(0, np.float32)
         self.played = 0                    # samples played
         self.underruns = 0
         self.step_ms: "collections.deque" = collections.deque(maxlen=200)
-        self.dac: "collections.deque" = collections.deque(maxlen=400)      # (first sample, dac time, rms)
+        self.dac: "collections.deque" = collections.deque(maxlen=400)      # (first sample, DAC time, rms, rms per channel, peak per channel)
         self.pending: List[Dict[str, Any]] = []      # control moves waiting for their first frame to be heard
         self.measured: "collections.deque" = collections.deque(maxlen=20)
         self.moves: List[Dict[str, Any]] = []        # the session's control moves, by frame
@@ -129,7 +127,6 @@ class Engine:
             self.playing = False
             return self._save()
 
-    # ------------------------------------------------------------------ controls
     def control(self, doses: Optional[Dict[str, float]] = None, master: Optional[Dict[str, Any]] = None):
         t = self.stream.time if self.playing else None
         if doses:
@@ -143,7 +140,6 @@ class Engine:
             if self.playing:
                 self.moves.append({"frame": self.played // HOP, "master": self.master.settings()})
 
-    # ------------------------------------------------------------------ the three loops
     def _generate(self):
         st = self.stepper
         try:
@@ -203,7 +199,6 @@ class Engine:
             if self.played > 0:
                 self.underruns += 1
 
-    # ------------------------------------------------------------------ readings
     def scope(self, seconds: float = 3.0, points: int = 300) -> Optional[List[List[float]]]:
         """The last seconds the model made, as (min, max) pairs, for the Engine panel's scope (mono)."""
         rec = self.recorded[-int(seconds * SR / HOP):]
@@ -253,7 +248,6 @@ class Engine:
             s["latency"] = self.latency()
         return s
 
-    # ------------------------------------------------------------------ snapshots and the session's record
     def snapshot(self, seconds: float) -> Dict[str, Any]:
         """The last `seconds` of what the engine generated, with its recipe (MusicGen: not yet replayable)."""
         import secrets

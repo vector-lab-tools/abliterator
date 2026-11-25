@@ -18,8 +18,10 @@ evenly over the steps, so every setting stays in reach, and a control whose chan
 the floor is laid out in even steps. A
 dose knob is laid out on each side of 0 separately, so 0 stays at the centre.
 
-These are measured bounds. They mark where the sound breaks, not where it is good: your listening
-(the grid) sets the last word, and can narrow a range further (`ears` in the file).
+These are measured bounds of where the sound breaks. Listening (the grid) can narrow a range
+further (`ears` in the file).
+
+The second paragraph of this docstring is written into the calibration file as its `method`.
 
     .venv/bin/python -m abliterator.calibrate      (from backend/; writes data/calibration/mrt2_small.json)
 """
@@ -127,7 +129,7 @@ def build(rows: List[Dict[str, Any]]) -> Dict[str, Any]:
             hi += 1
         safe = values[lo:hi + 1]
         raw = [float(np.mean([timbre_distance(presets[p][a], presets[p][b]) for p in presets])) for a, b in zip(safe[:-1], safe[1:])]
-        excess = [max(0.0, d - noise) for d in raw]        # beyond what seeds alone do
+        excess = [max(0.0, d - noise) for d in raw]
         n = max(1, len(raw))
         dist = [EVEN / n + (1 - EVEN) * (e / sum(excess)) if sum(excess) > 1e-6 else 1.0 / n for e in excess]
         level = [float(np.mean([presets[p][v]["rms_db"] - presets[p][d0]["rms_db"] for p in presets])) for v in safe]
@@ -232,17 +234,17 @@ def _relay(curve: List[List[float]], lo: float, hi: float, centre: Optional[floa
     """The curve cut to [lo, hi] and laid out again over the whole travel (a dose keeps 0 at the centre)."""
     ts, vs = [p[0] for p in curve], [p[1] for p in curve]
 
-    def at(v):                                    # travel at a value, along the old curve
+    def travel_at(v):
         for i in range(1, len(vs)):
             if v <= vs[i]:
                 a = (v - vs[i - 1]) / (vs[i] - vs[i - 1]) if vs[i] > vs[i - 1] else 0.0
                 return ts[i - 1] + a * (ts[i] - ts[i - 1])
         return ts[-1]
-    pts = [[at(lo), lo]] + [[t, v] for t, v in curve if lo < v < hi] + [[at(hi), hi]]
+    pts = [[travel_at(lo), lo]] + [[t, v] for t, v in curve if lo < v < hi] + [[travel_at(hi), hi]]
     if centre is None:
         t0, t1 = pts[0][0], pts[-1][0]
         return [[round((t - t0) / (t1 - t0), 4) if t1 > t0 else 0.0, v] for t, v in pts]
-    c = at(centre)
+    c = travel_at(centre)
     out = []
     for t, v in pts:
         if v < centre:

@@ -3,13 +3,14 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """
 Magenta RT 2 as a host for Vector Abliteration Units (VAU 1, the package `vau`, from
-https://github.com/vector-lab-tools/vector-abliteration-units, pinned as Abliterton Lens pins it).
+https://github.com/vector-lab-tools/vector-abliteration-units, pinned in requirements-mrt2.txt to the
+commit Abliterton Lens pins).
 
 The units are VAU's own files, run unchanged. Their edits are written in torch; the model runs
-in MLX. At a layer that carries a strip, the stream for the frame being made (one position of
-1024 values) is copied out of MLX, passed through the strips' edits in torch on the CPU, and
-copied back. That forces MLX to compute the frame up to that layer before going on, which is
-the bridge's cost, measured in bench/units_cost.py.
+in MLX. Where mlxunits has no MLX port of a strip's edit, the stream for the frame being made (one
+position of 1024 values) is copied out of MLX at that layer, passed through the edit in torch on
+the CPU, and copied back, which forces MLX to compute the frame up to that layer first (cost
+measured in bench/units_cost.py).
 
 What this host offers (VAU capabilities): `stream` (the output of each of the temporal
 transformer's 12 blocks, numbered as hidden states 1 to 12), `output` (what each block's
@@ -17,15 +18,15 @@ self-attention and MLP add to the stream: the output of the post-norm that ends 
 g ⊙ (W x + b) / rms; the component's weight is W with g folded into its rows, so a unit that
 projects W, as Abliterate's Keep size does, matches the hook; the bias stays inside the norm, so
 Abliterate's "Bias too" has no separate effect here; the cross-attention to the style is not
-offered), `ordered` (positions are frames,
-40 ms apart, from 0 at the start of play), `stats` and `pca` (of the stream over the reference
-set: the presets' and contrast sets' prompts, measured once on the unchanged model and cached
-in data/stats/), `directions` (this engine's directions, data/directions/mrt2_small/) and
-`contrasts`. Not offered yet: `weights`, `logits`, `texts` (so Morph, which fits on captured
-inputs, is unavailable). Units that need them are listed as unavailable.
+offered), `ordered` (positions are 40 ms frames from 0 at the start of play), `stats` and
+`pca` (of the stream over the reference set, the presets' and contrast sets' prompts, measured once
+on the unchanged model and cached in data/stats/), `directions` (data/directions/mrt2_small/) and
+`contrasts`. Not offered: `weights`, `logits`, `texts`, so units that need them (Morph) are listed
+as unavailable.
 
-Latency: every stream unit here is applied from the frame after the move (class live); a move
-re-attaches the strip, so a unit's memory (Delay's line, Erosion's held values) starts again.
+Latency: every stream unit is applied from the frame after the move (class live). A strip set by
+hand is attached again and its memory (Delay's line, Erosion's held values) starts again; a move by
+modulation keeps the memory (attach's `store`).
 """
 from __future__ import annotations
 
@@ -35,6 +36,8 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 import numpy as np
 import torch
 import vau
+from vau import collection
+from vau.manifest import space as vau_space
 
 from . import ROOT
 from . import directions as dr
@@ -46,20 +49,15 @@ LATENCY = {"class": "live", "ms": 0, "invalidates_cache": False,
 
 _registry: Optional[vau.Registry] = None
 
-# A unit is shown by VAU's own title (VAU 0.2.3 names the Core units for what they do to the
-# vectors) except where this host gives it a display title of its own (SPEC 5d): VAU's Position
-# Repeat is Frame Repeat here, since its positions are 40 ms frames of sound. Strip lines keep
-# VAU's ids (`beatrepeat layer=6 ...`), so recipes are unchanged.
+# This host's titles in place of VAU's (SPEC 5d): here positions are 40 ms frames. Strip lines keep VAU's ids.
 NAMES = {"beatrepeat": "Frame Repeat"}
-# A strip's top bar holds about this many characters of a name; VAU caps its short names at 14
-# too (SPEC 2). VAU's own name for a unit is given in its help, not on the strip.
+# characters a strip's top bar holds; VAU caps its short names at 14 too (SPEC 2)
 NAME_MAX = 14
 
 
-# Defaults on this host for units that do nothing (or cannot run) at VAU's own: Abliterate names
-# no direction (and then does nothing, silently), Neuron names no
-# neuron, Rotate needs two different directions, Principal Bands and Quantise are neutral. These
-# are starting points to be calibrated by ear like the rest.
+# Defaults for units that do nothing or cannot run at VAU's own: Abliterate names no direction (and
+# then does nothing, silently), Neuron no neuron, Rotate needs two different directions, Principal
+# Bands and Quantise start neutral.
 HOST_DEFAULTS = {
     "abliterate": {"dir": "brightness", "shape": "flat", "size": 0},
     "neuron": {"n": "373", "op": "scale", "value": 6},
@@ -69,17 +67,15 @@ HOST_DEFAULTS = {
 }
 
 
-# Ranges this host opens beyond VAU's own. Abliterate's Strength: VAU stops at 1.5; above 1 the direction is
-# turned round rather than removed, and from 2 to 6 the sound is pushed further past its far side (measured on
-# Deep techno and the Warm drone, 2026-11-18: strength 1 to 2 and 4 to 6 both held). The taper puts 1 at about a
-# third of the travel and 2 at the middle. VAU's unit reads the value unclamped.
+# Ranges this host opens beyond VAU's own. Abliterate's Strength: VAU stops at 1.5 but its unit reads the value
+# unclamped; strengths 1 to 2 and 4 to 6 held on Deep techno and the Warm drone (2026-11-18).
 HOST_RANGES = {
     "abliterate": {"strength": {"max": 6.0, "taper": [[0.0, 0.0], [0.15, 0.5], [0.35, 1.0], [0.5, 2.0], [0.75, 4.0], [1.0, 6.0]]}},
 }
 
 
-# Starting points offered on a unit's strip (a small menu by its name): each sets the settings it names and leaves
-# the rest, the direction included. `block` is the placement ("all" or a block). Abliterate's are by strength.
+# Presets on a unit's strip: each sets the settings it names and leaves the rest, the direction included.
+# `block` is the placement ("all" or a block).
 HOST_PRESETS = {
     "abliterate": [
         {"name": "Remove · 1", "block": "all", "params": {"shape": "flat", "size": 0, "strength": 1.0},
@@ -97,8 +93,8 @@ HOST_PRESETS = {
 }
 
 
-# The other units' presets, chosen in the unit review (2026-11-23) from a search over six seeds and measured again on ten
-# others: data/presets/<model>.json, with the figures each was chosen on. A preset sets every setting it names.
+# The other units' presets, from the unit review (2026-11-23: searched on six seeds, checked on ten others), with the
+# figures each was chosen on.
 PRESETS_FILE = ROOT / "data" / "presets" / "mrt2_small.json"
 
 
@@ -118,9 +114,8 @@ def _preset(uid: str, name: str) -> Dict[str, Any]:
     return next((q["params"] for q in HOST_PRESETS.get(uid, []) if q["name"] == name), {})
 
 
-# Defaults from the unit review, applied after the calibration's: at their old defaults these units changed no measure of
-# the sound consistently across twenty seeds (Neuron's single neuron 373 ×6, Quantise's 6 bits, Band Shrink on all bands
-# at 4:1). Each new default is one of the unit's presets, and HOST_PLACE its placement.
+# Defaults from the unit review, applied over the calibration's: at their old defaults these units changed no measure of
+# the sound consistently across twenty seeds. Each is one of the unit's presets; HOST_PLACE is its placement.
 HOST_HEARD = {k: v for k, v in {
     "delay": _preset("delay", "Feedback Loop"),
     "reverb": _preset("reverb", "Long Tail"),
@@ -128,17 +123,17 @@ HOST_HEARD = {k: v for k, v in {
     "neuron": _preset("neuron", "Ten Set"),
     "erosion": _preset("erosion", "Bitcrush"),
     "multiband": _preset("multiband", "Low Squeeze"),
-}.items() if v}                                       # a default whose preset has not passed the held-out check waits
+}.items() if v}                                       # a preset that failed the held-out check is not in the file
 HOST_PLACE = {k: v for k, v in {"neuron": "10", "limiter": 10}.items() if k in HOST_HEARD}
 
-# VAU host settings shown on a unit's card: Keep size on Lookback and Running Average, whose old defaults (Keep size off)
-# fell near silent on some held-out seeds while every Keep size preset held.
+# VAU host settings shown on a unit's card. Keep size on Lookback and Running Average: with it off, both fell near silent
+# on some held-out seeds.
 KEEP_SIZE = {"key": "keepnorm", "label": "Keep size", "kind": "toggle", "default": 0, "host": True,
              "tip": "h' ← h' · ‖h‖ / ‖h'‖ at each position: after the change, the stream is scaled back to the size it had"}
 HOST_EXTRA = {"delay": [KEEP_SIZE], "reverb": [KEEP_SIZE]}
 
 
-# What a unit does differently on this instrument, for its help box (beside VAU's own help)
+# What a unit does differently on this instrument, for its help box beside VAU's
 HOST_NOTES = {
     "abliterate": "Strength runs to 6 here; VAU stops at 1.5. Up to 1 the direction is taken out, from 1 to 2 it is turned round, "
                   "and past 2 the sound is pushed further to the far side. Taking a direction out pulls a sound toward the middle of "
@@ -167,17 +162,16 @@ def calibrated() -> Dict[str, Any]:
     return _cal["controls"]
 
 
-# Settings that cannot change the sound on this model, so the card does not show them (the line keeps their value):
-# Abliterate's Bias too (the host's components carry no separate bias: VAU projects the whole output either way).
-# Settings that depend on the model having an attention sink (Sink too on Sparsify and Component Clamp) are hidden by
-# their manifest's `when: {"host": ["sink"]}` (VAU 0.3), since this host's model has none (AudioHost.sink).
+# Settings the card hides because they cannot change the sound here (Bias too: see the module docstring); the line
+# keeps their value.
 HOST_HIDDEN = {"abliterate": {"bias"}}
+# Host flags a manifest's `when: {"host": [...]}` can name; a setting that needs one this host lacks is hidden.
 HOST_FLAGS = {"sink": False}
 
-# Settings that only act while another setting has one of some values (the manifest's `when`, VAU 0.3): the card dims
-# them otherwise. The card reads {key, in, why}.
+
 def _when(q: Dict[str, Any], qs: List[Dict[str, Any]]):
-    """The manifest's `when` as the card reads it, or None; `hide` True where it names a host flag this host lacks."""
+    """The manifest's `when` as the card reads it, {key, in, why} (the card dims the setting while the other setting is
+    outside `in`), or None; and `hide`, True where it names a host flag this host lacks."""
     w = q.get("when")
     if not isinstance(w, dict):
         return w, False
@@ -211,7 +205,7 @@ def params(u) -> List[Dict[str, Any]]:
             q.update(fragile=True)
         if q["key"] in HOST_HEARD.get(u.id, {}):
             q["default"] = HOST_HEARD[u.id][q["key"]]
-            sf = q.get("safe")                         # measured at the old default (Keep size off): its range and ⚠ no longer apply
+            sf = q.get("safe")                         # measured at the old default, so it may not hold the new one
             if sf and isinstance(q["default"], (int, float)) and not sf[0] <= q["default"] <= sf[1]:
                 q.pop("safe"); q.pop("measured", None); q["fragile"] = False
         w, hide = _when(q, qs)
@@ -238,8 +232,7 @@ def title(u) -> str:
 
 
 def short(u) -> str:
-    """The name for tight spaces (a strip's top bar): this host's own title, else VAU's short one
-    (Comp Clamp for Component Clamp, VAU 0.2.6), else the title."""
+    """The name for a strip's top bar (at most NAME_MAX characters)."""
     return NAMES.get(u.id) or u.m.get("short") or u.m["title"]
 
 
@@ -250,16 +243,7 @@ def registry() -> vau.Registry:
     return _registry
 
 
-# The space each unit acts on (the proposal now with VAU: a manifest may declare `space`; until it
-# does, this host's own reading of each unit), and which units act along time. VAU's own `axis`
-# (any | ordered) says whether a unit needs positions in order, and is reported as it is. Groups
-# are what the add menu and the units page show.
-SPACE = {"abliterate": "component", "neuron": "hidden"}             # the rest act on the stream at a layer
-ALONG_TIME = {"delay", "reverb", "beatrepeat"}         # their edit draws on earlier frames (Erosion is ordered only for its hold)
 ELEMENTWISE = {"saturator", "erosion", "gate", "limiter"}
-SUBSPACE = {"eq", "multiband", "shifter"}
-GROUP_TITLES = {"time": "Along time", "size": "On the stream's size", "element": "Coordinate by coordinate",
-                "subspace": "Along directions and principal bands", "block": "Inside a block", "other": "Other"}
 ELEMENTWISE_NOTE = ("Acts on each of the stream's 1,024 coordinates separately, so what it does depends on the "
                     "coordinates the stream is written in. In the measurements these units broke the sound no more "
                     "often than the others.")
@@ -269,7 +253,7 @@ _VG: Dict[str, Dict[str, Any]] = {}
 
 
 def _vau_groups() -> Dict[str, Dict[str, Any]]:
-    """Unit id -> its group in VAU's Core Collection look (VAU 0.3 and after), or {} on an older VAU."""
+    """Unit id -> its group in VAU's Core Collection look (vau/look/core.json), or {} if it cannot be read."""
     if not _VG:
         try:
             import json
@@ -282,41 +266,17 @@ def _vau_groups() -> Dict[str, Dict[str, Any]]:
 
 
 def space_of(u) -> Dict[str, Any]:
-    """`space` (the manifest's own, where it declares one), VAU's `axis`, and the unit's group here."""
-    try:
-        from vau.manifest import space as vau_space       # VAU 0.2.1 and after: the manifest's space, or its site's
-        space = vau_space(u.m)
-    except ImportError:
-        space = u.m.get("space") or SPACE.get(u.id) or ("component" if u.m["site"] == "output" else "stream")
-    axis = u.m.get("axis", "any")
-    g = _vau_groups().get(u.id)
-    if g:                                              # VAU 0.3's groups (look/core.json), which match the ones below
-        return {"space": space, "axis": axis, "group": g["id"], "group_title": g["title"],
-                "note": ELEMENTWISE_NOTE if u.id in ELEMENTWISE and space == "stream" else None}
-    if u.id in ALONG_TIME:
-        group = "time"
-    elif space in ("component", "hidden"):
-        group = "block"
-    elif u.id in ELEMENTWISE:
-        group = "element"
-    elif u.id in SUBSPACE:
-        group = "subspace"
-    elif space == "stream":
-        group = "size"
-    else:
-        group = "other"
-    return {"space": space, "axis": axis, "group": group, "group_title": GROUP_TITLES[group],
+    """`space` (the manifest's own, or its site's), VAU's `axis`, and the unit's group in VAU's look (None if
+    VAU gives it none; the page then files it under Other)."""
+    space = vau_space(u.m)
+    g = _vau_groups().get(u.id, {})
+    return {"space": space, "axis": u.m.get("axis", "any"), "group": g.get("id"), "group_title": g.get("title"),
             "note": ELEMENTWISE_NOTE if u.id in ELEMENTWISE and space == "stream" else None}
 
 
 def vau_name(u) -> str:
-    """VAU's own name for a unit, as VAU shows it: its collection's prefix before the manifest's
-    title (vLookback, vNorm Shrink for the Core Collection)."""
-    try:
-        from vau import collection                         # VAU 0.2 and after
-        return collection.name(u)
-    except (ImportError, AttributeError):
-        return "v" + u.m["title"]
+    """VAU's own name for a unit: its collection's prefix before the manifest's title (vLookback)."""
+    return collection.name(u)
 
 
 def catalogue() -> List[Dict[str, Any]]:
@@ -444,7 +404,7 @@ class AudioHost(vau.Host):
 
     def sink(self) -> bool:
         """Magenta RT 2 has no attention sink: its first position is the take's first 40 ms frame, which units bend
-        like any other (VAU 0.3)."""
+        like any other."""
         return HOST_FLAGS["sink"]
 
     def error(self, lineno, msg):
@@ -584,7 +544,7 @@ def attach(lines: List[str], host_args, strict: bool = True, store: Optional[Dic
     (live play, so that one bad strip does not silence the others' moves)."""
     host = AudioHost(*host_args)
     if store is not None:
-        host.store = store                 # the units' memory carried over: modulation moves a knob without clearing it
+        host.store = store                 # modulation moves a knob without clearing the units' memory
     report = []
     for i, text in enumerate(l for l in lines if l.strip() and not l.strip().startswith("#")):
         s = Line(text, i + 1)
@@ -602,9 +562,9 @@ def attach(lines: List[str], host_args, strict: bool = True, store: Optional[Dic
                 vau.prepare(u, s, host)
                 vau.attach(u, s, host)
             except Exception:
-                host.edits, host.outs, host.ins = mark            # nothing of a failed strip stays attached
+                host.edits, host.outs, host.ins = mark
                 raise
-            if native:                                            # the strip's edits in MLX, on the GPU, where mlxunits has them
+            if native:                                            # the strip's edits in MLX where mlxunits has a port
                 from . import mlxunits
                 p = mlxunits.port(u, s, host, {"edits": mark[0], "outs": mark[1], "ins": mark[2]},
                                   {"edits": host.edits, "outs": host.outs, "ins": host.ins})

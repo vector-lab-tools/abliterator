@@ -4,11 +4,10 @@
 """
 The local server: serves the page on http://127.0.0.1:8775/ and controls the engine.
 
-As Abliterton Lens's server (and Video Kintsugi's before it): it listens on 127.0.0.1 only,
-refuses a request whose Host header is not this machine, and refuses a write (POST, DELETE)
-without the header `X-Abliterator: 1`. Unlike Lens it runs no jobs: the engines play on their own
-threads and processes, and the server only reads their state and passes control moves to them,
-so nothing the page does can hold up the sound.
+It listens on 127.0.0.1 only, refuses a request whose Host header is not this machine, and
+refuses a write (POST, PUT, DELETE) without the header `X-Abliterator: 1`. It runs no jobs: the
+engines play on their own threads and processes, and the server only reads their state and passes
+control moves to them, so nothing the page does can hold up the sound.
 
 Two engines, one playing at a time: Magenta RT 2 small (mrt2.py, in its own process and
 environment) and MusicGen small (engine.py). Both are loaded at start.
@@ -45,9 +44,9 @@ WEB = ROOT / "web"
 RANGES = {"musical": [-0.4, 0.4], "full": [-3.0, 3.0]}     # Steer doses, as shares of the stream's size
 
 app = FastAPI(title=TOOL, version=VERSION, docs_url=None, redoc_url=None)
-engine = Engine()                     # MusicGen small
+musicgen = Engine()
 mrt2 = MRT2Engine()
-ENGINES = {"mrt2": mrt2, "musicgen": engine}
+ENGINES = {"mrt2": mrt2, "musicgen": musicgen}
 state: Dict[str, Any] = {"directions": {}, "active": "mrt2" if MRT2Engine.available() else "musicgen"}
 atexit.register(mrt2.quit)
 desk = Desk()
@@ -80,22 +79,22 @@ from abliterator.presets import presets  # noqa: E402
 
 def _load():
     try:
-        engine.status_text = "loading"
+        musicgen.status_text = "loading"
         # directions need the model: the engine loads it, then any missing direction is made
         have = dr.load_all()
-        engine.load(have)
+        musicgen.load(have)
         missing = [c for c in dr.contrasts() if c["name"] not in have]
         for c in missing:
-            engine.status_text = f"making the direction '{c['name']}' (about a minute)"
-            d = dr.Direction(dr.make(engine.mg, c, emit=lambda s: None))
+            musicgen.status_text = f"making the direction '{c['name']}' (about a minute)"
+            d = dr.Direction(dr.make(musicgen.mg, c, emit=lambda s: None))
             dr.save(d.data)
-            engine.steer.set_direction(d.name, d.unit(engine.steer.layer))
+            musicgen.steer.set_direction(d.name, d.unit(musicgen.steer.layer))
         state["directions"] = dr.load_all()
-        engine.status_text = "ready"
+        musicgen.status_text = "ready"
     except Exception as e:
         traceback.print_exc()
-        engine.error = f"{type(e).__name__}: {e}"
-        engine.status_text = "failed to load"
+        musicgen.error = f"{type(e).__name__}: {e}"
+        musicgen.status_text = "failed to load"
 
 
 def mg_directions():
@@ -282,7 +281,7 @@ async def play(request: Request):
         if state["active"] == "mrt2":
             mrt2.play(p, seed, b.get("sampling"))
         else:
-            engine.play(p, seed, b.get("cfg"))
+            musicgen.play(p, seed, b.get("cfg"))
     except Exception as e:
         traceback.print_exc()
         return err(f"{type(e).__name__}: {e}", 500)
@@ -321,8 +320,8 @@ async def control(request: Request):
                                 steer_on=(bool(b["steer_on"]) if "steer_on" in b else None))
         except Exception as e:
             return err(f"{type(e).__name__}: {e}", 500)
-    engine.control(doses=doses or None, master=b.get("master"))
-    return {"doses": engine.steer.doses, "master": engine.master.settings()}
+    musicgen.control(doses=doses or None, master=b.get("master"))
+    return {"doses": musicgen.steer.doses, "master": musicgen.master.settings()}
 
 
 @app.post("/api/lead")
@@ -333,8 +332,8 @@ async def lead(request: Request):
             return {"lead": mrt2.set_lead(int(b.get("lead", 2)))}
         except Exception as e:
             return err(f"{type(e).__name__}: {e}", 500)
-    engine.lead = max(4, min(25, int(b.get("lead", engine.lead))))
-    return {"lead": engine.lead}
+    musicgen.lead = max(4, min(25, int(b.get("lead", musicgen.lead))))
+    return {"lead": musicgen.lead}
 
 
 @app.get("/api/sessions")
@@ -343,7 +342,6 @@ def sessions():
     return {"sessions": sorted((p.stem for p in folder.glob("*.json")), reverse=True) if folder.exists() else []}
 
 
-# ------------------------------------------------------------------ tracks
 @app.get("/api/desk")
 def desk_state():
     return desk.state()
@@ -508,7 +506,6 @@ async def desk_snapshot(request: Request):
     return {"snapshot": snap, "desk": desk.state()}
 
 
-# ------------------------------------------------------------------ the sound library
 @app.get("/api/sounds")
 def sounds():
     return {"sounds": library.sounds()}

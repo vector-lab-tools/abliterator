@@ -110,7 +110,7 @@ def test_stopped_track_rings_on(desk, monkeypatch):
     d.trigger(0, 0)
     d._mix_block(4800, d.heard())
     d.stop_track(0)
-    assert np.abs(d._mix_block(512, d.heard())).max() > 1e-4             # the reverb's tail, after the stop
+    assert np.abs(d._mix_block(512, d.heard())).max() > 1e-4
 
 
 def test_library_rename_and_delete(desk, monkeypatch):

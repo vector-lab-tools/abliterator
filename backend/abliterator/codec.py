@@ -95,7 +95,6 @@ class StreamingDecoder:
                         s = (e - lo + j) * HOP
                         got.append((e + j, w[s: s + HOP].copy()))
                     self.emitted += k
-                # keep only what later frames need
                 cut = (self.emitted - CTX_TAIL) - self.lbase
                 if cut > 8:
                     self.L = self.L[..., cut:]

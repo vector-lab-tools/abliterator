@@ -2,7 +2,7 @@
 # Copyright (C) 2026 David M. Berry
 # SPDX-License-Identifier: GPL-3.0-or-later
 """
-Three threads, as the plan proposes:
+Three threads:
 - generation (MPS): MusicGen small frame by frame, with a steering hook on the residual stream
   at one layer whose dose is read from shared state at every step;
 - decoding (CPU): EnCodec with the LSTM state carried, 4 frames of lookahead, exact;
@@ -86,7 +86,7 @@ def gen_loop():
     st = Stepper(m, enc, mask, a.cfg, 7)
     last_dose = state["dose"]
     while not stop.is_set():
-        # throttle: the generator stays at most `lead` frames ahead of what the decoder has taken in
+        # throttle: the generator stays at most `lead` frames ahead of what has been played
         while len(st.frames) - cnt["played"] // HOP > a.lead and not stop.is_set():
             time.sleep(0.001)
         d = state["dose"]

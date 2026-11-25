@@ -2,19 +2,17 @@
 # Copyright (C) 2026 David M. Berry
 # SPDX-License-Identifier: GPL-3.0-or-later
 """
-Native MLX versions of VAU units that act elementwise, so that their edits stay on the GPU.
+Native MLX versions of some VAU units' edits, so that they stay on the GPU.
 
-The VAU units are written in torch, and the host (units.py, mrt2_proc.Hooks) runs each one by
-copying the stream out of MLX, through torch on the CPU, and back. Each copy makes MLX finish the
-frame up to that layer and wait while the CPU works: Neuron with block=all does it in all twelve
-blocks of every frame. For the units here, the same arithmetic is written in MLX and replaces the
-torch hook when the strip is attached; tests/test_mlxunits.py checks each against the VAU unit.
+The host's torch path (units.py, mrt2_proc.Hooks) copies the stream out of MLX and back at each
+hooked layer, which makes MLX finish the frame up to that layer and wait for the CPU (Neuron at
+block=all, twelve times a frame; Abliterate at block=all, 24). For the units here the same
+arithmetic is written in MLX and replaces the torch hook when the strip is attached;
+tests/test_mlxunits.py checks each against the VAU unit.
 
-Ported: Neuron (the six operations on an MLP's hidden units) and Erosion (bits and hold), each
-with the host features Wet, Envelope and Keep size. A strip with a window or a random control
-keeps the torch path. Abliterate (the direction taken out of what each block's attention and MLP
-write) is ported without host features: its 24 hooks at block=all made each step wait for the CPU
-24 times, and the MLX hook takes the direction, strength and rescaling from the hook VAU made.
+Ported: Neuron and Erosion, with the host features Wet, Envelope and Keep size (a strip with a
+window or a random control keeps the torch path); Abliterate without host features, taking the
+direction, strength and rescaling from the hook VAU made.
 """
 from __future__ import annotations
 
@@ -195,7 +193,7 @@ def port(u, strip, host, before: Dict[str, Dict], after: Dict[str, Dict]) -> Opt
             for layer, fns in added.items():
                 step = None if bits >= 16 else np.asarray(host.stats()["std"][layer], np.float64) * (6.0 / 2 ** max(1, bits))
                 f = _factor(s, layer, n)
-                first = 1 if getattr(host, "sink", lambda: True)() else 0      # VAU 0.3: no attention sink, frame 0 bent too
+                first = 1 if host.sink() else 0
                 fn = erosion_fn(step, hold, host.memory(strip, ("mlx", layer)), f, s["keepnorm"], first) if f != 0.0 else mlx_fn(lambda h, frame: h)
                 out["edits"].setdefault(layer, []).extend([fn] * len(fns))
             return out

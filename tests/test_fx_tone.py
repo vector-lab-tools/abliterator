@@ -104,10 +104,10 @@ def test_compressor_makeup_attack_release_and_link():
     x = np.concatenate([sine(1000, 0.5, 0.01), sine(1000, 0.5, 0.5), sine(1000, 1.0, 0.01)])
     y, _ = run("compressor", x, 512, thresh=-30.0, ratio=10.0, attack=5.0, release=200.0, knee=0.0)
     gain = lambda a, b: 20 * np.log10(np.abs(y[int(a * SR):int(b * SR)]).max() / np.abs(x[int(a * SR):int(b * SR)]).max())
-    assert gain(0.500, 0.502) > -6.0                              # the first 2 ms of the step get through
-    assert gain(0.6, 0.99) < -20.0                                # then it is held down
-    assert gain(1.01, 1.03) < -10.0                               # just after the drop it is still down
-    assert gain(1.9, 2.0) > -0.5                                  # 900 ms later it is back
+    assert gain(0.500, 0.502) > -6.0
+    assert gain(0.6, 0.99) < -20.0
+    assert gain(1.01, 1.03) < -10.0
+    assert gain(1.9, 2.0) > -0.5
 
 
 # ---------------------------------------------------------------- resonator
@@ -122,7 +122,7 @@ def peak_near(y, hz, pad=16):
 @pytest.mark.parametrize("root", [24, 36, 48, 57, 60, 69, 72, 84])
 @pytest.mark.parametrize("bright", [0.0, 0.5, 1.0])
 def test_resonator_rings_in_tune(root, bright):
-    """A click rings at the root's frequency within 1% (in fact within 0.1%), and with Octave at twice it."""
+    """A click rings at the root's frequency and, with chord 2 (Octave), at twice it."""
     imp = np.zeros((SR * 2, 2)); imp[100] = 1.0
     y, _ = run("resonator", imp, 512, root=root, chord=2, decay=3.0, bright=bright, mix=1.0)
     f0 = 440 * 2 ** ((root - 69) / 12)
@@ -152,8 +152,8 @@ def test_resonator_decay_time(root):
 
 
 def test_resonator_paths_agree():
-    """The ring path and the lfilter path are the same filter: forced one way or the other they give the same samples,
-    and a comb can move from one to the other (a Root change) without a jump."""
+    """The ring path and the lfilter path are the same filter: forced one way or the other by SHORT, they give the
+    same samples."""
     x = noise(1.0)
     p = dict(root=48, chord=3, decay=3.0, bright=0.4, mix=1.0)
     old = T.Resonator.SHORT
@@ -195,7 +195,7 @@ def test_freqshift_moves_a_sine():
     y, _ = run("freqshift", x, 512, shift=-250.0, spread=0.0, feedback=0.0, mix=1.0)
     L = spectrum_db(y[SR // 4:, 0])
     assert L(750) - L(1250) > 30
-    for hz in (100, 300, 3000, 10000):                              # across the band
+    for hz in (100, 300, 3000, 10000):
         y, _ = run("freqshift", sine(hz, 1.0), 512, shift=37.0, mix=1.0)
         L = spectrum_db(y[SR // 4:, 0])
         assert L(hz + 37) - L(hz - 37) > 30, hz
@@ -218,7 +218,7 @@ def test_freqshift_keeps_level_and_feedback_is_stable():
     ("freqshift", dict(mix=0.0, feedback=0.0, shift=20.0), dict(mix=1.0, feedback=0.6, shift=300.0, spread=1.0)),
 ])
 def test_knob_moves_do_not_click(kind, a, b):
-    """A knob turned while it plays moves over about 10 ms: no sample-to-sample step larger than the steady sound's."""
+    """Knob moves are smoothed over 10 ms (fx_tone.SMOOTH), inside the 960 samples checked after the move."""
     x = sine(220, 1.0, 0.3)
     e = T.CLASSES_NEW[kind](2)
     e.set(params(kind, **a)); y1 = e.process(x[:SR // 2])

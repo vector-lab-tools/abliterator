@@ -1,6 +1,5 @@
 /* Abliterator. Copyright (C) 2026 David M. Berry. SPDX-License-Identifier: GPL-3.0-or-later
-   Laid out as Abliterton Lens's page: its colours, app bar, browser, cards, dock, strips, knobs,
-   faders and info bar. */
+   The page's styles, laid out as Abliterton Lens's page. */
 :root {
   --bg: #f3f2ee; --surface: #fcfcfb; --surface-2: #f0efec; --border: #e2e0da;
   --text: #0b0b0b; --text-2: #52514e; --text-3: #85837d;
@@ -43,7 +42,6 @@ header.bar { position: relative; z-index: 20; display: flex; align-items: center
 .tp:hover:not(:disabled) { background: rgba(255,255,255,.1); color: var(--s-text); }
 .tp:disabled { opacity: .35; cursor: default; }
 .tp.play.on, .tp.play.on:disabled { opacity: 1; color: var(--live); text-shadow: 0 0 8px rgba(61,220,132,.6); }
-/* the transport, idle: each button in a dull version of its colour when on, so it is seen before it is used */
 .transport:not(.viewswap) .tp.play:not(.on) { opacity: 1; color: color-mix(in srgb, var(--live) 55%, transparent); }
 .transport:not(.viewswap) .tp.stop:disabled { opacity: 1; color: color-mix(in srgb, var(--s-text) 40%, transparent); }
 .transport:not(.viewswap) .tp.rec:disabled { opacity: 1; color: color-mix(in srgb, #ff6b5a 45%, transparent); }
@@ -135,7 +133,7 @@ table.t td { border-bottom: 1px solid var(--border); padding: 4px 8px 4px 0; }
 table.t td:last-child { font-family: var(--mono); text-align: right; }
 details.more summary { cursor: pointer; color: var(--text-2); font-size: 12.5px; margin-top: 10px; }
 
-/* ---------------- the Noodle: the pad and the dose faders, on the desk's black */
+/* ---------------- the XY pad and the desk */
 .noodle { display: flex; gap: 14px; align-items: stretch; flex-wrap: wrap; }
 .padwrap { display: grid; grid-template-columns: 18px auto; grid-template-rows: auto 18px; gap: 4px; }
 .padwrap .ax { font: 10.5px var(--mono); color: var(--text-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -148,8 +146,8 @@ details.more summary { cursor: pointer; color: var(--text-2); font-size: 12.5px;
 .desk .empty { align-self: center; color: #8a8f9b; font-size: 13px; padding: 20px; max-width: 360px; }
 .desk .io { writing-mode: vertical-rl; transform: rotate(180deg); align-self: center; font-size: 10.5px; letter-spacing: .3em; color: #6f7480; font-weight: 700; }
 
-/* ---------------- strips, knobs and faders (Video Kintsugi's, by way of Lens) */
-/* one row of strips, all as tall as the tallest (and at least as tall as the desk); the desk scrolls past that (Lens) */
+/* ---------------- strips, knobs and faders */
+/* one row of strips, each as tall as the tallest and at least the desk's height; the desk scrolls beyond that */
 .dockbody .desk { flex: 1 1 auto; min-width: 0; min-height: 0; overflow: auto; display: grid; grid-auto-flow: column; grid-auto-columns: max-content;
   grid-template-rows: minmax(min-content, 1fr); justify-content: start; align-items: stretch; column-gap: 8px; }
 .dockbody .desk > .io, .dockbody .desk > .empty { align-self: center; }
@@ -249,14 +247,14 @@ details.more summary { cursor: pointer; color: var(--text-2); font-size: 12.5px;
 .knob .kl { font-size: 10px; color: #a7acb8; white-space: nowrap; }
 .knob .kv { font: 500 10.5px var(--mono); color: #e9eaee; margin-top: -2px; white-space: nowrap; }
 .tg { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; color: #c9ccd4; background: var(--k); border: 1px solid #3a3f4a; border-radius: 6px; padding: 3px 8px; cursor: pointer; }
-.tg i { width: 8px; height: 8px; border-radius: 50%; background: #444955; }
+.tg i { flex: none; width: 8px; height: 8px; border-radius: 50%; background: #444955; }
 .tg[aria-pressed="true"] i { background: var(--gold); box-shadow: 0 0 6px var(--gold); }
 .tg.m[aria-pressed="true"] { background: #f3a33b; color: #1a1408; border-color: #f3a33b; }
 .tg.s[aria-pressed="true"] { background: #4aa3ff; color: #08121f; border-color: #4aa3ff; }
 .tg.m i, .tg.s i { display: none; }
 .tgrow { display: flex; gap: 3px; justify-content: center; flex-wrap: wrap; }
 .tgrow .tg { padding: 3px 7px; }
-.fader { display: flex; flex-direction: column; align-items: center; gap: 4px; margin-top: 4px; flex: 1 1 auto; min-height: 0; }
+.fader { --cap-h: 34px; display: flex; flex-direction: column; align-items: center; gap: 4px; margin-top: 4px; flex: 1 1 auto; min-height: 0; }
 .fader .fv { font: 500 11px var(--mono); color: var(--gold); min-height: 15px; white-space: nowrap; }
 .fader.metered .fv { font-size: 7px; min-height: 9px; }
 .fader .fl { font-size: 10.5px; color: #a7acb8; text-align: center; line-height: 1.2; }
@@ -265,19 +263,17 @@ details.more summary { cursor: pointer; color: var(--text-2); font-size: 12.5px;
 .fader input[type=range] { position: absolute; top: 0; bottom: 0; left: 0; writing-mode: vertical-lr; direction: rtl; appearance: none; -webkit-appearance: none; width: 34px; height: 100%; background: transparent; margin: 0; cursor: ns-resize; border: 0; padding: 0; }
 .fader input[type=range]:focus { outline: none; }
 .fader input[type=range]:focus-visible::-webkit-slider-thumb { outline: 2px solid var(--gold); outline-offset: 1px; }
-/* the slot, and the cap: brushed metal with ridges and a black index line across its middle */
 .fader input[type=range]::-webkit-slider-runnable-track { width: 6px; background: #050608; border-radius: 3px; box-shadow: inset 0 0 0 1px #000, 0 0 0 1px #2c303a; }
-.fader input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 30px; height: 34px; margin-left: -13px; border-radius: 3px; border: 1px solid #0b0c0f;
+.fader input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 30px; height: var(--cap-h); margin-left: -13px; border-radius: 3px; border: 1px solid #0b0c0f;
   background: linear-gradient(to bottom, #55585e 0, #c9ccd1 9%, #8d9097 20%, #e9eaed 33%, #b3b6bc 44%, #16171a 47%, #16171a 53%, #b3b6bc 56%, #eef0f2 67%, #8d9097 80%, #c9ccd1 91%, #55585e 100%);
   box-shadow: 0 2px 4px rgba(0,0,0,.6), inset 1px 0 0 rgba(255,255,255,.25), inset -1px 0 0 rgba(0,0,0,.35); }
 .fader input[type=range]::-moz-range-track { width: 6px; background: #050608; border-radius: 3px; }
 .fader input[type=range]::-moz-range-thumb { width: 28px; height: 32px; border-radius: 3px; border: 1px solid #0b0c0f;
   background: linear-gradient(to bottom, #55585e 0, #c9ccd1 9%, #8d9097 20%, #e9eaed 33%, #b3b6bc 44%, #16171a 47%, #16171a 53%, #b3b6bc 56%, #eef0f2 67%, #8d9097 80%, #c9ccd1 91%, #55585e 100%); }
-/* the scale beside the slot: each label at its value's place on the cap's travel (17 px is half the cap) */
+/* the scale beside the slot: each label at its value's place on the cap's travel */
 .fscale { position: relative; flex: none; width: 12px; height: 100%; }
-.fscale span { position: absolute; left: 0; top: calc(17px + (1 - var(--t)) * (100% - 34px)); transform: translateY(-50%); font: 500 6.5px/1 var(--mono); color: #9a9fab; white-space: nowrap; }
+.fscale span { position: absolute; left: 0; top: calc(var(--cap-h) / 2 + (1 - var(--t)) * (100% - var(--cap-h))); transform: translateY(-50%); font: 500 6.5px/1 var(--mono); color: #9a9fab; white-space: nowrap; }
 .fscale span:empty { width: 5px; height: 1px; background: #5a5f6b; }
-/* the LED ladder and its hold button */
 .leds { flex: none; display: flex; flex-direction: column; align-items: flex-end; gap: 3px; padding-top: 2px; }
 .leds .hold { width: 16px; height: 14px; padding: 0; border-radius: 2px; border: 1px solid #0b0c0f; background: linear-gradient(#5d6068, #3a3d44); cursor: pointer; display: grid; place-items: center; }
 .leds .hold i { width: 7px; height: 5px; border-radius: 1px; background: #23361f; }
@@ -300,12 +296,12 @@ details.more summary { cursor: pointer; color: var(--text-2); font-size: 12.5px;
 .addmenu button span { display: block; color: #9a9fab; font-size: 11.5px; line-height: 1.35; }
 .addmenu button:hover, .addmenu button:focus-visible { background: rgba(217,170,63,.14); outline: none; }
 .addmenu button:disabled { opacity: .45; cursor: default; }
-/* meters: the engine's and the desk's level, as Lens's master strip */
+/* level meters: the engine's and the desk's */
 .master { align-self: stretch; display: flex; flex-direction: column; align-items: center; gap: 3px; width: 38px; padding: 4px 0; }
 .master .mh { font-size: 9px; letter-spacing: .25em; color: #6f7480; font-weight: 700; padding-left: .25em; }
 .master .mm { position: relative; flex: 1 1 0; min-height: 48px; width: 10px; border-radius: 3px; background: #1b1e25; box-shadow: inset 0 0 0 1px #2a2e37; overflow: hidden; }
 .master .mo { position: absolute; bottom: 0; height: 0; width: calc(50% - 1px); background: var(--live); transition: height .12s; }
-.master .mo.cl { left: 0; } .master .mo.cr { right: 0; }          /* left and right, side by side in the same space */
+.master .mo.cl { left: 0; } .master .mo.cr { right: 0; }
 .master .mo.o { background: #f3a33b; } .master .mo.r { background: #ff4a24; }
 .master .mi { font: 600 10px var(--mono); color: #c9ccd3; white-space: nowrap; }
 
@@ -369,8 +365,7 @@ details.more summary { cursor: pointer; color: var(--text-2); font-size: 12.5px;
   #top { padding: 12px 16px; }
 }
 
-/* ================================================================ the synth panel (Make)
-   Panels on the desk's black, as Lens's Instrument and strips; the modulation sources colour-coded. */
+/* ================================================================ the Synth view; --c-*: the modulation sources' colours */
 :root { --c-lfo: #d9aa3f; --c-env: #f08a4b; --c-rand: #a78bfa; --c-macro: #4ac6e8; --c-steps: #5fd38d; --c-follow: #ef6f8f; --c-drift: #7fb8ff; --c-chaos: #ff6a4c; }
 .synth { display: grid; gap: 8px; padding: 10px; border-radius: 16px; background: #101216; border: 1px solid #23272f; color: #e9eaee;
   grid-template-columns: minmax(0, 6.2fr) minmax(0, 3.6fr) minmax(0, 1.9fr);
@@ -425,9 +420,8 @@ details.more summary { cursor: pointer; color: var(--text-2); font-size: 12.5px;
 .bend .addend:hover { color: var(--gold); border-color: var(--gold); }
 .bend .empty { align-self: center; color: #7d8290; font-size: 12px; padding: 0 8px; }
 
-/* the modulation sources: a tile each, with its trace; click one to assign it */
+/* the modulation sources: a tile each, with its trace */
 .modstrip { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 4px; }
-.mt[hidden] { display: none; }
 .mt { position: relative; height: 92px; border-radius: 8px; background: #16191e; border: 1px solid #262a32; cursor: pointer; padding: 5px 6px; text-align: left; color: inherit; font: inherit; overflow: hidden; }
 .mt b { position: relative; z-index: 1; font: 700 11.5px -apple-system, BlinkMacSystemFont, sans-serif; letter-spacing: .06em; color: var(--c); }
 .mt span { position: absolute; right: 6px; top: 6px; z-index: 1; font: 9.5px var(--mono); color: #7d8290; }
@@ -478,7 +472,6 @@ canvas.graph.stepsed { cursor: crosshair; touch-action: none; }
 .noroutes { font-size: 11px; color: #6f7480; }
 .macros { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 6px; justify-items: center; }
 .macro { display: grid; justify-items: center; gap: 3px; --c: var(--c-macro); }
-.macro .knob svg { width: 54px; height: 54px; }
 .macro .knob .karc { stroke: var(--c-macro); }
 .macro input { width: 96px; text-align: center; font: 600 11px -apple-system, BlinkMacSystemFont, sans-serif !important; color: var(--c-macro) !important; }
 .macro .mcount { font: 9.5px var(--mono); color: #6f7480; }
@@ -487,18 +480,18 @@ canvas.graph.stepsed { cursor: crosshair; touch-action: none; }
 .knob .kmod { fill: none; stroke-width: 3; stroke-linecap: round; opacity: .9; }
 .knob .kdot { fill: #fff; opacity: 0; }
 .knob.modded .kdot { opacity: 1; }
-.knob.target { cursor: ns-resize; }
+.knob.target { cursor: ns-resize; --assign-dim: color-mix(in srgb, var(--assign, #d9aa3f) 40%, #3a3f4a); }
 .knob.sending .kdot { opacity: 0; }
 .knob.sending .kv { color: var(--assign, #d9aa3f); }
 /* the selected source's knobs: those it moves already lit, those it could move dimmer */
 .knob.target svg { filter: drop-shadow(0 0 3px color-mix(in srgb, var(--assign, #d9aa3f) 30%, transparent)); }
-.knob.target .kbody { stroke: color-mix(in srgb, var(--assign, #d9aa3f) 40%, #3a3f4a); }
+.knob.target .kbody { stroke: var(--assign-dim); }
 .knob.target.linked svg { filter: drop-shadow(0 0 6px color-mix(in srgb, var(--assign, #d9aa3f) 90%, transparent)); }
 .knob.target.linked .kbody { stroke: var(--assign, #d9aa3f); stroke-width: 2; }
-.knob.target:not(.linked) .kv { color: color-mix(in srgb, var(--assign, #d9aa3f) 40%, #3a3f4a); }   /* its send text in the same dull colour as its rim */
+.knob.target:not(.linked) .kv { color: var(--assign-dim); }
 .strip .st small { display: block; margin-top: 2px; font: 500 9px var(--mono); color: #7d8290; letter-spacing: .02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-/* ---------------- compact: more of the panel on one screen (your request, 2026-11-16) */
+/* ---------------- compact sizes for the synth panel; these override earlier rules for the same selectors */
 .synth { gap: 6px; padding: 7px; }
 .pn { padding: 6px 10px 8px; border-radius: 8px; }
 .pn .ph { margin-bottom: 5px; }
@@ -608,13 +601,12 @@ body.moddrag .knob[data-mod].drophover svg { box-shadow: 0 0 0 3px var(--dragc),
 .ptype:focus { outline: none; border-color: var(--gold); }
 .ptype::placeholder { color: #6f7480; }
 
-/* a macro's handle in the Macros tab: drag it onto a knob, or click to assign */
+/* a macro's handle in the Macros tab */
 .mgrab { font: 600 10px var(--mono); letter-spacing: .08em; color: var(--c); background: #15171c; border: 1px solid color-mix(in srgb, var(--c) 60%, transparent); border-radius: 999px; padding: 2px 9px; cursor: grab; touch-action: none; }
 .mgrab:hover { box-shadow: 0 0 8px color-mix(in srgb, var(--c) 45%, transparent); }
 
 /* settings: the model's data, and about the software */
 .setpanel { position: fixed; inset: 0; z-index: 90; background: rgba(6,7,10,.55); display: grid; place-items: center; padding: 24px; }
-.setpanel[hidden] { display: none; }
 .setbox { width: min(860px, 100%); max-height: min(88vh, 900px); display: flex; flex-direction: column; background: #16191f; color: #e4e6ec; border: 1px solid #2c303a; border-radius: 12px; box-shadow: 0 24px 60px rgba(0,0,0,.55); overflow: hidden; }
 .sethead { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px 0 16px; border-bottom: 1px solid #262a32; }
 .settabs { display: flex; gap: 4px; }
@@ -667,8 +659,7 @@ body.moddrag .knob[data-mod].drophover svg { box-shadow: 0 0 0 3px var(--dragc),
 
 #scope { cursor: pointer; }
 
-/* the stereo field (goniometer), beside the save controls at the foot of the Engine panel's right side */
-.engfoot { flex: 1; display: flex; gap: 10px; align-items: stretch; }
+/* the Engine panel's save controls, and the stereo field (goniometer) */
 .engsave { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; align-self: flex-start; }
 .engfoot .gonio { flex: none; width: 84px; display: flex; flex-direction: column; gap: 3px; align-self: flex-start; }
 .engfoot .gonio canvas { width: 84px; height: 84px; display: block; border-radius: 50%; background: #0d0f13; border: 1px solid #23272f; }
@@ -688,7 +679,6 @@ body.moddrag .knob[data-mod].drophover svg { box-shadow: 0 0 0 3px var(--dragc),
 .scoperow { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .scoperow .readout { flex: 1; min-width: 0; }
 .scopemode.chmode { position: static; flex: none; }
-.scopemode.chmode[hidden] { display: none; }
 .engfoot { justify-content: flex-end; align-items: flex-start; margin-top: 8px; flex: none; }
 
 /* output meters at the foot of the Engine panel's right side */
@@ -710,22 +700,20 @@ body.moddrag .knob[data-mod].drophover svg { box-shadow: 0 0 0 3px var(--dragc),
 #pn-engine .pinfo .readout { display: inline; font: inherit; color: inherit; }
 #pn-engine .pinfo .readout .bad { color: #ff6a4a; }
 
-/* Steer: the pad as tall as the panel allows, the knobs and their controls in a column beside it */
+/* Steer: the dose knobs and their controls in a column beside the pad */
 .steerside { display: flex; flex-direction: column; gap: 10px; }
 .steerctl { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; padding-left: 4px; }
 .steerctl .pchk { font-size: 11px; }
 
-/* Output as a grid: Low-pass and Volume, then Buffer beside the three switches in one column */
+/* Output as a grid */
 #pn-out .outk { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: center; justify-items: center; gap: 8px 6px; align-content: start; }
-#pn-out .outtg { display: flex; flex-direction: column; gap: 4px; width: 100%; }
-#pn-out .outtg .tg { width: 100%; justify-content: flex-start; }
 .tg:focus:not(:focus-visible) { outline: none; box-shadow: none; }
 #pn-out { display: flex; flex-direction: column; }
 #pn-out .outp { flex: 1; }
 #pn-out #outmeter { display: flex; }
 #pn-out #outmeter .master { height: auto; flex: 1; }
 
-/* Steer's dose history, and Output's automatic stages, in the panels' lower corners */
+/* Steer's dose history, and Output's automatic stages */
 .dosehist { margin-top: auto; padding-left: 4px; }
 .dosehist canvas { width: 100%; max-width: 150px; height: 60px; display: block; border-radius: 5px; background: #0d0f13; border: 1px solid #23272f; }
 .dosehist .dhk { display: flex; gap: 8px; font: 7.5px var(--mono); color: #6f7480; margin-top: 3px; text-transform: uppercase; letter-spacing: .06em; }
@@ -741,13 +729,12 @@ body.moddrag .knob[data-mod].drophover svg { box-shadow: 0 0 0 3px var(--dragc),
 .stages .sv { font: 600 8.5px var(--mono); color: #cfd3dc; text-align: right; letter-spacing: 0; text-transform: none; }
 
 .master .mhold { position: absolute; height: 2px; width: calc(50% - 1px); background: #fbfcfe; display: none; transform: translateY(1px); }
-.master .mhold.cl { left: 0; } .master .mhold.cr { right: 0; } .master .mhold.r { background: #ff4a24; }
+.master .mhold.cl { left: 0; } .master .mhold.cr { right: 0; }
 
 .outm .ot b.r { background: #ff4a24; opacity: 1; }
-.master .mhold.o { background: #f3c93b; }
 .outm .ot b.o { background: #f3c93b; opacity: 1; }
 
-/* hold lines and peak ticks: green when the peak is fine (a lighter green than the bars, so the line shows where they meet) */
+/* hold lines and peak ticks: green when the peak is fine, lighter than the bars so the line shows where they meet */
 .master .mhold { background: #9bffbf; }
 .outm .ot b { background: #9bffbf; }
 .master .mhold.o { background: #f3c93b; } .master .mhold.r { background: #ff4a24; }
@@ -768,17 +755,15 @@ body.moddrag .knob[data-mod].drophover svg { box-shadow: 0 0 0 3px var(--dragc),
 .dyrows { display: flex; flex-direction: column; gap: 5px; }
 .dled { display: flex; gap: 1px; height: 6px; }
 .dled i { flex: 1; border-radius: 1px; background: #1a1d23; box-shadow: inset 0 0 0 1px #2a2e36; }
-.dled.c i.on { background: #c08a2c; box-shadow: none; }          /* amber, as the Compressor card's GR meter */
+.dled.c i.on { box-shadow: none; }
 .dled.g i.on { background: #4dff8a; box-shadow: 0 0 4px #4dff8a88; }
 /* Output tightened so Dynamics fits in the row's height */
 #pn-out .outk { gap: 4px 6px; }
-#pn-out .outtg { gap: 3px; }
-#pn-out .outtg .tg { padding: 2px 8px; }
 #pn-out .outcol2 { gap: 6px; }
 #pn-out .stages, .dyrows { gap: 3px; }
 
-/* the OUT meter as cells: 3 px lit, 1 px gap, green to −6 dB, amber to −1, red above (60 dB scale);
-   the unlit cells show the same colours, dark */
+/* the OUT meter as cells: 3 px lit and 1 px gap (app.js meter() counts 4 px a cell); on its 60 dB scale, green to −6 dB,
+   amber to −1 dB, red above */
 .master.cells .mo { height: 100%; transition: none; clip-path: inset(100% 0 0 0);
   background: linear-gradient(to top, #3ddc84 0 90%, #f3a33b 90% 98.33%, #ff4a24 98.33%); }
 .master.cells .mm { background: linear-gradient(to top, #15301f 0 90%, #3a2a12 90% 98.33%, #3d1810 98.33%); box-shadow: none; border: 1px solid #2a2e37; }
@@ -786,8 +771,7 @@ body.moddrag .knob[data-mod].drophover svg { box-shadow: 0 0 0 3px var(--dragc),
   background: repeating-linear-gradient(to top, transparent 0 3px, #111318 3px 4px); }
 .master.cells .mhold { z-index: 2; }
 
-/* CPU and GPU load, in the top bar after the model info: one thin box, its figures fixed in width
-   so a changing number does not move the model info */
+/* CPU and GPU load in the top bar; the figures have a fixed width so a changing number does not move the model info */
 .loads { flex: none; display: flex; align-items: center; gap: 10px; padding: 3px 9px; border: 1px solid rgba(255,255,255,.1); border-radius: 6px;
   font-size: 11.5px; color: color-mix(in srgb, var(--s-text-2) 55%, transparent); white-space: nowrap; }
 .loads b { display: inline-block; min-width: 4.2ch; text-align: left; font: 500 11.5px var(--mono); font-variant-numeric: tabular-nums; color: color-mix(in srgb, var(--s-text-2) 85%, transparent); }
@@ -795,10 +779,16 @@ body.moddrag .knob[data-mod].drophover svg { box-shadow: 0 0 0 3px var(--dragc),
 @media (max-width: 900px) { .loads { display: none; } }
 /* Output: Low-pass, Volume and Buffer in a row, the four switches two by two beneath */
 #pn-out .outk { grid-template-columns: repeat(3, minmax(0, 1fr)); }   /* a long readout cannot widen the row into the meter */
-#pn-out .outtg { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; gap: 3px; }
-#pn-out .outtg .tg { padding: 2px 6px; font-size: 10.5px; gap: 5px; }
+#pn-out .outtg { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; gap: 3px; width: 100%; container: outtg / inline-size; }
+#pn-out .outtg .tg { width: 100%; min-width: 0; justify-content: flex-start; white-space: nowrap; padding: 2px 6px; font-size: 10.5px; gap: 5px; }
+@container outtg (max-width: 139.9px) { #pn-out .outtg .tg { padding: 2px 4px; gap: 4px; font-size: 10px; } #pn-out .outtg .tg i { width: 6px; height: 6px; } }   /* buttons of 56 px fit De-click at 10 px */
+@container outtg (max-width: 114.9px) {                         /* buttons of 38 to 55 px: the state as a fill, no light */
+  #pn-out .outtg .tg { padding: 2px 2px; font-size: 9px; justify-content: center; }
+  #pn-out .outtg .tg i { display: none; }
+  #pn-out .outtg .tg[aria-pressed="true"] { background: var(--gold); color: #1a1408; border-color: var(--gold); }
+}
 
-/* ---------------- the effect chain: add, remove, drag to reorder (0.1.6) */
+/* ---------------- the effect chain: add, remove, drag to reorder */
 .fxrow .empty { flex: 1; align-self: center; color: #6f7480; font-size: 11.5px; padding: 10px 4px; }
 .fxadd { flex: none; width: 34px; }
 .fxh button.x { background: none; border: 0; color: #6f7480; cursor: pointer; font-size: 11px; padding: 0 2px; }
@@ -812,7 +802,7 @@ body.moddrag .knob[data-mod].drophover svg { box-shadow: 0 0 0 3px var(--dragc),
 .dropl { box-shadow: inset 3px 0 0 var(--gold); }
 .dropr { box-shadow: inset -3px 0 0 var(--gold); }
 
-/* ---------------- an effect card, in the manner of the Engine and Output panels (0.1.7) */
+/* ---------------- an effect card */
 .fxs { --fxc: #3fb6d9; display: flex; flex-direction: column; min-width: 0; background: #20242b; border: 1px solid #2c303a; border-radius: 8px; padding: 6px 8px 7px; }
 .fxs.tone { --fxc: #f3a33b; }
 .fxs.off > :not(.fxh) { opacity: .38; }
@@ -852,7 +842,7 @@ body.moddrag .knob[data-mod].drophover svg { box-shadow: 0 0 0 3px var(--dragc),
 .fxcount span { font: 600 8px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: #6f7480; }
 .fxcount b { font: 600 12px var(--mono); color: #e9eaee; }
 
-/* the effect chain in one line, scrolled sideways, as the Model layers row (0.1.7) */
+/* the effect chain in one row, scrolled sideways */
 #pn-fx .fxrow { display: flex; flex-wrap: nowrap; gap: 8px; align-items: stretch; overflow-x: auto; padding-bottom: 4px; }
 #pn-fx .fxrow .fxs { flex: 0 0 232px; }
 #pn-fx .fxrow .fxs.narrow { flex-basis: 146px; }
@@ -861,7 +851,7 @@ body.moddrag .knob[data-mod].drophover svg { box-shadow: 0 0 0 3px var(--dragc),
 #pn-fx .fxs.zig .fxkr + .fxkr { margin-top: -14px; }
 #pn-fx .fxrow .empty { flex: 0 1 auto; }
 .io { flex: none; align-self: center; writing-mode: vertical-rl; transform: rotate(180deg); font: 600 9px var(--mono); letter-spacing: .18em; text-transform: uppercase; color: #5d626d; }
-/* a + in each gap, shown when the pointer is over it, as in Abliterton Lens */
+/* a + in each gap, shown when the pointer is over it */
 .addgap { flex: none; position: relative; z-index: 1; width: 16px; margin: 0 -12px; padding: 0; border: 0; background: none; cursor: pointer; align-self: stretch; }
 .addgap::before { content: ""; position: absolute; left: 7px; top: 8px; bottom: 8px; width: 2px; border-radius: 1px; background: var(--gold); opacity: 0; transition: opacity .12s; }
 .addgap .plus { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center;
@@ -872,7 +862,7 @@ body.moddrag .knob[data-mod].drophover svg { box-shadow: 0 0 0 3px var(--dragc),
 .addmenu .am-where { padding: 4px 8px 6px; color: #8a8f9b; font-size: 11.5px; }
 #pn-fx.bypassed .fxrow { opacity: .45; }
 
-/* Steer as the first card of the Model layers row: fixed at layer 6, outside the row that scrolls */
+/* Steer as the first card of the Model layers row, outside the row that scrolls */
 #pn-bend .bendrow { display: flex; gap: 8px; align-items: stretch; min-width: 0; }
 #pn-bend .bendrow > .bend { flex: 1; min-width: 0; }
 .bend .strip.steercard, .strip.steercard { width: auto; flex: none; align-items: stretch; background: #22262e; }
@@ -916,7 +906,7 @@ body.moddrag .knob[data-mod].drophover svg { box-shadow: 0 0 0 3px var(--dragc),
 .flow .fgo:hover .farr.out { fill: #c9a15e; }
 .flow .fh.fl { text-anchor: start; }
 .flow .fh.fr { text-anchor: end; }
-/* Steer folded (by its fold button, or when off): its light, its name upright, and the fold button */
+/* Steer folded, by its fold button or when off */
 .strip.steercard.bypassed, .strip.steercard.folded { width: 38px; padding: 10px 4px; align-items: center; }
 .strip.steercard.bypassed > :not(.sh), .strip.steercard.bypassed .sat, .strip.steercard.folded > :not(.sh), .strip.steercard.folded .sat { display: none; }
 .strip.steercard.bypassed .sh, .strip.steercard.folded .sh { flex-direction: column; align-items: center; gap: 10px; }
@@ -926,7 +916,7 @@ body.moddrag .knob[data-mod].drophover svg { box-shadow: 0 0 0 3px var(--dragc),
 .steercard .fold { flex: none; width: 16px; height: 16px; padding: 0; border: 1px solid #3a3f4a; border-radius: 4px; background: none; color: #8a8f9b; font: 600 11px/1 var(--mono); cursor: pointer; }
 .steercard .fold:hover { color: var(--gold); border-color: var(--gold); }
 .flow .fsweep { fill: rgba(109,143,179,.10); transition: opacity .4s; pointer-events: none; }
-/* the unit displays change softly: a reading every 120 ms never snaps on and off */
+/* readings arrive every 120 ms while playing (app.js poll); the transitions smooth the steps */
 .strip .uview i, .strip .uview b, .strip .sq span, .strip .sq div { transition: opacity .3s, background-color .3s, color .3s, box-shadow .3s; }
 .strip .spx .px i { transition: opacity .35s, background-color .35s, box-shadow .35s; }
 .flow #fl-fx rect { transition: fill .3s; }
@@ -952,13 +942,12 @@ html, body { overscroll-behavior-x: none; }
 .fxpan .track { position: relative; width: 64px; height: 3px; background: #1a1d23; border-radius: 2px; }
 .fxpan .track::before { content: ""; position: absolute; left: 50%; top: -2px; width: 1px; height: 7px; background: #3a3f4a; }
 .fxpan .track i { position: absolute; left: 50%; top: 50%; width: 5px; height: 5px; margin: -2.5px 0 0 -2.5px; border-radius: 50%; background: #a8875a; transition: left .12s linear; }
-/* how Speed slows the sound, beside its knob */
 .engl #engknobs { flex-wrap: wrap; }
 .engfoot .widen { display: grid; grid-template-columns: 58px 58px; gap: 6px 2px; justify-items: center; }
 .engfoot .widen .knob { width: 54px; box-sizing: border-box; }
-/* a knob that does nothing in the current setting (Speed while Mode is Off): dimmed, and it does not turn */
+/* a knob with no effect in the current setting (Speed while Mode is Off) */
 .knob.disabled { opacity: .35; pointer-events: none; }
-/* Output: when the row is taller than its controls, they sit together in the middle rather than split top and bottom */
+/* Output: the controls centred together when the row is taller than they are */
 #pn-out .outcol2 { justify-content: center; }
 #pn-out .outcol2 .outk { flex: none; }
 #pn-out .dyn { margin-top: 10px; }
@@ -966,16 +955,13 @@ html, body { overscroll-behavior-x: none; }
 .eng > .engl { display: flex; flex-direction: column; min-height: 0; }
 .eng > .engl #engknobs { margin-top: auto; margin-bottom: auto; padding-top: 6px; padding-bottom: 6px; }
 .eng > .engl .engsave { flex: none; align-self: stretch; margin-top: 0; }
-/* room between the Engine's title row and the preset */
 .eng > .engl > .prow:first-child { margin-top: 18px; }
-/* the engine menu in the panel's header at normal weight */
-/* the model's name in the Engine header: it is chosen in Settings, Model, which a click opens */
+/* the model's name in the Engine header; a click opens Settings, Model */
 .engname { background: none; border: 1px solid transparent; border-radius: 6px; padding: 3px 6px; color: #c9ccd4; font: 400 11.5px var(--mono); cursor: pointer; white-space: nowrap; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .engname:hover, .engname:focus-visible { border-color: #2c303a; color: #f2f3f5; outline: none; }
-/* the Engine's knobs in a plain two-by-two grid, each centred in its column; the die sits at Seed's shoulder and takes no room */
+/* the Engine's knobs; Seed's die is placed absolutely so it takes no room */
 .engl #engknobs { display: grid; grid-template-columns: 1fr 2fr; row-gap: 0; justify-items: center; align-items: end; padding: 0; }
 .engl #engknobs .samppair { display: grid; grid-template-columns: 1fr 1fr; justify-items: center; width: 100%; }
-/* the prompt, quoted and typed, with Guidance beside it */
 .engl .promptrow { display: flex; align-items: flex-end; gap: 8px; }
 .engl .promptrow .pcol { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
 .engl #engknobs .seedpair { position: relative; display: block; }
@@ -983,14 +969,14 @@ html, body { overscroll-behavior-x: none; }
 /* the channel meters' scale: the end labels inside the bar's ends, so a narrow meter does not run them together */
 .outm .os span:first-child { transform: none; }
 .outm .os span:last-child { transform: translateX(-100%); }
-/* the Engine's right side under the scope: the four knobs in a row, the levels under them, the stereo field beside both */
+/* the Engine's right side under the scope: the knobs, the levels under them, the stereo field beside both */
 .engfoot { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "knobs field" "levels field"; gap: 8px 14px; align-items: start; }
 .engfoot .widen { grid-area: knobs; grid-template-columns: 58px 58px auto; justify-content: start; align-items: center; }
 .engfoot .outcol { grid-area: levels; margin-right: 0; min-width: 0; }
 .engfoot .gonio { grid-area: field; align-self: center; }
-/* Mono and Stereo in the scope's lower left corner: they set how the scope draws */
+/* Mono and Stereo in the scope's lower left corner */
 .scopewrap .scopemode.chmode { position: absolute; left: 6px; bottom: 6px; top: auto; right: auto; }
-/* a pair of knobs under a thin bracket with its name in the middle: Mode and Speed (SPEED CONTROL), Width and Spread (STEREO) */
+/* a pair of knobs under a thin bracket, its name (data-label) in the middle */
 .engfoot .widen { grid-template-columns: auto auto; gap: 0 6px; justify-content: space-evenly; }
 .kgroup { position: relative; padding-top: 6px; }
 .engfoot .widen .kgroup { display: grid; grid-template-columns: 54px 54px; justify-items: center; gap: 0 2px; border: 0; margin: 0; order: 0; }
@@ -998,43 +984,36 @@ html, body { overscroll-behavior-x: none; }
 .kgroup::before { content: attr(data-label); position: absolute; top: -4px; left: 50%; transform: translateX(-50%); z-index: 1; padding: 0 4px; background: #1b1e24; font: 600 6.5px/8px var(--mono); letter-spacing: .12em; color: #7d8290; white-space: nowrap; pointer-events: none; }
 /* the model's format and state, centred in the header's space after the engine menu */
 #pn-engine .pinfo { flex: 1; text-align: center; }
-/* a little room either side of the sampler, whatever height the panel has */
 .eng > .engl #pform { margin-bottom: 12px; }
 #pform { align-items: center; }
 #pform .knob.kmini { margin-left: 4px; transform: translateY(7px); }   /* its dial level with the Prompt box, the value and label hanging below */
 .eng > .engl .engsave { margin-top: 6px; }
-/* a mini knob, as in Dynamics: Strength beside the prompt */
+/* small knobs: Strength beside the prompt, Volume in the top bar */
 .knob.kmini { padding: 0; }
 .knob.kmini svg { width: 28px; height: 28px; }
 .knob.kmini .kv { font-size: 8px; margin-top: -3px; }
 .knob.kmini .kl { font-size: 7px; color: #8a8f9b; }
-/* the Prompt box's text a size down, so more of a typed style shows */
 #pform #ptype { font-size: 10px; }
-/* the quoted prompt the width of the preset box above it, inside the two arrows */
+/* 28px, about a preset arrow and its gap, so the quoted prompt lines up with the preset box */
 .eng > .engl .pnote#prompt { margin-left: 28px; margin-right: 28px; }
-/* the quoted prompt keeps two lines' height whatever its length: a long one ends in an ellipsis (the whole of it on hover) and moves nothing below it */
+/* two lines high whatever the prompt's length, so a long one moves nothing below it */
 .eng > .engl .pnote#prompt { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; line-height: 1.35; height: 2.7em; min-height: 0; flex: none; }
 .eng > .engl .pnote#prompt { font-style: italic; }
 
 .knob.boosted .kv { color: var(--gold); }
 #pn-out .outk .knob { min-width: 0; max-width: 100%; }
 #pn-out .outk .knob .kv { max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
-/* the Output panel's top knobs small, as the Dynamics knobs are, a little larger */
 #outknobs .knob { padding: 0; }
 #outknobs .knob svg { width: 30px; height: 30px; }
 #outknobs .knob .kv { font-size: 8.5px; margin-top: -3px; }
 #outknobs .knob .kl { font-size: 7.5px; color: #8a8f9b; }
-#pn-out .outtg .tg { white-space: nowrap; min-width: 0; overflow: hidden; text-overflow: ellipsis; }   /* De-click on one line */
-.tg i { flex: none; }                                            /* the light keeps its size when a label is long for its button */
-#pn-out .outtg { container: outtg / inline-size; }
-@container outtg (max-width: 139.9px) { #pn-out .outtg .tg { padding: 2px 4px; gap: 4px; font-size: 10px; } #pn-out .outtg .tg i { width: 6px; height: 6px; } }
 
-/* the ? at an effect card's foot, right, as on the unit cards: its help box */
+/* an effect card's (?) and its help box, the same as the unit cards' .strip .qhelp */
 .fxs { position: relative; }
 .fxs .qhelp { position: absolute; right: 6px; bottom: 6px; width: 17px; height: 17px; padding: 0; border-radius: 50%; border: 1px solid #3a3f4a; background: #1a1d23; color: #9aa0ac; font: 700 10px/1 var(--mono); cursor: pointer; }
 .fxs .qhelp:hover, .fxs .qhelp:focus-visible { color: #14161b; background: var(--gold); border-color: var(--gold); outline: none; }
 
-/* a unit setting that has no effect while another is set as it is (units.HOST_WHEN) */
+/* a unit setting dimmed while another setting's value leaves it without effect (the manifest's `when`, units._when) */
 .unit-inert { opacity: 0.32; }
 .addmenu .am-sep { height: 1px; margin: 4px 6px; background: #2c303a; }
 .addmenu .am-ck { display: inline-block; width: 14px; font-style: normal; color: var(--gold); }
@@ -1073,20 +1052,16 @@ html, body { overscroll-behavior-x: none; }
   .engfoot { grid-template-areas: "knobs knobs" "levels field"; }
   .engfoot .gonio { align-self: start; }
 }
-/* a unit's direction when there are only a few: one button each, the chosen one lit (gold, like a switch that is on) */
+/* a unit's direction choices, one button each (.dseg) */
 .strip .dseg { display: flex; flex-direction: column; gap: 3px; width: 100%; }
 .strip .sgrid .dseg { grid-column: 1 / -1; }
-.strip .dseg .dsl { font-size: 10px; color: #8a8f9b; text-align: center; }
 .strip .dseg .dsb { display: flex; border: 1px solid #3a3f4a; border-radius: 6px; overflow: hidden; background: var(--k); }
 .strip .dseg button { flex: 1; min-width: 0; padding: 4px 2px; border: 0; background: none; color: #a9adb7; font: 500 11px inherit; cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.strip .dseg button + button { border-left: 1px solid #3a3f4a; }
 .strip .dseg button:hover { color: #e9eaee; }
-.strip .dseg button[aria-pressed="true"] { background: rgba(217,170,63,.18); color: var(--gold); }
 .strip .dseg button:focus-visible { outline: 1px solid var(--gold); outline-offset: -1px; }
 /* with a direction row first, the switches after it pair up as they would without it */
 .strip .sgrid > .dseg ~ :last-child:nth-child(odd) { grid-column: auto; justify-self: center; width: auto; }
 .strip .sgrid > .dseg ~ :last-child:nth-child(even) { grid-column: 1 / -1; justify-self: center; width: calc(50% - 4px); }
-.strip:not(.wide) .dseg button { font-size: 10px; padding: 4px 1px; letter-spacing: -0.1px; }
 /* Settings, Model: the model in use, one button for each engine */
 .engpick { display: flex; gap: 8px; flex-wrap: wrap; margin: 4px 0 6px; }
 .engpick button { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-width: 190px; padding: 8px 12px; border: 1px solid #3a3f4a; border-radius: 8px; background: #14161b; color: #c9ccd4; cursor: pointer; text-align: left; }
@@ -1096,8 +1071,8 @@ html, body { overscroll-behavior-x: none; }
 .engpick button[aria-pressed="true"] { border-color: var(--gold); background: rgba(217,170,63,.12); }
 .engpick button[aria-pressed="true"] span { color: var(--gold); }
 .setnote { font-size: 11.5px; color: #8a8f9b; margin: 0 0 4px; }
-/* compact, as the effect cards' segmented switches (.fxseg): the label inline in small capitals, small segments, the chosen one gold;
-   and a unit card's switches sized to their text, centred, instead of filling the grid */
+/* the direction segments styled as the effect cards' .fxseg, and a unit card's switches sized to their text; these override
+   the .dseg and .sgrid rules above */
 .strip .dseg { flex-direction: row; align-items: stretch; width: auto; max-width: 100%; justify-self: center; align-self: center; gap: 0; border: 1px solid #2c303a; border-radius: 5px; overflow: hidden; background: rgba(13,15,19,.6); }
 .strip:not(.wide) .dseg { align-self: stretch; }
 .strip .dseg .dsl { display: flex; align-items: center; padding: 0 6px; font: 600 8px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: #6f7480; border-right: 1px solid #2c303a; text-align: left; }
@@ -1105,14 +1080,12 @@ html, body { overscroll-behavior-x: none; }
 .strip .dseg button, .strip:not(.wide) .dseg button { padding: 3px 8px; font: 600 9.5px var(--mono); letter-spacing: 0; color: #8a8f9b; }
 .strip .dseg button + button { border-left: 1px solid #2c303a; }
 .strip .dseg button[aria-pressed="true"] { background: rgba(217,170,63,.14); color: var(--gold); }
-.strip .sgrid .tg { justify-self: center; padding: 2px 9px; font-size: 10.5px; }
 .strip .sgrid > :last-child:nth-child(odd), .strip .sgrid > .dseg ~ :last-child:nth-child(even) { width: auto; }
 /* names in full; on a narrow card the label goes above the segments */
 .strip .dseg button, .strip:not(.wide) .dseg button { flex: 1 0 auto; min-width: auto; overflow: visible; text-overflow: clip; }
 .strip:not(.wide) .dseg { flex-direction: column; }
 .strip:not(.wide) .dseg .dsl { justify-content: center; padding: 2px 0; border-right: 0; border-bottom: 1px solid #2c303a; }
-.strip:not(.wide) .dseg button { padding: 3px 4px; }
-/* smaller type in a unit card's switches and direction segments, so the names fit; both switches the same size treatment */
+/* smaller type in a unit card's switches and direction segments, so the names fit */
 .strip .sgrid .tg, .strip .sgrid > .tg:last-child { justify-self: center; width: auto; grid-column: auto; padding: 1px 7px; font-size: 9.5px; gap: 5px; }
 .strip .sgrid .tg i { width: 6px; height: 6px; }
 .strip .dseg button, .strip:not(.wide) .dseg button { font-size: 8.5px; padding: 2px 6px; }
@@ -1126,23 +1099,19 @@ html, body { overscroll-behavior-x: none; }
 .hdrmeter.master .mh { display: none; }
 .hdrmeter.master .mm { flex: none; width: 8px; height: 30px; min-height: 0; }
 .hdrmeter.master .mi { font-size: 9px; min-width: 30px; text-align: right; color: #9aa0ab; }
-.hdrout .knob.kmini { transform: translateY(3px); }
-.hdrout .knob.kmini .kl { display: none; }                       /* plain in the top bar; its tooltip names it */
-.hdrout .knob.kmini { transform: translateY(2px); }
-.hdrmeter.master .mi { display: none; }                          /* in the top bar it is an indicator; the figure is on the Output panel's OUT meter */
-.hdrout .knob.kmini .kv { display: none; }                       /* the dial alone in the top bar; its tooltip and the Output panel give the value */
-.hdrout .knob.kmini { transform: none; }
-/* Settings, Display: the theme as a compact segmented switch (as the effect cards' .fxseg) */
+.hdrout .knob.kmini .kl { display: none; }
+.hdrmeter.master .mi { display: none; }                          /* the figure is on the Output panel's OUT meter */
+.hdrout .knob.kmini .kv { display: none; }
+/* Settings, Display: the theme switch, styled as the effect cards' .fxseg */
 .setseg { display: inline-flex; border: 1px solid #2c303a; border-radius: 5px; overflow: hidden; background: rgba(13,15,19,.6); margin: 2px 0 6px; }
 .setseg button { padding: 3px 12px; border: 0; background: none; color: #8a8f9b; font: 600 11px var(--mono); cursor: pointer; }
 .setseg button + button { border-left: 1px solid #2c303a; }
 .setseg button:hover { color: #e9eaee; }
 .setseg button[aria-pressed="true"] { color: var(--gold); background: rgba(217,170,63,.14); }
-/* the Compressor's gain reduction: the drive meter's cells, all amber, and the reduction in dB in place of CLIP */
-.fxmeter.grm .cells i.on { background: #c08a2c; }
+/* the Compressor's gain reduction: its figure in dB in place of CLIP */
 .fxmeter.grm b { min-width: 26px; text-align: right; border: 0; padding: 0; color: #9aa0ab; letter-spacing: 0; font-size: 8px; }
-/* gain reduction in three bands, on the Compressor card and in Dynamics alike: cells 1-4 (up to 4 dB) green, 5-7 (6-10 dB) yellow,
-   8-10 (12-20 dB) red */
+/* gain reduction in three bands, on the Compressor card and in Dynamics alike (the cells are app.js GR_CELLS, in dB):
+   cells 1-4 (up to 4 dB) green, 5-7 (6-10 dB) yellow, 8-10 (12-20 dB) red */
 .fxmeter.grm .cells i.on, .dled.c i.on { background: #4d9f5a; }
 .fxmeter.grm .cells i.on:nth-child(n+5), .dled.c i.on:nth-child(n+5) { background: #d4b13a; }
 .fxmeter.grm .cells i.on:nth-child(n+8), .dled.c i.on:nth-child(n+8) { background: #c84a38; }

@@ -12,10 +12,10 @@ from typing import Any, Dict, List, Optional
 
 import yaml
 
-from . import ROOT
+from . import ROOT, DATA
 
 FILE = ROOT / "backend" / "config" / "presets.md"
-USER = ROOT / "data" / "prompts.json"
+USER = DATA / "prompts.json"
 MAX_PROMPT = 240
 GROUP = "Your prompts"
 

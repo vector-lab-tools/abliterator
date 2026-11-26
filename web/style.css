@@ -53,6 +53,9 @@ header.bar { position: relative; z-index: 20; display: flex; align-items: center
 .modelchip { margin-left: auto; font-size: 12.5px; color: color-mix(in srgb, var(--s-text-2) 55%, transparent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 .modelchip b { color: color-mix(in srgb, var(--s-text-2) 70%, transparent); font-weight: 500; }
 .modelchip .busy { color: #f3c969; }
+.modelchip .mbar { display: inline-block; vertical-align: middle; width: 120px; height: 6px; margin: 0 6px 0 10px; border-radius: 3px; background: color-mix(in srgb, #f3c969 18%, transparent); overflow: hidden; }
+.modelchip .mbar i { display: block; height: 100%; background: #f3c969; transition: width 0.4s linear; }
+.modelchip .mpc { color: #f3c969; font-variant-numeric: tabular-nums; }
 .icon-btn { flex: none; background: transparent; border: 1px solid transparent; border-radius: 6px; cursor: pointer; width: 30px; height: 30px; display: inline-grid; place-items: center; color: var(--s-text-2); font-size: 16px; padding: 0; }
 .icon-btn:hover { border-color: rgba(255,255,255,.25); color: var(--s-text); }
 

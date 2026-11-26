@@ -34,12 +34,12 @@ from typing import Any, Dict, List, Optional
 
 import numpy as np
 
-from . import ROOT
+from . import ROOT, DATA
 from .measure import timbre_distance
 
 RESULTS = ROOT / "_tmp" / "sweep" / "results.jsonl"
 UNITS = ROOT / "_tmp" / "sweep" / "units.jsonl"
-FILE = ROOT / "data" / "calibration" / "mrt2_small.json"
+FILE = DATA / "calibration" / "mrt2_small.json"
 DEFAULTS = {"guidance": 3.0, "temperature": 1.3, "top_k": 40}
 EVEN = 0.4            # the share of each knob's travel spread evenly over its steps; the rest follows the change
 CLIP, SILENCE, DROP_DB, FLAT_ABS, FLAT_REL, LOUD_DB = 0.001, 0.25, 24.0, 0.3, 3.0, -12.0

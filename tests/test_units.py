@@ -50,7 +50,7 @@ def test_vau_presets_match_ours():
     theirs = vau.presets_for("mrt2_small")
     if theirs is None:
         pytest.skip("VAU before 0.3 has no presets")
-    mine = json.loads((units.ROOT / "data" / "presets" / "mrt2_small.json").read_text())["units"]
+    mine = json.loads((units.SHIPPED / "presets" / "mrt2_small.json").read_text())["units"]
     assert set(theirs["units"]) == set(mine)
     for uid, ps in mine.items():
         t = {q["name"]: q for q in theirs["units"][uid]["presets"]}

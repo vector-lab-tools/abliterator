@@ -24,10 +24,10 @@ from pathlib import Path
 
 import numpy as np
 
-from . import ROOT, TOOL, VERSION
+from . import ROOT, DATA, TOOL, VERSION
 from . import presets as pr
 
-RENDERS = ROOT / "data" / "renders"
+RENDERS = DATA / "renders"
 
 
 def _engine():

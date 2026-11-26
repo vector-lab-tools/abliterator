@@ -39,11 +39,11 @@ import vau
 from vau import collection
 from vau.manifest import space as vau_space
 
-from . import ROOT
+from . import DATA, SHIPPED
 from . import directions as dr
 
 CAPABILITIES = {"stream", "output", "ordered", "stats", "pca", "directions", "contrasts"}
-STATS = ROOT / "data" / "stats"
+STATS = DATA / "stats"
 LATENCY = {"class": "live", "ms": 0, "invalidates_cache": False,
            "note": "heard from the next frame; a move re-attaches the strip and resets its memory"}
 
@@ -95,7 +95,7 @@ HOST_PRESETS = {
 
 # The other units' presets, from the unit review (2026-11-23: searched on six seeds, checked on ten others), with the
 # figures each was chosen on.
-PRESETS_FILE = ROOT / "data" / "presets" / "mrt2_small.json"
+PRESETS_FILE = SHIPPED / "presets" / "mrt2_small.json"
 
 
 def _file_presets() -> Dict[str, List[Dict[str, Any]]]:
@@ -145,7 +145,7 @@ HOST_NOTES = {
 }
 
 
-CALIBRATION = ROOT / "data" / "calibration" / "mrt2_small.json"
+CALIBRATION = DATA / "calibration" / "mrt2_small.json"
 _cal: Dict[str, Any] = {"mtime": None, "controls": {}}
 
 

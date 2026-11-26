@@ -48,7 +48,7 @@ from typing import Any, Dict, List, NamedTuple, Optional
 import numpy as np
 from scipy.signal import ellip, lfilter, sosfilt
 
-from . import ROOT
+from . import SHIPPED
 
 SR = 48000
 CHUNK = 240                     # 5 ms: no loop here is shorter
@@ -136,7 +136,7 @@ def clean(slots: Optional[List[Dict[str, Any]]]) -> List[Dict[str, Any]]:
 
 # Named presets for each type, measured offline; data/presets/fx.json holds how, and the figures each was kept on.
 # Applying one merges its params into the slot's. A type has none if the file is missing.
-PRESETS_FILE = ROOT / "data" / "presets" / "fx.json"
+PRESETS_FILE = SHIPPED / "presets" / "fx.json"
 
 
 def _file_presets() -> Dict[str, List[Dict[str, Any]]]:

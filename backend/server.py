@@ -29,7 +29,9 @@ from fastapi import FastAPI, Request
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 
-from abliterator import ROOT, TOOL, VERSION
+from abliterator import ROOT, DATA, TOOL, VERSION, seed
+
+seed()
 from abliterator import directions as dr
 import atexit
 
@@ -338,7 +340,7 @@ async def lead(request: Request):
 
 @app.get("/api/sessions")
 def sessions():
-    folder = ROOT / "data" / "sessions"
+    folder = DATA / "sessions"
     return {"sessions": sorted((p.stem for p in folder.glob("*.json")), reverse=True) if folder.exists() else []}
 
 
@@ -414,7 +416,7 @@ def calibration_grid():
 def calibration_clip(folder: str, name: str):
     if not re.fullmatch(r"[a-z_]+(-[a-z_]+){0,2}", folder) or not re.fullmatch(r"[a-z-]+-s\d+--?[0-9.]+", name):
         return err("No such clip.", 404)
-    p = ROOT / "data" / "calibration" / "clips" / folder / f"{name}.flac"
+    p = DATA / "calibration" / "clips" / folder / f"{name}.flac"
     if not p.exists():
         return err("No such clip.", 404)
     return FileResponse(p, media_type="audio/flac")
@@ -618,13 +620,13 @@ NAME = re.compile(r"[A-Za-z0-9-]+")
 
 @app.get("/api/exports")
 def exports():
-    folder = ROOT / "data" / "exports"
+    folder = DATA / "exports"
     return {"exports": sorted((p.stem for p in folder.glob("*.json")), reverse=True) if folder.exists() else []}
 
 
 @app.get("/api/exports/{name}.{ext}")
 def export_file(name: str, ext: str):
-    p = ROOT / "data" / "exports" / f"{name}.{ext}"
+    p = DATA / "exports" / f"{name}.{ext}"
     if ext not in ("wav", "json") or not NAME.fullmatch(name) or not p.exists():
         return err("No such export.", 404)
     return FileResponse(p, media_type="audio/wav" if ext == "wav" else "application/json", filename=p.name)
@@ -632,7 +634,7 @@ def export_file(name: str, ext: str):
 
 @app.get("/api/sessions/{name}.post.wav")
 def session_post_wav(name: str):
-    p = ROOT / "data" / "sessions" / f"{name}.post.wav"
+    p = DATA / "sessions" / f"{name}.post.wav"
     if not re.fullmatch(r"[0-9-]+", name) or not p.exists():
         return err("No such session.", 404)
     return FileResponse(p, media_type="audio/wav", filename=p.name)
@@ -640,7 +642,7 @@ def session_post_wav(name: str):
 
 @app.get("/api/sessions/{name}.wav")
 def session_wav(name: str):
-    p = ROOT / "data" / "sessions" / f"{name}.wav"
+    p = DATA / "sessions" / f"{name}.wav"
     if not re.fullmatch(r"[0-9-]+", name) or not p.exists():
         return err("No such session.", 404)
     return FileResponse(p, media_type="audio/wav")

@@ -6,9 +6,9 @@ import re
 import time
 from typing import Any, Dict, List, Optional
 
-from . import ROOT
+from . import DATA
 
-FILE = ROOT / "data" / "my_presets.json"
+FILE = DATA / "my_presets.json"
 KINDS = ("units", "fx")
 MAX_NAME = 40
 

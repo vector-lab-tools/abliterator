@@ -29,7 +29,7 @@ from typing import Any, Dict, List, Optional
 
 import numpy as np
 
-from . import ROOT, TOOL, VERSION
+from . import DATA, TOOL, VERSION
 from . import fx
 
 SR = fx.SR
@@ -38,9 +38,9 @@ BLOCK = 512
 LEVEL_FLOOR = -60.0          # the foot of a track fader: silence
 RELEASE_DB = 24.0            # the meters' release, dB a second
 TAIL_S = 3.0
-SNAPSHOTS = ROOT / "data" / "snapshots"
-EXPORTS = ROOT / "data" / "exports"
-STATE = ROOT / "data" / "tracks" / "desk.json"
+SNAPSHOTS = DATA / "snapshots"
+EXPORTS = DATA / "exports"
+STATE = DATA / "tracks" / "desk.json"
 
 
 def load_clip(sid: str) -> np.ndarray:

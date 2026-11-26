@@ -2375,7 +2375,7 @@ async function poll() {
       }
       if (s.frame_ms) S.frameMs = s.frame_ms;
       const name = s.model?.model_id || (s.engines || []).find((e) => e.id === s.engine)?.label || "";
-      $("#modelchip").innerHTML = s.error ? `<span class="busy">${esc(s.error)}</span>` : s.freezing ? `<span class="busy">freezing ${s.freezing[0]} / ${s.freezing[1]} frames</span>` : (s.playing || s.state === "ready") ? "" : `<span class="busy">${esc(name)}: ${esc(s.state)}</span>`;
+      $("#modelchip").innerHTML = s.error ? `<span class="busy">${esc(s.error)}</span>` : s.freezing ? `<span class="busy">freezing ${s.freezing[0]} / ${s.freezing[1]} frames</span>` : (s.playing || s.state === "ready") ? "" : `<span class="busy">${/^Please wait/.test(s.state) ? "" : esc(name) + ": "}${esc(s.state)}</span>${progressBar(s.progress)}`;
       if (s.model) $("#modelinfo").textContent = `${s.model.dtype} · ${s.model.sample_rate / 1000} kHz ${s.model.channels === 2 ? "stereo" : "mono"}`;
       const L = s.latency || { measured_ms: [] };
       // the line under the waveform says one or two words; the figures are in its tip and in Settings
@@ -2756,6 +2756,12 @@ function drawSettings() {
   box.innerHTML = h;
   if (S.status) drawEngine(S.status);
   $("#engpick").addEventListener("click", (e) => { const b = e.target.closest("button[data-e]"); if (b) switchEngine(b.dataset.e); });
+}
+// A long first-run measurement (the stream, a direction): a bar and how far it has got, from the engine's [done, total].
+function progressBar(p) {
+  if (!p || !p[1]) return "";
+  const pc = Math.min(100, Math.floor(100 * p[0] / p[1]));
+  return `<span class="mbar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pc}"><i style="width:${pc}%"></i></span><span class="mpc">${pc}%</span>`;
 }
 async function openSettings(tab) {
   if (tab) SET.tab = tab;

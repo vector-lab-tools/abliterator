@@ -45,7 +45,7 @@ sys.setswitchinterval(0.001)
 
 import numpy as np  # noqa: E402
 
-from abliterator import ROOT, TOOL, VERSION  # noqa: E402
+from abliterator import DATA, TOOL, VERSION  # noqa: E402
 from abliterator import directions as dr  # noqa: E402
 from abliterator import mod  # noqa: E402
 from abliterator import scope as scp  # noqa: E402
@@ -57,9 +57,9 @@ DEVICE_S = 0.040                       # the sound card's queue (see play)
 _TS = os.environ.get("ABL_TEST_SRC")   # diagnostic: a raw float32 stereo file played in place of the model, to test the rest of the path
 TEST_SRC = np.fromfile(_TS, dtype=np.float32).reshape(-1, CHANNELS) if _TS else None
 SIZE, BITS, LAYER = "mrt2_small", 8, 6
-DIRS = ROOT / "data" / "directions" / SIZE
-SESSIONS = ROOT / "data" / "sessions"
-SNAPSHOTS = ROOT / "data" / "snapshots"
+DIRS = DATA / "directions" / SIZE
+SESSIONS = DATA / "sessions"
+SNAPSHOTS = DATA / "snapshots"
 DEFAULTS = {"guidance": 3.0, "temperature": 1.3, "top_k": 40}     # the vendor's defaults
 LICENCE = "CC-BY 4.0 (weights), Apache-2.0 (code)"
 HEARD_IS = ("the output section applied (auto level, low-pass, limiter, and their modulation) at full level, the volume "
@@ -283,6 +283,7 @@ class Proc:
     def __init__(self):
         self.tasks: "queue.Queue" = queue.Queue()
         self.status_text = "loading Magenta RT 2"
+        self.progress: Optional[List[int]] = None        # [frames done, frames in all] while a long first-run measurement runs
         self.error: Optional[str] = None
         self.playing = False
         self.master = Master(SR, CHANNELS)
@@ -371,7 +372,7 @@ class Proc:
         from abliterator import units
         self.stream_stats = units.StreamStats(SIZE)
         if not self.stream_stats.exists():
-            self.status_text = "measuring the stream for the units (once, about two minutes)"
+            self.status_text = "Please wait, measuring model streams (approx. two minutes)"
             refs = list(dict.fromkeys(prompts + [q for c in dr.contrasts() for q in c["positive"] + c["negative"]]))
             self.measure_stream(refs)
         self.status_text = "ready"
@@ -379,7 +380,7 @@ class Proc:
 
     def load_calibration(self):
         """The knobs' musical curves (calibrate.py), for modulation to move along."""
-        f = ROOT / "data" / "calibration" / f"{SIZE}.json"
+        f = DATA / "calibration" / f"{SIZE}.json"
         cal = json.loads(f.read_text()) if f.exists() else {}
         from abliterator import calibrate
         mod.set_curves({k: c["curve"] for k, c in calibrate.effective(cal).items() if k in ("guidance", "temperature") or k.startswith("dose:")})
@@ -420,16 +421,21 @@ class Proc:
         from abliterator import units
         mx = self.mx
         rows = []
-        for i, q in enumerate(prompts):
-            cond = self.conditioning(q, DEFAULTS)
-            st = self.initial_state(seed + i)
-            for j in range(dr.FRAMES):
-                self.hooks.tap = [mx.zeros((1024,), mx.float32) for _ in range(self.n_layers + 1)] if j >= dr.SKIP else None
-                _, st = self.step(st, cond)
-                if self.hooks.tap is not None:
-                    mx.eval(*self.hooks.tap)
-                    rows.append(np.stack([np.array(t) for t in self.hooks.tap]))
-            self.hooks.tap = None
+        self.progress = [0, len(prompts) * dr.FRAMES]
+        try:
+            for i, q in enumerate(prompts):
+                cond = self.conditioning(q, DEFAULTS)
+                st = self.initial_state(seed + i)
+                for j in range(dr.FRAMES):
+                    self.hooks.tap = [mx.zeros((1024,), mx.float32) for _ in range(self.n_layers + 1)] if j >= dr.SKIP else None
+                    _, st = self.step(st, cond)
+                    if self.hooks.tap is not None:
+                        mx.eval(*self.hooks.tap)
+                        rows.append(np.stack([np.array(t) for t in self.hooks.tap]))
+                    self.progress[0] += 1
+                self.hooks.tap = None
+        finally:
+            self.progress = None
         units.StreamStats.save(SIZE, np.stack(rows), prompts, dr.FRAMES, dr.SKIP)
 
     def _scope_layer(self, layer: int) -> scp.Layer:
@@ -545,10 +551,15 @@ class Proc:
                 if self.hooks.tap is not None:
                     mx.eval(*self.hooks.tap)
                     n += 1
+                self.progress[0] += 1
             tap, self.hooks.tap = self.hooks.tap, None
             return np.stack([np.array(t) / n for t in tap])
-        P = np.stack([means(p, seed + i) for i, p in enumerate(contrast["positive"])])
-        N = np.stack([means(p, seed + i) for i, p in enumerate(contrast["negative"])])
+        self.progress = [0, (len(contrast["positive"]) + len(contrast["negative"])) * (dr.FRAMES + 4)]
+        try:
+            P = np.stack([means(p, seed + i) for i, p in enumerate(contrast["positive"])])
+            N = np.stack([means(p, seed + i) for i, p in enumerate(contrast["negative"])])
+        finally:
+            self.progress = None
         return dr.record(contrast, P, N, {"model": f"magenta-rt-2/{SIZE}", "revision": "magenta-rt 2.0.3",
                                           "dtype": f"{BITS}-bit"}, seed, t0, f"musiccoca {DEFAULTS['guidance']}")
 
@@ -1092,7 +1103,7 @@ class Proc:
                 "measured_ms": m[-5:], "measured_median_ms": float(np.median(m)) if m else None}
 
     def status(self) -> Dict[str, Any]:
-        s = {"tool": TOOL, "version": VERSION, "state": self.status_text, "error": self.error, "playing": self.playing,
+        s = {"tool": TOOL, "version": VERSION, "state": self.status_text, "progress": self.progress, "error": self.error, "playing": self.playing,
              "model": self.info(), "lead": self.lead, "lead_boost": self.boost if self.playing else 0, "lead_range": [1, 12], "frame_ms": FRAME_MS, "block": self.block,
              "doses": dict(self.doses), "master": dict(self.master_base), "sampling": dict(self.sampling),
              "mod": self.mod_spec, "master_now": self.master.settings(), "scope": self.scope(), "scope_lr": getattr(self, "scope_lr", None), "field": self.field() if self.playing else None, "stages": self.master.readings() if self.playing else None,
@@ -1141,7 +1152,7 @@ class Proc:
                   "norm_by_layer": [round(float(x), 1) for x in d["norm"]]}
         cal = None
         try:
-            c = json.loads((ROOT / "data" / "calibration" / f"{SIZE}.json").read_text())
+            c = json.loads((DATA / "calibration" / f"{SIZE}.json").read_text())
             cal = {"made": c.get("made"), "renders": c.get("renders"), "controls": len(c.get("controls", {})), "presets": sorted(c.get("floor", {}).keys())}
         except Exception:
             pass

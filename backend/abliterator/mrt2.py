@@ -13,13 +13,14 @@ import json
 import os
 import subprocess
 import threading
+from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from . import ROOT
+from . import LOGS, ROOT
 
-PY = ROOT / ".venv-mrt2" / "bin" / "python"
+PY = Path(os.environ.get("ABLITERATOR_MRT2_PYTHON") or ROOT / ".venv-mrt2" / "bin" / "python")
 PROC = ROOT / "backend" / "abliterator" / "mrt2_proc.py"
-LOG = ROOT / "_tmp" / "mrt2.log"
+LOG = LOGS / "mrt2.log"
 
 
 class MRT2Engine:
@@ -42,7 +43,7 @@ class MRT2Engine:
         if not self.available():
             self.status_text = "not installed (no .venv-mrt2)"
             return
-        LOG.parent.mkdir(exist_ok=True)
+        LOG.parent.mkdir(parents=True, exist_ok=True)
         env = dict(os.environ, ABLITERATOR_PROMPTS=json.dumps(prompts), ABLITERATOR_PRESET_NAMES=json.dumps(names or {}),
                    PYTHONUNBUFFERED="1")
         self.p = subprocess.Popen([str(PY), str(PROC)], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
@@ -61,7 +62,7 @@ class MRT2Engine:
                 w["reply"] = m
                 w["ev"].set()
         self.status_text = "stopped"
-        self.error = f"the Magenta RT 2 process ended (see {LOG.relative_to(ROOT)})"
+        self.error = f"the Magenta RT 2 process ended (see {LOG})"
 
     def call(self, cmd: str, timeout: float = 5.0, **kw) -> Dict[str, Any]:
         if self.p is None or self.p.poll() is not None:

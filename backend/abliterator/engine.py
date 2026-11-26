@@ -27,13 +27,13 @@ from typing import Any, Dict, List, Optional
 
 import numpy as np
 
-from . import ROOT, TOOL, VERSION
+from . import DATA, TOOL, VERSION
 from .codec import HOP, LOOKAHEAD_FRAMES, SR, worker
 from .dsp import Master
 from .spectro import Spectro
 
-SESSIONS = ROOT / "data" / "sessions"
-SNAPSHOTS = ROOT / "data" / "snapshots"
+SESSIONS = DATA / "sessions"
+SNAPSHOTS = DATA / "snapshots"
 DELAY_PATTERN_FRAMES = 3
 
 

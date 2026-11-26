@@ -28,10 +28,10 @@ from typing import Any, Dict, List
 import numpy as np
 import yaml
 
-from . import ROOT
+from . import ROOT, DATA
 
 CONTRASTS = ROOT / "backend" / "config" / "contrasts"
-FOLDER = ROOT / "data" / "directions"
+FOLDER = DATA / "directions"
 FRAMES = 150
 SKIP = 25
 

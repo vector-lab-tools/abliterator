@@ -12,9 +12,9 @@ import json
 import re
 from typing import Any, Dict, List, Optional
 
-from . import ROOT
+from . import DATA
 
-SOUNDS = ROOT / "data" / "snapshots"
+SOUNDS = DATA / "snapshots"
 ID = re.compile(r"[0-9A-Za-z-]+")
 
 

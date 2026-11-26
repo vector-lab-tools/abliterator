@@ -19,7 +19,7 @@
 
 **Author:** David M. Berry
 **Institution:** University of Sussex
-**Version:** 0.4.0
+**Version:** 0.4.1
 **Status:** alpha
 **Licence:** GPL-3.0-or-later
 **DOI:** [10.5281/zenodo.24517766](https://doi.org/10.5281/zenodo.24517766)
@@ -58,7 +58,7 @@ The [Model layers page](https://vector-lab-tools.github.io/abliterator/units.htm
 
 ## Installing
 
-**As an app.** Download `Abliterator-<version>.dmg` from the [latest release](https://github.com/vector-lab-tools/abliterator/releases/latest) and drag Abliterator to Applications. It needs a Mac with Apple silicon and macOS 14 or later. The app is not yet signed with a Developer ID, so the first time, right-click it and choose Open. The first run installs Python 3.12 and the two environments from pinned, hash-checked lock files (about 2.4 GB) and downloads the Magenta RT 2 small weights from Hugging Face (2.5 GB, checksum-checked) into `~/Documents/Magenta`, keeping any already there. Your sounds, sessions and exports go to `~/Library/Application Support/Abliterator/data` (Help, Show Data Folder). `app/build.sh` builds the app and the disk image from this tree.
+**As an app.** Download `Abliterator-<version>.dmg` from the [latest release](https://github.com/vector-lab-tools/abliterator/releases/latest) and drag Abliterator to Applications. It needs a Mac with Apple silicon and macOS 14 or later. It is not yet signed with a Developer ID, so macOS stops it the first time: open it, choose Done, then in System Settings, Privacy & Security, click Open Anyway and confirm. The first run installs Python 3.12 and the two environments from pinned, hash-checked lock files (about 2.4 GB) and downloads the Magenta RT 2 small weights from Hugging Face (2.5 GB, checksum-checked) into `~/Documents/Magenta`, keeping any already there. Your sounds, sessions and exports go to `~/Library/Application Support/Abliterator/data` (Help, Show Data Folder). `app/build.sh` builds the app and the disk image from this tree.
 
 **From the source.** Requirements: a Mac with Apple silicon (Magenta RT 2 runs on MLX), Python 3.12, and [uv](https://github.com/astral-sh/uv) or pip. The model's weights (about 2.9 GB) are not in this repository; `magenta-rt` keeps them in `$MAGENTA_HOME`, by default `~/Documents/Magenta`.
 

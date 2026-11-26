@@ -124,7 +124,7 @@
       <p>Yes. The same seed, preset, settings and moves give the same audio, sample for sample. Every saved sound keeps its recipe, and the engine renders it again from the recipe, sample for sample.</p>
     </div></details>
     <details><summary>What format are sounds saved in, and where?</summary><div>
-      <p>WAV, 48 kHz stereo, 32-bit float, in <code>data/snapshots/</code>: the sound as you heard it (after the effects and the output section) and the model's own output. Session exports a track or the mix as WAV to <code>data/exports/</code>.</p>
+      <p>WAV, 48 kHz stereo, 32-bit float, in <code>data/snapshots/</code> (in the app, under <code>~/Library/Application Support/Abliterator/data/</code>): the sound as you heard it (after the effects and the output section) and the model's own output. Session exports a track or the mix as WAV to <code>data/exports/</code>.</p>
     </div></details>
     <details><summary>Can I use it with my DAW? Is it a plug-in?</summary><div>
       <p>Export WAV and bring it in. A plug-in for Ableton Live is planned, with the Synth panel as its interface, and not built. Abliterator is not affiliated with Ableton.</p>
@@ -135,7 +135,7 @@
       <p>Magenta RealTime 2 small by default, in 8-bit on Apple's MLX. MusicGen small is a second engine, with Steer but without the model-layer units, and slower to answer (about 285 ms); it is chosen in Settings (⚙), Model. Both run through the same engine interface; adding another model means writing an engine for it.</p>
     </div></details>
     <details><summary>What do I need?</summary><div>
-      <p>A Mac with Apple silicon, Python 3.12, and uv or pip. Magenta RT 2's weights take about 2.9 GB and are kept in <code>$MAGENTA_HOME</code>, by default <code>~/Documents/Magenta</code>. It has been built and measured on an Apple M5 with 24 GB; other machines have not been tested.</p>
+      <p>A Mac with Apple silicon and macOS 14 or later. The app (a disk image on the <a href="https://github.com/vector-lab-tools/abliterator/releases/latest">latest release</a>) installs everything else on its first run; from the source you need Python 3.12 and uv or pip. Magenta RT 2's weights take about 2.9 GB and are kept in <code>$MAGENTA_HOME</code>, by default <code>~/Documents/Magenta</code>. It has been built and measured on an Apple M5 with 24 GB; other machines have not been tested.</p>
     </div></details>
     <details><summary>Does it need the internet?</summary><div>
       <p>To install it, and to fetch the models. After that it runs on your own machine.</p>

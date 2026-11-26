@@ -36,7 +36,6 @@ header.bar { position: relative; z-index: 20; display: flex; align-items: center
   background: var(--ink-1); color: var(--s-text); box-shadow: 0 1px 0 rgba(255,255,255,.04), 0 6px 20px rgba(5,8,20,.25); }
 .brand { flex: none; display: flex; align-items: center; gap: 9px; font-weight: 700; font-size: 15px; letter-spacing: .01em; white-space: nowrap; }
 .brand img { width: 22px; height: 22px; }
-.brand .ver { font-size: 10.5px; font-weight: 500; color: var(--s-text-3); }
 .transport { flex: none; display: flex; align-items: center; gap: 2px; padding: 3px; border-radius: 8px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.08); }
 .tp { position: relative; height: 28px; min-width: 34px; display: inline-grid; place-items: center; border: 0; border-radius: 6px; background: transparent; color: var(--s-text-2); cursor: pointer; font: 14px/1 inherit; padding: 0 8px; }
 .tp:hover:not(:disabled) { background: rgba(255,255,255,.1); color: var(--s-text); }

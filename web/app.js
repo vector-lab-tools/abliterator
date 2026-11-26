@@ -43,10 +43,10 @@ const fail = (e) => info(e.message || String(e), "bad");
 const THEMES = ["system", "light", "dark"];
 function setTheme(t) {
   if (t === "system") delete document.documentElement.dataset.theme; else document.documentElement.dataset.theme = t;
-  try { localStorage.setItem("aa-theme", t); } catch (e) { /* private window */ }
 }
-let theme = "system";
-try { theme = localStorage.getItem("aa-theme") || "system"; } catch (e) { /* private window */ }
+// Dark unless a theme was picked in Settings. The old "aa-theme" key held no choice (every load wrote it).
+let theme = "dark";
+try { localStorage.removeItem("aa-theme"); theme = localStorage.getItem("aa-theme-picked") || "dark"; } catch (e) { /* private window */ }
 setTheme(theme);
 
 // ------------------------------------------------------------- controls: knob and fader
@@ -2328,7 +2328,6 @@ async function poll() {
   const part = (name, fn) => { try { fn(); } catch (e) { console.error(name, e); pageError(`${name}: ${e.message}`); } };
   part("engine", () => {
       S.status = s;
-      $("#ver").textContent = s.version || "";
       if (s.engines) {
         drawEngine(s);
         refreshSettings(s);
@@ -2710,8 +2709,8 @@ function drawSettings() {
   const box = $("#setbody"), d = SET.data;
   if (SET.tab === "display") {
     box.innerHTML = `<h4>Theme</h4><div class="setseg" role="group" aria-label="Theme">${THEMES.map((t) => `<button type="button" data-th="${t}" aria-pressed="${t === theme}">${t === "system" ? "System" : t === "light" ? "Light" : "Dark"}</button>`).join("")}</div>
-      <p class="setnote">System follows this computer's light or dark setting. The choice is kept in this browser.</p>`;
-    box.querySelectorAll("[data-th]").forEach((b) => b.addEventListener("click", () => { theme = b.dataset.th; setTheme(theme); drawXY(); drawSettings(); }));
+      <p class="setnote">Dark until you pick another. System follows this computer's light or dark setting. The choice is kept in this browser.</p>`;
+    box.querySelectorAll("[data-th]").forEach((b) => b.addEventListener("click", () => { theme = b.dataset.th; setTheme(theme); try { localStorage.setItem("aa-theme-picked", theme); } catch (e) { /* private window */ } drawXY(); drawSettings(); }));
     return;
   }
   if (!d) { box.innerHTML = `<p>Reading…</p>`; return; }

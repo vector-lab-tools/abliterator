@@ -10,7 +10,7 @@
 <p align="center"><img src="web/mark.svg" alt="" width="88"></p>
 
 <h1 align="center">Abliterator</h1>
-<p align="center">Vector bending for a music model, played live<br>
+<p align="center">Abliterator is a new instrument that enables vector bending of a music AI model that is playable live and in realtime.<br>
 <sub>A Vector Lab tool · beta · GPL-3.0-or-later</sub></p>
 <p align="center"><b><a href="https://vector-lab-tools.github.io/abliterator/">Website: vector-lab-tools.github.io/abliterator</a></b></p>
 <p align="center"><a href="https://zenodo.org/badge/latestdoi/1460113472"><img src="https://zenodo.org/badge/1460113472.svg" alt="DOI"></a></p>
@@ -19,7 +19,7 @@
 
 **Author:** David M. Berry
 **Institution:** University of Sussex
-**Version:** 0.5.0
+**Version:** 0.5.1
 **Status:** beta
 **Licence:** GPL-3.0-or-later
 **DOI:** [10.5281/zenodo.24517766](https://doi.org/10.5281/zenodo.24517766)

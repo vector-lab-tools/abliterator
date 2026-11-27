@@ -79,7 +79,7 @@
           <li><a href="#width"><b>Width and Spread</b></a> on the stereo field.</li>
           <li><a href="#last"><b>Low-pass</b>, <b>limiter</b> and <b>volume</b></a>.</li>
         </ol>
-        <p><b>Bypass</b> skips everything after De-click except the volume, so you hear the model as it wrote the sound. Every stage works in fixed steps counted from the start of the sound, so it gives the same output whatever block size the sound card asks for, and a saved sound rendered offline matches what was heard. Each play starts the output section from silence, its settings kept: no reverb tail or level carries over from the last take.</p>
+        <p><b>Bypass</b> skips everything after De-click except the volume. What you hear is then the sound as the model wrote it. Each stage of the output section works in fixed steps, and these are counted from the start of the sound, so that the output is the same whatever block size the sound card asks for. A saved sound rendered offline will therefore match what was heard. Each time you play, the section starts again from silence, with its settings left as they were. No reverb tail or level is carried over from the last take.</p>
       </div>
       <div>
         <figure class="clip green" style="--w:230px;--mw:260px">
@@ -94,8 +94,8 @@
   <section class="section wrap reveal" id="declick">
     <span class="num">02</span>
     <h2>De-click</h2>
-    <p>Some settings make the model itself write clicks: bursts a few samples long that swing up and down, sometimes to full scale, and sound like a bad splice. Neuron pushed hard at one block does it, and so does Quantise at 6 bits (85 a minute on the Warm drone, none at 8). The engine logs the sound card's underflows and any jump between the blocks it sends, and neither appears when these happen, so they are in the model's output, not the playback.</p>
-    <p>De-click finds samples that jump more than six times the sound's mean step above the line through their neighbours and reverse from one sample to the next, and redraws each burst as a straight line between the good samples either side. It looks 64 samples (1.3 ms) ahead, so the output is that much late. With Neuron at ×14.45 on block 3, the steps heard above half the peak fell from 27 to 2; on clean techno, jazz and gamelan it touched 3 to 12 places in 45 seconds. It is on by default, with a switch on the Output panel, and the same stage can be placed anywhere in the effect chain.</p>
+    <p>Some settings make the model itself write clicks. These are bursts a few samples long that swing up and down, sometimes to full scale, and they sound like a bad splice. Pushing Neuron hard at one block will do it, and so will Quantise at 6 bits (on the Warm drone there were 85 a minute, and none at 8). The engine logs the sound card's underflows, and any jump between the blocks it sends, but neither of these turns up when the clicks happen. So the clicks are in the model's output and not in the playback.</p>
+    <p>De-click looks for samples that jump above the line through their neighbours by more than six times the sound's mean step, and that then reverse from one sample to the next. Each of these bursts is then redrawn as a straight line between the good samples on either side. To do this it looks 64 samples (1.3 ms) ahead, which means the output is that much late. With Neuron at ×14.45 on block 3, the number of steps heard above half the peak fell from 27 to 2. On clean techno, jazz and gamelan it touched between 3 and 12 places in 45 seconds. De-click is on by default and has a switch on the Output panel. The same stage can also be put anywhere in the effect chain.</p>
     <div class="viz" id="viz-declick" role="group" aria-label="Figure: a waveform with a five-sample burst, before and after De-click">
       <svg viewBox="0 0 960 260" aria-hidden="true"></svg>
       <div class="bar"><span class="lab">De-click</span>
@@ -110,7 +110,7 @@
   <section class="section wrap reveal" id="level">
     <span class="num">03</span>
     <h2>Auto level</h2>
-    <p>Auto level keeps the loudness steady while the controls move, so that a move is heard as a change of sound more than a change of level. It follows the sound's power with a 1.5 s time constant (0.3 s to a rise) and sets a gain toward −20 dBFS RMS, from −12 to +18 dB, ramped in 10 ms steps. Below −60 dBFS it holds its gain, so silence is not raised. It also evens out the music's own slow swells; switch <b>Level</b> off to keep them. The AUTO row on the Output panel shows its gain.</p>
+    <p>Auto level keeps the loudness steady while the controls move, so that a move is heard more as a change of sound than as a change of level. To do this it follows the power of the sound with a 1.5 s time constant (0.3 s when the sound rises), and sets a gain of between −12 and +18 dB that brings it toward −20 dBFS RMS. The gain is ramped in 10 ms steps. When the sound drops below −60 dBFS the gain is held, so that silence is not raised. Auto level will also even out the music's own slow swells, and if you want to keep them you can switch <b>Level</b> off. The gain it is applying is shown in the AUTO row on the Output panel.</p>
   </section>
 
   <!-- 04 -->
@@ -119,7 +119,7 @@
     <h2>Dynamics</h2>
     <div class="split">
       <div>
-        <p>Dynamics is a compressor and a gate, as on a console's channel strip, after the effects and off by default. The compressor turns down what goes over the <b>Threshold</b> (−40 to 0 dBFS) by the <b>Ratio</b> (1:1 to 20:1); its attack is 30 ms, or 3 ms with <b>Fast</b>, and its <b>Release</b> runs from 0.05 to 4 s. It reads the RMS level, or the peak with <b>Peak</b>. The <b>Gate</b> closes by 40 dB when the level falls below its threshold (−80 to −20 dBFS; at the bottom it is off). Both work in 1 ms steps counted from the start.</p>
+        <p>Dynamics is a compressor and a gate, of the kind you would find on a console's channel strip. It comes after the effects and is off by default. The compressor turns down anything that goes over the <b>Threshold</b> (which runs from −40 to 0 dBFS) by the <b>Ratio</b> (from 1:1 to 20:1). Its attack is 30 ms (3 ms if you use <b>Fast</b>), and the <b>Release</b> can be set anywhere from 0.05 to 4 s. Normally it reads the RMS level, but with <b>Peak</b> it reads the peak. When the level falls below its threshold the <b>Gate</b> closes by 40 dB. That threshold can be set from −80 to −20 dBFS, and at the very bottom of the range the gate is switched off. Both of them work in 1 ms steps, counted from the start of the sound.</p>
         <p>The COMP and GATE rows light their reduction on LEDs; the AUTO and LIMIT rows show auto level's gain and the limiter's pull on the peak.</p>
       </div>
       <div>
@@ -144,14 +144,14 @@
   <section class="section wrap reveal" id="width">
     <span class="num">05</span>
     <h2>Width and Spread</h2>
-    <p>Width and Spread are on the Engine panel, beside the stereo field that shows what they do, and act here, after Dynamics. The sound is split into mid (left plus right) and side (left minus right). <b>Width</b> scales the side: 0% is mono, 100% the stereo the model wrote, 200% twice as wide. <b>Spread</b> makes width from a mono sound: it adds the mid, delayed 12 ms, to the left and takes it from the right. Twelve milliseconds is inside the window where the ear hears one sound rather than an echo, and the mono sum stays the mid, so nothing is lost when the sound is played in mono.</p>
+    <p>Width and Spread are set on the Engine panel, beside the stereo field that shows what they do, but they act here, after Dynamics. At this point the sound is split into a mid (left plus right) and a side (left minus right). <b>Width</b> scales the side. That is to say, at 0% the sound is mono, at 100% it is the stereo the model wrote, and at 200% it is twice as wide. <b>Spread</b> is a way of making width from a mono sound. It adds the mid, delayed by 12 ms, to the left, and takes it away from the right. Twelve milliseconds falls inside the window in which the ear hears a single sound, so no echo is heard. Because the mono sum stays the mid, nothing is lost when the sound is played in mono.</p>
   </section>
 
   <!-- 06 -->
   <section class="section wrap reveal" id="last">
     <span class="num">06</span>
     <h2>Low-pass, limiter and volume</h2>
-    <p>The <b>Low-pass</b> is a one-pole filter from 500 Hz to 16 kHz, gentle enough to darken a sound without a resonance. The <b>Limiter</b> is a soft curve, tanh(1.5x) scaled back to unity at full scale, which rounds peaks rather than cutting them; the LIMIT row shows how far it pulls the peak down. <b>Volume</b> comes last. The <b>OUT</b> meter lights in cells, green, amber from −6 dB and red from −1 dB, with a hold line at each channel's peak, and shows the level as it goes to the sound card.</p>
+    <p>The <b>Low-pass</b> is a one-pole filter that can be set from 500 Hz to 16 kHz. It is gentle enough to darken a sound without a resonance. For the <b>Limiter</b> there is a soft curve, tanh(1.5x), scaled back to unity at full scale, which rounds peaks off without cutting them, and the LIMIT row shows how far it pulls the peak down. <b>Volume</b> comes last. The <b>OUT</b> meter shows the level as it goes to the sound card. It lights in cells (green, amber from −6 dB and red from −1 dB), and there is a hold line at each channel's peak.</p>
     <figure class="clip green" style="--w:70px;--mw:90px">
       <a class="shot" href="img/chain/out-meter.webp" data-cap="The OUT meter: a column of cells for each channel, green, amber from −6 dB and red from −1 dB, with the hold line at the peak."><img src="img/chain/out-meter.webp" width="100" height="577" loading="lazy" alt="A tall meter of small green cells with amber and red cells at the top, and a figure below."></a>
       <figcaption><span class="tag">OUT</span>Cells and a hold line.</figcaption>
@@ -162,7 +162,7 @@
   <section class="section wrap reveal" id="cover">
     <span class="num">07</span>
     <h2>Dropouts</h2>
-    <p>The model writes ahead of the sound card by the Buffer's number of frames (see <a href="engine.html#frames">Frame by frame</a>). If a step runs long and the card asks for sound that is not there, the output section covers the gap. The last block the card played goes on, mirrored so that it starts where the sound stopped (played backwards, then forwards), and fades out over 30 ms; when sound arrives it crossfades back in over 5 ms. A dropout is heard as a short dip, without a click. Only what is heard is covered: a saved sound is taken from the frames the model wrote, so a dropout heard live is not in it.</p>
+    <p>The model writes ahead of the sound card by the number of frames set in the Buffer (see <a href="engine.html#frames">Frame by frame</a>). If a step runs long and the card asks for sound that is not there, the output section covers the gap. It carries on with the last block the card played, mirrored so that it starts where the sound stopped (played backwards and then forwards), and fades it out over 30 ms. When the sound arrives, it crossfades back in over 5 ms. A dropout is then heard as a short dip, with no click. Only what is heard is covered in this way. A saved sound is taken from the frames the model wrote, so a dropout heard live will not be in it.</p>
     <div class="viz" id="viz-cover" role="group" aria-label="Animated figure: a dropout covered by the mirrored last block, fading, then a crossfade back">
       <svg viewBox="0 0 960 260" aria-hidden="true"></svg>
       <div class="bar"><span class="lab">Dropout</span>

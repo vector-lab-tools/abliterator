@@ -78,6 +78,10 @@
     <details><summary>Who made it?</summary><div>
       <p>David M. Berry, at the University of Sussex, as a <a href="https://vector-lab-tools.github.io">Vector Lab</a> instrument. It is free software, GPL-3.0-or-later.</p>
     </div></details>
+    <details><summary>How do I install it?</summary><div>
+      <p>The easiest way is the Mac app, for a Mac with Apple silicon and macOS 14 or later. Download <code>Abliterator-&lt;version&gt;.dmg</code> from the <a href="https://github.com/vector-lab-tools/abliterator/releases/latest">latest release</a>, open it and drag Abliterator to Applications. The app is not yet signed with a Developer ID, and so macOS will stop it the first time you open it. Choose Done, then in System Settings, Privacy &amp; Security, click Open Anyway and confirm. The first run installs Python 3.12 and the app's two environments (about 2.4 GB), and downloads the Magenta RT 2 small weights (2.5 GB, with each file checked against its published checksum) into <code>~/Documents/Magenta</code>, although any weights already there are kept. The model's streams are then measured once (this takes about two minutes). After that the app starts like any other. Your sounds and sessions are kept in <code>~/Library/Application Support/Abliterator/data</code> (Help, Show Data Folder).</p>
+      <p>To run it from the source instead, clone the <a href="https://github.com/vector-lab-tools/abliterator">repository</a> and run <code>./setup.sh --mrt2</code>, then <code>./launch.sh</code>. <a href="index.html#start">Getting started</a> has both ways in full.</p>
+    </div></details>
 
     <h3>Sound</h3>
     <details><summary>Do the Model layers process audio?</summary><div>
@@ -135,7 +139,7 @@
       <p>Magenta RealTime 2 small by default, in 8-bit on Apple's MLX. MusicGen small is a second engine, with Steer but without the model-layer units, and slower to answer (about 285 ms); it is chosen in Settings (⚙), Model. Both run through the same engine interface; adding another model means writing an engine for it.</p>
     </div></details>
     <details><summary>What do I need?</summary><div>
-      <p>A Mac with Apple silicon and macOS 14 or later. The app (a disk image on the <a href="https://github.com/vector-lab-tools/abliterator/releases/latest">latest release</a>) installs everything else on its first run; from the source you need Python 3.12 and uv or pip. Magenta RT 2's weights take about 2.9 GB and are kept in <code>$MAGENTA_HOME</code>, by default <code>~/Documents/Magenta</code>. It has been built and measured on an Apple M5 with 24 GB; other machines have not been tested.</p>
+      <p>A Mac with Apple silicon and macOS 14 or later. The app (a disk image on the <a href="https://github.com/vector-lab-tools/abliterator/releases/latest">latest release</a>) installs everything else on its first run; from the source you need Python 3.12 and uv or pip. Magenta RT 2's weights take 2.5 GB in the app (about 2.9 GB from the source, which also fetches files the app does not use) and are kept in <code>$MAGENTA_HOME</code>, by default <code>~/Documents/Magenta</code>. It has been built and measured on an Apple M5 with 24 GB; other machines have not been tested.</p>
     </div></details>
     <details><summary>Does it need the internet?</summary><div>
       <p>To install it, and to fetch the models. After that it runs on your own machine.</p>
